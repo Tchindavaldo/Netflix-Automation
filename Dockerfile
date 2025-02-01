@@ -25,14 +25,17 @@ RUN npm install
 # Étape 6 : Installer Playwright et ses dépendances
 RUN npm install playwright
 
-# Étape 7 : Installer les navigateurs Playwright
-RUN npx playwright install
-
-# Étape 8 : Copier tout le code source dans le conteneur
+# Étape 7 : Copier tout le code source dans le conteneur
 COPY . .
 
-# Étape 9 : Exposer le port sur lequel l'application va tourner (par exemple, port 3000)
+# Étape 8 : Exposer le port sur lequel l'application va tourner (par exemple, port 3000)
 EXPOSE 3000
 
-# Étape 10 : Commande pour démarrer l'application
-CMD ["npm", "start"]
+# Étape 9 : Ajouter un script d'installation des navigateurs Playwright lors du démarrage
+RUN echo 'npx playwright install' >> /app/start.sh
+
+# Étape 10 : Changer les permissions pour le script
+RUN chmod +x /app/start.sh
+
+# Étape 11 : Commande pour démarrer l'application
+CMD ["sh", "/app/start.sh"]
