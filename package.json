@@ -2,17 +2,22 @@
   "name": "mobilepay",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "start": "node index.js",
+    "start:dev": "nodemon index.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.48.1",
-    "@types/node": "^22.7.9"
+    "nodemon": "^3.1.7"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.1",
-    "ts-node": "^10.9.2"
+    "playwright": "^1.48.1"
   }
 }
