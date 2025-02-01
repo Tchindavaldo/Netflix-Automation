@@ -13,7 +13,7 @@ class PlaywrightService
               // this.browser = await chromium.launch( { headless: false } );
               this.browser = await chromium.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
-                     headless: true // Important pour Render
+                     headless: false // Important pour Render
               } );;
        }
 
@@ -24,6 +24,18 @@ class PlaywrightService
               await page.setDefaultTimeout( 60000 ); // Définit un timeout global de 60 secondes
 
               await page.goto( url );
+
+              const rejectButton = page.locator( '#onetrust-reject-all-handler' );
+
+              try
+              {
+                     await rejectButton.waitFor( { state: 'visible', timeout: 5000 } ); // Attendre max 5s
+                     console.log( "Popup de consentement détecté, clic sur 'Reject'..." );
+                     await rejectButton.click();
+              } catch ( error )
+              {
+                     console.log( "Aucun popup de consentement détecté, on continue..." );
+              }
 
               // Exemple d'interactions pour remplir les formulaires
               // await page.fill('input[name="username"]', data.username);

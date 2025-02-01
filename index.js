@@ -17,6 +17,11 @@ app.use( cors( {
        methods: [ 'GET', 'POST', 'PUT', 'DELETE' ], // Méthodes autorisées
        allowedHeaders: [ 'Content-Type' ],  // En-têtes autorisés
 } ) );
+app.get( '/health', ( req, res ) =>
+{
+       res.status( 200 ).send( 'OK' );
+} );
+
 
 // Route pour le formulaire
 app.post( '/api/fill-form', async ( req, res ) =>
