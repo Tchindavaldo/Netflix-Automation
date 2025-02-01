@@ -26,7 +26,6 @@ RUN apt-get update && apt-get install -y \
        libx11-xcb1 \
        libxcursor1 \
        libgtk-3-0 \
-       libgdk-3-0 \
        && rm -rf /var/lib/apt/lists/*
 
 # Étape 3 : Définir le répertoire de travail dans le conteneur
