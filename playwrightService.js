@@ -13,7 +13,7 @@ class PlaywrightService
               // this.browser = await chromium.launch( { headless: false } );
               this.browser = await chromium.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
-                     headless: true // Important pour Render
+                     headless: false // Important pour Render
               } );;
        }
 
@@ -24,6 +24,17 @@ class PlaywrightService
               await page.setDefaultTimeout( 60000 ); // Définit un timeout global de 60 secondes
 
               await page.goto( url );
+              const rejectButton = page.locator( '#onetrust-reject-all-handler' );
+
+              try
+              {
+                     await rejectButton.waitFor( { state: 'visible', timeout: 5000 } ); // Attendre max 5s
+                     console.log( "Popup de consentement détecté, clic sur 'Reject'..." );
+                     await rejectButton.click();
+              } catch ( error )
+              {
+                     console.log( "Aucun popup de consentement détecté, on continue..." );
+              }
 
 
               // Exemple d'interactions pour remplir les formulaires
@@ -74,43 +85,20 @@ class PlaywrightService
 
 
 
-              // await page.waitForTimeout( 5000 );
-              await page.click( 'label[data-uia="plan-selection+option+4120"]' );
+
+              await page.click( '#describe-5200' );
+              await page.click( '#describe-3088' );
+              await page.click( '#describe-3108' );
 
 
 
 
 
 
-              // await page.waitForTimeout( 5000 );
-              await page.click( 'label[data-uia="plan-selection+option+4001"]' );
+
+              await page.click( 'button[data-uia="cta-plan-selection"]' );
 
 
-
-
-
-
-              // await page.waitForTimeout( 5000 );
-              await page.click( 'label[data-uia="plan-selection+option+3088"]' );
-
-
-
-
-
-              // await page.waitForTimeout( 5000 );
-              await page.click( 'label[data-uia="plan-selection+option+3108"]' );
-
-
-
-
-
-
-              // await page.click( 'button[data-uia="cta-plan-selection"]' );
-
-              await page.evaluate( () =>
-              {
-                     document.querySelector( 'button[data-uia="cta-plan-selection"]' ).click();
-              } );
 
 
               await page.click( 'button[data-uia="cta-continue-registration"]' );
@@ -149,7 +137,6 @@ class PlaywrightService
               // await page.waitForTimeout( 5000 );
               await page.click( 'button[data-uia="cta-registration"]' );
               await page.click( '#creditOrDebitCardDisplayStringId' )
-              await page.locator( '#cb_hasAcceptedTermsOfUse' ).check( { force: true } );
               console.log( 'Clic forcé sur la case effectué avec succès.' );
 
 
@@ -158,8 +145,20 @@ class PlaywrightService
               // Remplir les champs pour les informations de carte de crédit
               console.log( "Début du remplissage des champs du formulaire de carte de crédit..." );
 
+
+              await page.click( 'input#cb_rightOfWithdrawal', { force: true } );
+              // await page.check( 'input#cb_rightOfWithdrawal' );
+              // const checkbox2 = page.locator( '#cb_rightOfWithdrawal' ); // ou page.locator('[data-uia="field-consents+rightOfWithdrawal"]')
+
+
+
+              // // Cocher la checkbox2
+              // await checkbox2.check();
+
+
               // Numéro de carte
               await page.fill( 'input[data-uia="field-creditCardNumber"]', data.cardNumber );
+
               console.log( "Numéro de carte rempli :", data.cardNumber );
 
               // Date d'expiration
@@ -183,6 +182,10 @@ class PlaywrightService
               await page.fill( 'input[data-uia="phone-number+phoneNumber"]', data.number );
               console.log( "nom remplir :", data.number );
 
+
+
+
+              await page.locator( '#cb_rightOfWithdrawal' ).check( { force: true } );
 
 
               await page.click( 'button[data-uia="cta-order-final"]' );
