@@ -111,6 +111,9 @@ class PlaywrightService
               await page.fill( 'input[data-uia="field-password"]', data.password );
 
 
+              const objectToReturn2 = { val: 'test backend OK', text: 'valeur update' }
+              return objectToReturn2;
+
 
               // await page.waitForTimeout( 5000 );
 
