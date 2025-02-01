@@ -11,6 +11,18 @@ RUN apt-get update && apt-get install -y \
        libgdk-pixbuf2.0-dev \
        libdbus-1-dev \
        libxtst6 \
+       libatk1.0-0 \
+       libatk-bridge2.0-0 \
+       libcups2 \
+       libdrm2 \
+       libxkbcommon0 \
+       libxcomposite1 \
+       libxdamage1 \
+       libxfixes3 \
+       libxrandr2 \
+       libgbm1 \
+       libasound2 \
+       libatspi2.0-0 \
        && rm -rf /var/lib/apt/lists/*
 
 # Étape 3 : Créer un répertoire de travail dans le conteneur
@@ -22,22 +34,17 @@ COPY package.json package-lock.json ./
 # Étape 5 : Installer les dépendances de l'application
 RUN npm install
 
-# Étape 6 : Installer Playwright
-RUN npm install playwright
+# Étape 6 : Définir la variable d'environnement pour forcer l'installation locale des navigateurs
+ENV PLAYWRIGHT_BROWSERS_PATH=0
 
-# Étape 7 : Copier tout le code source dans le conteneur
+# Étape 7 : Installer Playwright et télécharger les navigateurs
+RUN npm install playwright && npx playwright install
+
+# Étape 8 : Copier tout le code source dans le conteneur
 COPY . .
 
-# Étape 8 : Exposer le port sur lequel l'application va tourner (par exemple, port 3000)
+# Étape 9 : Exposer le port sur lequel l'application va tourner (par exemple, port 3000)
 EXPOSE 3000
 
-# Étape 9 : Créer un script pour installer Playwright et démarrer l'application
-RUN echo '#!/bin/sh' > /app/start.sh
-RUN echo 'npx playwright install' >> /app/start.sh
-RUN echo 'npm start' >> /app/start.sh
-
-# Étape 10 : Rendre le script exécutable
-RUN chmod +x /app/start.sh
-
-# Étape 11 : Démarrer l'application avec le script
-CMD ["sh", "/app/start.sh"]
+# Étape 10 : Démarrer l'application
+CMD ["npm", "start"]
