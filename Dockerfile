@@ -1,7 +1,7 @@
 # Étape 1 : Choisir une image de base avec Node.js
 FROM node:18
 
-# Étape 2 : Mettre à jour et installer les dépendances nécessaires pour Playwright
+# Étape 2 : Installer les dépendances système nécessaires pour Playwright
 RUN apt-get update && apt-get install -y \
        wget \
        libx11-dev \
@@ -25,26 +25,26 @@ RUN apt-get update && apt-get install -y \
        libatspi2.0-0 \
        && rm -rf /var/lib/apt/lists/*
 
-# Étape 3 : Créer un répertoire de travail dans le conteneur
+# Étape 3 : Définir le répertoire de travail
 WORKDIR /app
 
-# Étape 4 : Copier package.json et package-lock.json dans le conteneur
+# Étape 4 : Copier uniquement package.json et package-lock.json
 COPY package.json package-lock.json ./
 
 # Étape 5 : Installer les dépendances de l'application
 RUN npm install
 
-# Étape 6 : Définir la variable d'environnement pour forcer l'installation locale des navigateurs
+# Étape 6 : Définir la variable d'environnement pour que les navigateurs soient installés dans node_modules
 ENV PLAYWRIGHT_BROWSERS_PATH=0
 
 # Étape 7 : Installer Playwright et télécharger les navigateurs
 RUN npm install playwright && npx playwright install
 
-# Étape 8 : Copier tout le code source dans le conteneur
+# Étape 8 : Copier le reste du code source dans le conteneur (en s'assurant d'exclure .local-browsers via .dockerignore)
 COPY . .
 
-# Étape 9 : Exposer le port sur lequel l'application va tourner (par exemple, port 3000)
+# Étape 9 : Exposer le port sur lequel l'application va tourner
 EXPOSE 3000
 
-# Étape 10 : Démarrer l'application
-CMD ["npm", "start"]
+# Étape 10 : Démarrer l'application en forçant l'installation des navigateurs au démarrage (optionnel)
+CMD ["sh", "-c", "npx playwright install && npm start"]
