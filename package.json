@@ -4,8 +4,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "nodemon index.js",
-  "postinstall": "apt-get update && apt-get install -y chromium"
+    "start:dev": "nodemon index.js", 
+      "postinstall": "npx playwright install --with-deps"
+
 
   },
   "keywords": [],
@@ -21,5 +22,6 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "playwright": "^1.48.1"
+    
   }
 }
