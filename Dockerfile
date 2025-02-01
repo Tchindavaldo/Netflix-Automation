@@ -22,7 +22,7 @@ COPY package.json package-lock.json ./
 # Étape 5 : Installer les dépendances de l'application
 RUN npm install
 
-# Étape 6 : Installer Playwright et ses dépendances
+# Étape 6 : Installer Playwright
 RUN npm install playwright
 
 # Étape 7 : Copier tout le code source dans le conteneur
@@ -31,11 +31,13 @@ COPY . .
 # Étape 8 : Exposer le port sur lequel l'application va tourner (par exemple, port 3000)
 EXPOSE 3000
 
-# Étape 9 : Ajouter un script d'installation des navigateurs Playwright lors du démarrage
+# Étape 9 : Créer un script pour installer Playwright et démarrer l'application
+RUN echo '#!/bin/sh' > /app/start.sh
 RUN echo 'npx playwright install' >> /app/start.sh
+RUN echo 'npm start' >> /app/start.sh
 
-# Étape 10 : Changer les permissions pour le script
+# Étape 10 : Rendre le script exécutable
 RUN chmod +x /app/start.sh
 
-# Étape 11 : Commande pour démarrer l'application
+# Étape 11 : Démarrer l'application avec le script
 CMD ["sh", "/app/start.sh"]
