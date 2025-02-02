@@ -1,12 +1,17 @@
 // PlaywrightService.js
 const { chromium } = require( 'playwright' );
+let niveauDeClick = 'initialisation';
+
 
 class PlaywrightService
 {
+
+
        constructor()
        {
               this.initBrowser();
        }
+
 
        async initBrowser()
        {
@@ -37,58 +42,28 @@ class PlaywrightService
               }
 
 
-              // Exemple d'interactions pour remplir les formulaires
-              // await page.fill('input[name="username"]', data.username);
-              // await page.fill('input[name="password"]', data.password);
-              // await page.click('button[type="submit"]');
 
-              // await page.waitForTimeout(5000);
 
-              // Cliquez sur le bouton ayant le sélecteur correspondant
-
-              // Vérifiez périodiquement la visibilité du bouton avec un log
-              // let isButtonVisible = false;
-              // while ( !isButtonVisible )
-              // {
-              //        try
-              //        {
-              //               isButtonVisible = await page.evaluate( () =>
-              //               {
-              //                      const btn = document.querySelector( 'button[data-uia="continue-button"]' );
-              //                      return btn && btn.offsetParent !== null; // Vérifie que le bouton est visible
-              //               } );
-
-              //               if ( isButtonVisible )
-              //               {
-              //                      console.log( "Le bouton est maintenant visible !" );
-              //                      break;
-              //               } else
-              //               {
-              //                      console.log( "Le bouton n'est pas encore visible, on attend..." );
-              //               }
-              //        } catch ( err )
-              //        {
-              //               console.log( "Erreur lors de la vérification du bouton :", err );
-              //        }
-
-              //        // Attendez un court instant avant de réessayer
-              //        await page.waitForTimeout( 500 );
-              // }
-
-              // // Cliquez sur le bouton après qu'il soit visible
-              // await page.click( 'button[data-uia="continue-button"]' );
-              // console.log( "Le clic sur le bouton a été effectué !" );
-
+              console.log( "execution du click suivant" );
               await page.click( 'button[data-uia="continue-button"]' );
 
 
+              console.log( "execution du click suivant 2" );
 
 
 
 
-              await page.click( '#describe-5200' );
-              await page.click( '#describe-3088' );
-              await page.click( '#describe-3108' );
+
+              // await page.click( '#describe-5200' );
+              // await page.click( '#describe-3088' );
+              // await page.click( '#describe-3108' );
+
+
+
+              // `label[data-uia="plan-selection+option+${ planId }"]`
+              await page.click( 'label[data-uia="plan-selection+option+4001"]' );
+              await page.click( 'label[data-uia="plan-selection+option+4120"]' );
+              await page.click( 'label[data-uia="plan-selection+option+3088"]' );
 
 
 
@@ -111,8 +86,8 @@ class PlaywrightService
               await page.fill( 'input[data-uia="field-password"]', data.password );
 
 
-              const objectToReturn2 = { val: 'test backend OK', text: 'valeur update' }
-              return objectToReturn2;
+              // const objectToReturn2 = { val: 'test backend OK', text: 'valeur update' }
+              // return objectToReturn2;
 
 
               // await page.waitForTimeout( 5000 );
@@ -149,9 +124,6 @@ class PlaywrightService
               console.log( "Début du remplissage des champs du formulaire de carte de crédit..." );
 
 
-              await page.click( 'input#cb_rightOfWithdrawal', { force: true } );
-              // await page.check( 'input#cb_rightOfWithdrawal' );
-              // const checkbox2 = page.locator( '#cb_rightOfWithdrawal' ); // ou page.locator('[data-uia="field-consents+rightOfWithdrawal"]')
 
 
 
@@ -178,23 +150,103 @@ class PlaywrightService
               console.log( "nom remplir :", data.nameOnCard );
 
 
-              await page.click( 'button[data-uia="action-submit-payment"]' );
 
 
-              // nameOnCard
-              await page.fill( 'input[data-uia="phone-number+phoneNumber"]', data.number );
-              console.log( "nom remplir :", data.number );
+              const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
+              await checkboxTermsOfUse.check( { force: true } );
+
+
+              // click sur le btn start MemberShip
+              try
+              {
+
+                     niveauDeClick = 'click sur le btn start MemberShip';
+                     await page.click( 'button[data-uia="action-submit-payment"]' );
+
+
+                     try
+                     {
+                            // Attendre soit l'erreur soit la navigation
+                            await page.waitForSelector( '[data-uia="UIMessage-content"]', { timeout: 10000 } );
+
+
+                            // Récupérer le texte d'erreur
+                            const errorText = await page.locator( '[data-uia="UIMessage-content"] span[data-uia=""]' ).innerText();
+
+                            return {
+
+                                   success: false,
+                                   error: errorText,
+                                   niveauDeClick: 'après action-submit-payment',
+                                   details: 'Erreur de paiement détectée'
+
+                            };
+
+                     } catch ( error ) { console.log( "erreur détectée", error ); }
+
+
+              } catch ( error )
+              {
+
+                     const objectToReturn = { niveauDeClick: niveauDeClick, erreur: error }
+                     return objectToReturn;
+
+              }
 
 
 
 
-              await page.locator( '#cb_rightOfWithdrawal' ).check( { force: true } );
-
-
-              await page.click( 'button[data-uia="cta-order-final"]' );
 
 
 
+              try
+              {
+
+                     await page.click( 'button[data-uia="cta-order-final"]' );
+                     niveauDeClick = 'click sur le btn order-final';
+
+
+              } catch ( error )
+              {
+
+                     const objectToReturn = { niveauDeClick: niveauDeClick, erreur: error }
+                     return objectToReturn;
+
+              }
+
+
+
+
+
+              // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-emailPreference"]' );
+              // await checkboxTermsOfUse.waitFor( { state: 'visible' } );
+              // console.log( 'checkboxTermsOfUse found:', await checkboxTermsOfUse.count() ); // Devrait afficher "1" si l'élément est trouvé
+
+              // const isDisabled = await checkboxTermsOfUse.isDisabled();
+              // console.log( 'checkboxTermsOfUse is disabled:', isDisabled );
+
+
+
+              // await checkboxTermsOfUse.click( { force: true } );
+              // console.log( 'Case cochée avec un clic forcé' );
+
+              // if ( isDisabled )
+              // {
+              //        throw new Error( "La case à cocher n'est pas activable" );
+              // }
+
+
+
+              // await page.check( 'input#cb_rightOfWithdrawal' );
+              // const checkbox2 = page.locator( '#cb_rightOfWithdrawal' ); // ou page.locator('[data-uia="field-consents+rightOfWithdrawal"]')
+
+
+
+
+
+
+
+              niveauDeClick = 'fin';
               const result = await page.title(); // Récupérer le titre ou tout autre résultat pertinent
               //  await page.close();
               const objectToReturn = { val: result, text: 'valeur update' }
