@@ -1,5 +1,5 @@
 // PlaywrightService.js
-const { chromium } = require( 'playwright' );
+const { chromium, firefox } = require( 'playwright' );
 let niveauDeClick = 'initialisation';
 
 
@@ -16,9 +16,9 @@ class PlaywrightService
        async initBrowser()
        {
               // this.browser = await chromium.launch( { headless: false } );
-              this.browser = await chromium.launch( {
+              this.browser = await firefox.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
-                     headless: true // Important pour Render
+                     headless: false // Important pour Render
               } );;
        }
 
@@ -26,9 +26,22 @@ class PlaywrightService
        {
 
               const page = await this.browser.newPage();
-              await page.setDefaultTimeout( 60000 ); // Définit un timeout global de 60 secondes
+              await page.setDefaultTimeout( 120000 ); // Définit un timeout global de 60 secondes
 
-              await page.goto( url );
+              try
+              {
+                     await page.goto( url );
+                     // await page.goto( url, { waitUntil: 'domcontentloaded', timeout: 60000 } );
+                     console.log( 'page charger completment' );
+
+              } catch ( error )
+              {
+                     console.error( "Erreur lors de la navigation :", error );
+                     return { success: false, message: "Impossible d'accéder à la page" };
+              }
+
+              // await page.goto( url, { waitUntil: 'domcontentloaded' } );
+
               const rejectButton = page.locator( '#onetrust-reject-all-handler' );
 
               try
@@ -44,11 +57,27 @@ class PlaywrightService
 
 
 
-              console.log( "execution du click suivant" );
-              await page.click( 'button[data-uia="continue-button"]' );
+              // console.log( "execution du click suivant" );
+              // await page.waitForSelector( 'button[data-uia="continue-button"]', { state: 'attached' } );
+              // await page.click( 'button[data-uia="continue-button"]', { force: true } );
+
+              try
+              {
 
 
-              console.log( "execution du click suivant 2" );
+                     await page.click( 'button[data-uia="continue-button"]' );
+                     console.log( "execution du click suivant 2" );
+
+              } catch ( error )
+              {
+
+
+                     console.error( "Erreur lors du click sur le 1er btn pour continuer :", error );
+                     return { success: false, message: "Impossible d'accéder à la page" };
+
+              }
+
+
 
 
 
