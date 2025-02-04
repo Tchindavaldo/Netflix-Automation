@@ -1,5 +1,5 @@
 // PlaywrightService.js
-const { chromium, firefox } = require( 'playwright' );
+const { chromium, firefox, webkit } = require( 'playwright' );
 let niveauDeClick = 'initialisation';
 
 
@@ -16,7 +16,7 @@ class PlaywrightService
        async initBrowser()
        {
               // this.browser = await chromium.launch( { headless: false } );
-              this.browser = await firefox.launch( {
+              this.browser = await chromium.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
                      headless: true // Important pour Render
               } );;
