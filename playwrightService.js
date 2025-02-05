@@ -112,7 +112,9 @@ class PlaywrightService
 
 
 
-              await page.click( 'button[data-uia="cta-plan-selection"]' );
+              // await page.click( 'button[data-uia="cta-plan-selection"]' );
+              const button = 'Next'
+              await page.click( `button:has-text("${ button }")` );
 
 
 
