@@ -202,12 +202,13 @@ class PlaywrightService
 
 
 
+              const checkboxTermsOfUse = page.locator( 'input[data-uia="field-consents+rightOfWithdrawal"]' );
               // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
-              // await checkboxTermsOfUse.check( { force: true } );
+              await checkboxTermsOfUse.check( { force: true } );
 
 
-              const acceptTerm = 'You agree that your membership will begin immediately, and acknowledge that you will therefore lose your right of withdrawal.';
-              await page.click( `label:has-text("${ acceptTerm }")` );
+              // const acceptTerm = 'You agree that your membership will begin immediately, and acknowledge that you will therefore lose your right of withdrawal.';
+              // await page.click( `label:has-text("${ acceptTerm }")` );
 
 
               // click sur le btn start MemberShip
