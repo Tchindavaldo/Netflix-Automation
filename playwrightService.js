@@ -98,9 +98,9 @@ class PlaywrightService
               await page.click( `label:has-text("${ planName }")` );
               console.log( 'clik sur le plan standard with ads' );
 
-              const planName2 = '€13.99';
-              await page.click( `span:has-text("${ planName2 }")` );
-              console.log( 'clik sur le plan standard ' );
+              // const planName2 = '€13.99';
+              // await page.click( `span:has-text("${ planName2 }")` );
+              // console.log( 'clik sur le plan standard ' );
 
               const planName3 = 'Premium';
               await page.click( `label:has-text("${ planName3 }")` );
