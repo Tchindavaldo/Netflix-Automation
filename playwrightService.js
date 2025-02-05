@@ -138,7 +138,8 @@ class PlaywrightService
               // await page.click( 'input[data-uia="field-emailPreference"]' );
 
               const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
-              await checkbox.waitFor( { state: 'visible' } );
+              // await checkbox.waitFor( { state: 'visible' } );
+
               console.log( 'Checkbox found:', await checkbox.count() ); // Devrait afficher "1" si l'élément est trouvé
 
               const isDisabled = await checkbox.isDisabled();
@@ -146,7 +147,17 @@ class PlaywrightService
 
 
 
-              await checkbox.click( { force: true } );
+              // await checkbox.click( { force: true } );
+              try
+              {
+                     await checkbox.waitFor( { state: 'visible' } );
+                     await checkbox.click( { force: true } );
+                     console.log( 'Case cochée' );
+              } catch ( error )
+              {
+                     console.error( 'Erreur lors de l\'interaction avec la checkbox:', error );
+              }
+
               console.log( 'Case cochée avec un clic forcé' );
 
               if ( isDisabled )
