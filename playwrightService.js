@@ -18,7 +18,7 @@ class PlaywrightService
               // this.browser = await chromium.launch( { headless: false } );
               this.browser = await chromium.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
-                     headless: true // Important pour Render
+                     headless: false // Important pour Render
               } );;
        }
 
@@ -134,6 +134,9 @@ class PlaywrightService
               // await page.waitForTimeout( 5000 );
 
 
+              await page.waitForSelector( 'input[data-uia="field-emailPreference"]', { visible: true } );
+              await page.click( 'input[data-uia="field-emailPreference"]' );
+
               // const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
               // await checkbox.waitFor( { state: 'visible' } );
               // console.log( 'Checkbox found:', await checkbox.count() ); // Devrait afficher "1" si l'élément est trouvé
@@ -152,14 +155,14 @@ class PlaywrightService
               // }
 
 
-              const emailMeSpecialOffer = 'Yes, please email me Netflix special offers.';
-              await page.click( `label:has-text("${ emailMeSpecialOffer }")` );
+              // const emailMeSpecialOffer = 'Yes, please email me Netflix special offers.';
+              // await page.click( `label:has-text("${ emailMeSpecialOffer }")` );
 
 
 
 
 
-              // await page.waitForTimeout( 5000 );
+              await page.waitForTimeout( 5000 );
               await page.click( 'button[data-uia="cta-registration"]' );
               await page.click( '#creditOrDebitCardDisplayStringId' )
               console.log( 'Clic forcé sur la case effectué avec succès.' );
