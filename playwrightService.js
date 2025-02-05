@@ -134,8 +134,8 @@ class PlaywrightService
               // await page.waitForTimeout( 5000 );
 
 
-              await page.waitForSelector( 'input[data-uia="field-emailPreference"]', { visible: true } );
-              await page.click( 'input[data-uia="field-emailPreference"]' );
+              // await page.waitForSelector( 'input[data-uia="field-emailPreference"]', { visible: true } );
+              // await page.click( 'input[data-uia="field-emailPreference"]' );
 
               // const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
               // await checkbox.waitFor( { state: 'visible' } );
@@ -162,7 +162,7 @@ class PlaywrightService
 
 
 
-              await page.waitForTimeout( 5000 );
+              // await page.waitForTimeout( 5000 );
               await page.click( 'button[data-uia="cta-registration"]' );
               await page.click( '#creditOrDebitCardDisplayStringId' )
               console.log( 'Clic forcé sur la case effectué avec succès.' );
