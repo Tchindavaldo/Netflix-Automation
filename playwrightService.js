@@ -18,7 +18,7 @@ class PlaywrightService
               // this.browser = await chromium.launch( { headless: false } );
               this.browser = await chromium.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
-                     headless: true // Important pour Render
+                     headless: false // Important pour Render
               } );;
        }
 
@@ -26,7 +26,7 @@ class PlaywrightService
        {
 
               const page = await this.browser.newPage();
-              await page.setDefaultTimeout( 120000 ); // Définit un timeout global de 60 secondes
+              await page.setDefaultTimeout( 60000 ); // Définit un timeout global de 60 secondes
 
               try
               {
@@ -90,9 +90,24 @@ class PlaywrightService
 
 
               // `label[data-uia="plan-selection+option+${ planId }"]`
-              await page.click( 'label[data-uia="plan-selection+option+4001"]' );
-              await page.click( 'label[data-uia="plan-selection+option+4120"]' );
-              await page.click( 'label[data-uia="plan-selection+option+3088"]' );
+              // await page.click( 'label[data-uia="plan-selection+option+4001"]' );
+              // await page.click( 'label[data-uia="plan-selection+option+4120"]' );
+              // await page.click( 'label[data-uia="plan-selection+option+3088"]' );
+
+              const planName = 'Standard with ads';
+              await page.click( `label:has-text("${ planName }")` );
+              console.log( 'clik sur le plan standard with ads' );
+
+
+              const planName2 = 'Standard';
+              await page.click( `label:has-text("${ planName2 }")` );
+              console.log( 'clik sur le plan standard ' );
+
+
+              const planName3 = 'Premium';
+              await page.click( `label:has-text("${ planName3 }")` );
+              console.log( 'clik sur le plan premium' );
+
 
 
 
