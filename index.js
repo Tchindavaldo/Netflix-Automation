@@ -4,7 +4,7 @@ const cors = require( 'cors' );  // Assurez-vous d'importer le package cors
 const { PlaywrightService } = require( './playwrightService' );
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const playwrightService = new PlaywrightService();
 
 
@@ -17,6 +17,7 @@ app.use( cors( {
        methods: [ 'GET', 'POST', 'PUT', 'DELETE' ], // Méthodes autorisées
        allowedHeaders: [ 'Content-Type' ],  // En-têtes autorisés
 } ) );
+
 app.get( '/health', ( req, res ) =>
 {
        res.status( 200 ).send( 'OK' );
