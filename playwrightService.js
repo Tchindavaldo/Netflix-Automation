@@ -112,9 +112,7 @@ class PlaywrightService
 
 
 
-              // await page.click( 'button[data-uia="cta-plan-selection"]' );
-              const button = 'Next'
-              await page.click( `button:has-text("${ button }")` );
+              await page.click( 'button[data-uia="cta-plan-selection"]' );
 
 
 
@@ -136,22 +134,28 @@ class PlaywrightService
               // await page.waitForTimeout( 5000 );
 
 
-              const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
-              await checkbox.waitFor( { state: 'visible' } );
-              console.log( 'Checkbox found:', await checkbox.count() ); // Devrait afficher "1" si l'élément est trouvé
+              // const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
+              // await checkbox.waitFor( { state: 'visible' } );
+              // console.log( 'Checkbox found:', await checkbox.count() ); // Devrait afficher "1" si l'élément est trouvé
 
-              const isDisabled = await checkbox.isDisabled();
-              console.log( 'Checkbox is disabled:', isDisabled );
+              // const isDisabled = await checkbox.isDisabled();
+              // console.log( 'Checkbox is disabled:', isDisabled );
 
 
 
-              await checkbox.click( { force: true } );
-              console.log( 'Case cochée avec un clic forcé' );
+              // await checkbox.click( { force: true } );
+              // console.log( 'Case cochée avec un clic forcé' );
 
-              if ( isDisabled )
-              {
-                     throw new Error( "La case à cocher n'est pas activable" );
-              }
+              // if ( isDisabled )
+              // {
+              //        throw new Error( "La case à cocher n'est pas activable" );
+              // }
+
+
+              const emailMeSpecialOffer = 'Yes, please email me Netflix special offers.';
+              await page.click( `label:has-text("${ emailMeSpecialOffer }")` );
+
+
 
 
 
