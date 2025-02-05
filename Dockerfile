@@ -49,8 +49,9 @@ RUN npx playwright install-deps
 # Étape 9 : Copier le reste du code source dans le conteneur
 COPY . .
 
-# Étape 10 : Exposer le port sur lequel l'application va tourner
-EXPOSE 3000
+# Exposer le port 8080
+EXPOSE 8080
+
 
 # Étape 11 : Démarrer l'application
 CMD ["npm", "start"]
