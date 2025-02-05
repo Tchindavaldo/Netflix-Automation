@@ -98,16 +98,13 @@ class PlaywrightService
               await page.click( `label:has-text("${ planName }")` );
               console.log( 'clik sur le plan standard with ads' );
 
-
-              const planName2 = 'Standard';
-              await page.click( `label:has-text("${ planName2 }")` );
+              const planName2 = '€13.99';
+              await page.click( `span:has-text("${ planName2 }")` );
               console.log( 'clik sur le plan standard ' );
-
 
               const planName3 = 'Premium';
               await page.click( `label:has-text("${ planName3 }")` );
               console.log( 'clik sur le plan premium' );
-
 
 
 
@@ -196,8 +193,12 @@ class PlaywrightService
 
 
 
-              const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
-              await checkboxTermsOfUse.check( { force: true } );
+              // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
+              // await checkboxTermsOfUse.check( { force: true } );
+
+
+              const acceptTerm = 'You agree that your membership will begin immediately, and acknowledge that you will therefore lose your right of withdrawal.';
+              await page.click( `label:has-text("${ acceptTerm }")` );
 
 
               // click sur le btn start MemberShip
