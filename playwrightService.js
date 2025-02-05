@@ -137,6 +137,11 @@ class PlaywrightService
               // await page.waitForSelector( 'input[data-uia="field-emailPreference"]', { visible: true } );
               // await page.click( 'input[data-uia="field-emailPreference"]' );
 
+
+              console.log( 'de but de la recherche de la checkbox' );
+
+              await page.waitForTimeout( 10000 ); // Attendre 5 secondes
+
               const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
               // await checkbox.waitFor( { state: 'visible' } );
 
