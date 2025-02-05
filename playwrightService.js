@@ -18,7 +18,7 @@ class PlaywrightService
               // this.browser = await chromium.launch( { headless: false } );
               this.browser = await chromium.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
-                     headless: true // Important pour Render
+                     headless: false // Important pour Render
               } );;
        }
 
