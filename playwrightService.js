@@ -18,7 +18,7 @@ class PlaywrightService
        async initBrowser()
        {
               // this.browser = await chromium.launch( { headless: false } );
-              this.browser = await chromium.launch( {
+              this.browser = await webkit.launch( {
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
                      headless: true // Important pour Render
               } );;
@@ -145,8 +145,7 @@ class PlaywrightService
 
 
               await page.waitForTimeout( 120000 );
-              const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
-
+              const checkboxSelector = 'input[data-uia="field-emailPreference"]';
               try
               {
                      // Navigation et étapes précédentes...
