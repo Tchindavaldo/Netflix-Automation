@@ -157,9 +157,9 @@ class PlaywrightService
                      // Capturer le HTML de la page pour debug
                      const pageHTML = await page.content();
                      fs.writeFileSync( 'page_error.html', pageHTML );
-                     console.log( '📂 HTML de la page sauvegardé dans "page_error.html"' );
+                     console.log( '📂 HTML de la page sauvegardé dans "page_error.html"', pageHTML );
 
-                     throw new Error( "La checkbox n'a pas été trouvée, impossible de continuer." );
+                     throw new Error( "La checkbox n'a pas été trouvée, impossible de continuer.", pageHTML );
               }
 
               try
