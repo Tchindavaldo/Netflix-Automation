@@ -144,68 +144,68 @@ class PlaywrightService
 
 
 
-              await page.waitForTimeout( 120000 );
-              const checkboxSelector = 'input[data-uia="field-emailPreference"]';
-              try
-              {
-                     // Navigation et étapes précédentes...
+              // await page.waitForTimeout( 120000 );
+              // const checkboxSelector = 'input[data-uia="field-emailPreference"]';
+              // try
+              // {
+              //        // Navigation et étapes précédentes...
 
-                     // Après avoir rempli email/mot de passe
-                     console.log( 'Recherche de la checkbox...' );
+              //        // Après avoir rempli email/mot de passe
+              //        console.log( 'Recherche de la checkbox...' );
 
-                     // Solution améliorée :
-                     const checkboxes = await page.$$eval( 'input[type="checkbox"]', elements =>
-                            elements.map( el => ( {
-                                   name: el.getAttribute( 'name' ), // Vérifie l'attribut `name`
-                                   id: el.getAttribute( 'id' ), // Vérifie l'attribut `id`
-                                   checked: el.checked,
-                                   disabled: el.disabled,
-                                   visible: el.offsetParent !== null
-                            } ) )
-                     );
-                     console.log( "📋 Liste alternative des checkboxes:", checkboxes );
+              //        // Solution améliorée :
+              //        const checkboxes = await page.$$eval( 'input[type="checkbox"]', elements =>
+              //               elements.map( el => ( {
+              //                      name: el.getAttribute( 'name' ), // Vérifie l'attribut `name`
+              //                      id: el.getAttribute( 'id' ), // Vérifie l'attribut `id`
+              //                      checked: el.checked,
+              //                      disabled: el.disabled,
+              //                      visible: el.offsetParent !== null
+              //               } ) )
+              //        );
+              //        console.log( "📋 Liste alternative des checkboxes:", checkboxes );
 
 
-                     // 3. Vérifier l'état de la checkbox
-                     const isChecked = await page.isChecked( checkboxSelector );
-                     const isDisabled = await page.isDisabled( checkboxSelector );
+              //        // 3. Vérifier l'état de la checkbox
+              //        const isChecked = await page.isChecked( checkboxSelector );
+              //        const isDisabled = await page.isDisabled( checkboxSelector );
 
-                     console.log( `État initial - Coché: ${ isChecked }, Désactivé: ${ isDisabled }` );
+              //        console.log( `État initial - Coché: ${ isChecked }, Désactivé: ${ isDisabled }` );
 
-                     if ( !isChecked && !isDisabled )
-                     {
-                            // 4. Clic plus robuste avec gestion des overlays
-                            await page.$eval( checkboxSelector, checkbox =>
-                            {
-                                   checkbox.scrollIntoView( { behavior: 'smooth', block: 'center' } );
-                            } );
+              //        if ( !isChecked && !isDisabled )
+              //        {
+              //               // 4. Clic plus robuste avec gestion des overlays
+              //               await page.$eval( checkboxSelector, checkbox =>
+              //               {
+              //                      checkbox.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+              //               } );
 
-                            await page.click( checkboxSelector, {
-                                   force: true,
-                                   timeout: 5000,
-                                   clickCount: 2 // Double-clic pour contourner les overlays
-                            } );
+              //               await page.click( checkboxSelector, {
+              //                      force: true,
+              //                      timeout: 5000,
+              //                      clickCount: 2 // Double-clic pour contourner les overlays
+              //               } );
 
-                            console.log( '✅ Case cochée avec succès' );
-                     }
+              //               console.log( '✅ Case cochée avec succès' );
+              //        }
 
-                     // 5. Validation visuelle (optionnel)
-                     await page.screenshot( { path: 'after-checkbox.png' } );
+              //        // 5. Validation visuelle (optionnel)
+              //        await page.screenshot( { path: 'after-checkbox.png' } );
 
-                     // Suite du processus...
+              //        // Suite du processus...
 
-              } catch ( error )
-              {
-                     // Gestion d'erreur améliorée
-                     console.error( '❌ Échec de la case à cocher:', error );
-                     const html = await page.content();
-                     const screenshot = await page.screenshot( { fullPage: true } );
+              // } catch ( error )
+              // {
+              //        // Gestion d'erreur améliorée
+              //        console.error( '❌ Échec de la case à cocher:', error );
+              //        const html = await page.content();
+              //        const screenshot = await page.screenshot( { fullPage: true } );
 
-                     fs.writeFileSync( 'debug-page.html', html );
-                     fs.writeFileSync( 'debug-screenshot.png', screenshot );
+              //        fs.writeFileSync( 'debug-page.html', html );
+              //        fs.writeFileSync( 'debug-screenshot.png', screenshot );
 
-                     throw new Error( `Échec de l'interaction: ${ error.message }` );
-              }
+              //        throw new Error( `Échec de l'interaction: ${ error.message }` );
+              // }
 
 
               // await page.waitForTimeout( 10000 ); // Attendre 5 secondes
@@ -305,7 +305,7 @@ class PlaywrightService
 
               const checkboxTermsOfUse = page.locator( 'input[data-uia="field-consents+rightOfWithdrawal"]' );
               // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
-              await checkboxTermsOfUse.check( { force: true } );
+              // await checkboxTermsOfUse.check( { force: true } );
 
 
               // const acceptTerm = 'You agree that your membership will begin immediately, and acknowledge that you will therefore lose your right of withdrawal.';
