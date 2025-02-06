@@ -20,7 +20,7 @@ class PlaywrightService
               // this.browser = await chromium.launch( { headless: false } ); 
 
               this.browser = await chromium.launch( {
-                     executablePath: '/usr/bin/google-chrome-stable',
+                     // executablePath: '/usr/bin/google-chrome-stable',
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
                      headless: true // Important pour Render
               } );;
@@ -308,9 +308,11 @@ class PlaywrightService
               try
               {
 
-                     const checkboxTermsOfUse = page.locator( 'input[data-uia="field-consents+rightOfWithdrawal"]' );
+                     // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-consents+rightOfWithdrawal"]' );
                      // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
-                     await checkboxTermsOfUse.check( { force: true } );
+                     // await checkboxTermsOfUse.check( { force: true } );
+                     console.log( 'saut du la case a cocher' );
+
               } catch ( error )
               {
 
@@ -347,8 +349,10 @@ class PlaywrightService
                             await page.waitForSelector( '[data-uia="UIMessage-content"]', { timeout: 10000 } );
 
 
-                            // Récupérer le texte d'erreur
-                            const errorText = await page.locator( '[data-uia="UIMessage-content"] span[data-uia=""]' ).innerText();
+                            // Récupérer le texte d'erreur 
+                            await page.screenshot( { path: 'error-screenshot1.png', fullPage: true } );
+                            console.log( '📸 Capture d’écran 1111 sauvegardée : error-screenshot.png' );
+
 
                             return {
 
@@ -364,6 +368,12 @@ class PlaywrightService
 
               } catch ( error )
               {
+
+
+
+                     await page.screenshot( { path: 'error-screenshot-final.png', fullPage: true } );
+                     console.log( '📸 Capture d’écran final sauvegardée : error-screenshot.png' );
+
 
                      const objectToReturn = { niveauDeClick: niveauDeClick, erreur: error }
                      return objectToReturn;
