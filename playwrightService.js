@@ -154,29 +154,18 @@ class PlaywrightService
                      // Solution améliorée :
                      const checkboxSelector = 'input[data-uia="field-emailPreference"]';
 
-                     // 1. Attendre explicitement le sélecteur avec plusieurs stratégies
-                     await page.waitForSelector( checkboxSelector, {
-                            state: 'visible',
-                            timeout: 15000
-                     } ).catch( async () =>
+                     const checkbox = await page.$( checkboxSelector );
+                     if ( checkbox )
                      {
-                            // 2. Fallback : vérifier si elle est dans un iframe
-                            const frames = page.frames();
-                            for ( const frame of frames )
-                            {
-                                   if ( await frame.$( checkboxSelector ) )
-                                   {
-                                          await frame.check( checkboxSelector, { force: true } );
-                                          return;
-                                   }
-                            }
+                            const isVisible = await checkbox.isVisible();
+                            const isEnabled = await checkbox.isEnabled();
+                            console.log( `👀 Visibilité: ${ isVisible }, Activable: ${ isEnabled }` );
+                     }
 
-
-                            const screenshot2 = await page.screenshot( { fullPage: true } );
-
-                            fs.writeFileSync( 'debug-screenshot.png', screenshot2 );
-                            throw new Error( 'Checkbox non trouvée dans les iframes' );
-                     } );
+                     await page.evaluate( selector =>
+                     {
+                            document.querySelector( selector ).style.display = 'block';
+                     }, checkboxSelector );
 
                      // 3. Vérifier l'état de la checkbox
                      const isChecked = await page.isChecked( checkboxSelector );
