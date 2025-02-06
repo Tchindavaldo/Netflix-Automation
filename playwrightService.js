@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 // PlaywrightService.js
 const { chromium, firefox, webkit } = require( 'playwright' );
 let niveauDeClick = 'initialisation';
