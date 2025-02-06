@@ -152,20 +152,17 @@ class PlaywrightService
                      console.log( 'Recherche de la checkbox...' );
 
                      // Solution améliorée :
-                     const checkboxSelector = 'input[data-uia="field-emailPreference"]';
+                     const checkboxes = await page.$$eval( 'input[type="checkbox"]', elements =>
+                            elements.map( el => ( {
+                                   dataUia: el.getAttribute( 'data-uia' ),
+                                   checked: el.checked,
+                                   disabled: el.disabled,
+                                   visible: el.offsetParent !== null // Vérifie si l'élément est visible
+                            } ) )
+                     );
 
-                     const checkbox = await page.$( checkboxSelector );
-                     if ( checkbox )
-                     {
-                            const isVisible = await checkbox.isVisible();
-                            const isEnabled = await checkbox.isEnabled();
-                            console.log( `👀 Visibilité: ${ isVisible }, Activable: ${ isEnabled }` );
-                     }
+                     console.log( "📋 Liste des checkboxes détectées:", checkboxes );
 
-                     await page.evaluate( selector =>
-                     {
-                            document.querySelector( selector ).style.display = 'block';
-                     }, checkboxSelector );
 
                      // 3. Vérifier l'état de la checkbox
                      const isChecked = await page.isChecked( checkboxSelector );
