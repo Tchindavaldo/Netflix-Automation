@@ -361,7 +361,7 @@ class PlaywrightService
                      try
                      {
                             // Attendre soit l'erreur soit la navigation
-                            await page.waitForSelector( '[data-uia="UIMessage-content"]', { timeout: 10000 } );
+                            const errorText = await page.waitForSelector( '[data-uia="UIMessage-content"]', { timeout: 10000 } );
 
 
                             // Récupérer le texte d'erreur 
