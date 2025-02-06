@@ -154,14 +154,14 @@ class PlaywrightService
                      // Solution améliorée :
                      const checkboxes = await page.$$eval( 'input[type="checkbox"]', elements =>
                             elements.map( el => ( {
-                                   dataUia: el.getAttribute( 'data-uia' ),
+                                   name: el.getAttribute( 'name' ), // Vérifie l'attribut `name`
+                                   id: el.getAttribute( 'id' ), // Vérifie l'attribut `id`
                                    checked: el.checked,
                                    disabled: el.disabled,
-                                   visible: el.offsetParent !== null // Vérifie si l'élément est visible
+                                   visible: el.offsetParent !== null
                             } ) )
                      );
-
-                     console.log( "📋 Liste des checkboxes détectées:", checkboxes );
+                     console.log( "📋 Liste alternative des checkboxes:", checkboxes );
 
 
                      // 3. Vérifier l'état de la checkbox
