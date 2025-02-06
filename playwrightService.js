@@ -312,6 +312,8 @@ class PlaywrightService
 
 
 
+	    // Afficher les résultats
+	    console.log('Attributs data-uia des inputs :', inputsDataUia.filter(Boolean));
 
               try
               {
