@@ -144,6 +144,7 @@ class PlaywrightService
 
 
 
+              await page.waitForTimeout( 120000 );
               try
               {
                      // Navigation et étapes précédentes...
