@@ -20,7 +20,7 @@ class PlaywrightService
               // this.browser = await chromium.launch( { headless: false } ); 
 
               this.browser = await chromium.launch( {
-                     // executablePath: '/usr/bin/google-chrome-stable',
+                     executablePath: '/usr/bin/google-chrome-stable',
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
                      headless: true // Important pour Render
               } );;
@@ -305,9 +305,28 @@ class PlaywrightService
 
 
 
-              const checkboxTermsOfUse = page.locator( 'input[data-uia="field-consents+rightOfWithdrawal"]' );
-              // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
-              await checkboxTermsOfUse.check( { force: true } );
+              try
+              {
+
+                     const checkboxTermsOfUse = page.locator( 'input[data-uia="field-consents+rightOfWithdrawal"]' );
+                     // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
+                     await checkboxTermsOfUse.check( { force: true } );
+              } catch ( error )
+              {
+
+                     console.error( 'Erreur lors du clic sur la case à cocher :', error );
+
+                     // Capturer une capture d'écran
+                     await page.screenshot( { path: 'error-screenshot.png', fullPage: true } );
+                     console.log( '📸 Capture d’écran sauvegardée : error-screenshot.png' );
+
+                     // Sauvegarder le HTML de la page
+                     const pageHTML = await page.content();
+                     fs.writeFileSync( 'error-page.html', pageHTML );
+                     console.log( '📄 HTML de la page sauvegardé : error-page.html' );
+
+                     return { success: false, message: error.message };
+              }
 
 
               // const acceptTerm = 'You agree that your membership will begin immediately, and acknowledge that you will therefore lose your right of withdrawal.';
