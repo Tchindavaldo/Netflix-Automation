@@ -366,7 +366,9 @@ class PlaywrightService
 
                             };
 
-                     } catch ( error ) { console.log( "erreur détectée", error ); }
+                     } catch ( error ) { await page.screenshot({path: 'screenshost2.png',fullpage:true});
+					console.log('capture effectuer');
+					 console.log( "erreur détectée", error ); }
 
 
               } catch ( error )
