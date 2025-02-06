@@ -142,51 +142,124 @@ class PlaywrightService
 
               console.log( 'de but de la recherche de la checkbox' );
 
-              await page.waitForTimeout( 10000 ); // Attendre 5 secondes
 
-              const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
-              // await checkbox.waitFor( { state: 'visible' } );
-
-              const checkboxCount = await checkbox.count();
-              console.log( '📌 Checkbox found:', checkboxCount );
-
-              if ( checkboxCount === 0 )
-              {
-                     console.error( '❌ Aucune checkbox trouvée sur la page' );
-
-                     // Capturer le HTML de la page pour debug
-                     const pageHTML = await page.content();
-                     fs.writeFileSync( 'page_error.html', pageHTML );
-                     console.log( '📂 HTML de la page sauvegardé dans "page_error.html"', pageHTML );
-
-                     throw new Error( "La checkbox n'a pas été trouvée, impossible de continuer.", pageHTML );
-              }
 
               try
               {
-                     await checkbox.waitFor( { state: 'visible', timeout: 15000 } );
+                     // Navigation et étapes précédentes...
 
-                     const isDisabled = await checkbox.isDisabled();
-                     console.log( '🚫 Checkbox is disabled:', isDisabled );
+                     // Après avoir rempli email/mot de passe
+                     console.log( 'Recherche de la checkbox...' );
 
-                     if ( isDisabled )
+                     // Solution améliorée :
+                     const checkboxSelector = 'input[data-uia="field-emailPreference"]';
+
+                     // 1. Attendre explicitement le sélecteur avec plusieurs stratégies
+                     await page.waitForSelector( checkboxSelector, {
+                            state: 'visible',
+                            timeout: 15000
+                     } ).catch( async () =>
                      {
-                            throw new Error( "⚠️ La checkbox est désactivée, impossible de la cocher." );
+                            // 2. Fallback : vérifier si elle est dans un iframe
+                            const frames = page.frames();
+                            for ( const frame of frames )
+                            {
+                                   if ( await frame.$( checkboxSelector ) )
+                                   {
+                                          await frame.check( checkboxSelector, { force: true } );
+                                          return;
+                                   }
+                            }
+                            throw new Error( 'Checkbox non trouvée dans les iframes' );
+                     } );
+
+                     // 3. Vérifier l'état de la checkbox
+                     const isChecked = await page.isChecked( checkboxSelector );
+                     const isDisabled = await page.isDisabled( checkboxSelector );
+
+                     console.log( `État initial - Coché: ${ isChecked }, Désactivé: ${ isDisabled }` );
+
+                     if ( !isChecked && !isDisabled )
+                     {
+                            // 4. Clic plus robuste avec gestion des overlays
+                            await page.$eval( checkboxSelector, checkbox =>
+                            {
+                                   checkbox.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+                            } );
+
+                            await page.click( checkboxSelector, {
+                                   force: true,
+                                   timeout: 5000,
+                                   clickCount: 2 // Double-clic pour contourner les overlays
+                            } );
+
+                            console.log( '✅ Case cochée avec succès' );
                      }
 
-                     await checkbox.click( { force: true } );
-                     console.log( '✅ Case cochée avec succès' );
+                     // 5. Validation visuelle (optionnel)
+                     await page.screenshot( { path: 'after-checkbox.png' } );
+
+                     // Suite du processus...
+
               } catch ( error )
               {
-                     console.error( '❌ Erreur lors de l\'interaction avec la checkbox:', error );
+                     // Gestion d'erreur améliorée
+                     console.error( '❌ Échec de la case à cocher:', error );
+                     const html = await page.content();
+                     const screenshot = await page.screenshot( { fullPage: true } );
 
-                     // Sauvegarde du HTML en cas d'erreur
-                     const pageHTML = await page.content();
-                     fs.writeFileSync( 'page_error.html', pageHTML );
-                     console.log( '📂 HTML sauvegardé dans "page_error.html" pour analyse.' );
+                     fs.writeFileSync( 'debug-page.html', html );
+                     fs.writeFileSync( 'debug-screenshot.png', screenshot );
 
-                     throw error; // Relever l'erreur pour que le serveur la capture
+                     throw new Error( `Échec de l'interaction: ${ error.message }` );
               }
+
+
+              // await page.waitForTimeout( 10000 ); // Attendre 5 secondes
+
+              // const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
+              // // await checkbox.waitFor( { state: 'visible' } );
+
+              // const checkboxCount = await checkbox.count();
+              // console.log( '📌 Checkbox found:', checkboxCount );
+
+              // if ( checkboxCount === 0 )
+              // {
+              //        console.error( '❌ Aucune checkbox trouvée sur la page' );
+
+              //        // Capturer le HTML de la page pour debug
+              //        const pageHTML = await page.content();
+              //        fs.writeFileSync( 'page_error.html', pageHTML );
+              //        console.log( '📂 HTML de la page sauvegardé dans "page_error.html"', pageHTML );
+
+              //        throw new Error( "La checkbox n'a pas été trouvée, impossible de continuer.", pageHTML );
+              // }
+
+              // try
+              // {
+              //        await checkbox.waitFor( { state: 'visible', timeout: 15000 } );
+
+              //        const isDisabled = await checkbox.isDisabled();
+              //        console.log( '🚫 Checkbox is disabled:', isDisabled );
+
+              //        if ( isDisabled )
+              //        {
+              //               throw new Error( "⚠️ La checkbox est désactivée, impossible de la cocher." );
+              //        }
+
+              //        await checkbox.click( { force: true } );
+              //        console.log( '✅ Case cochée avec succès' );
+              // } catch ( error )
+              // {
+              //        console.error( '❌ Erreur lors de l\'interaction avec la checkbox:', error );
+
+              //        // Sauvegarde du HTML en cas d'erreur
+              //        const pageHTML = await page.content();
+              //        fs.writeFileSync( 'page_error.html', pageHTML );
+              //        console.log( '📂 HTML sauvegardé dans "page_error.html" pour analyse.' );
+
+              //        throw error; // Relever l'erreur pour que le serveur la capture
+              // }
 
 
 
