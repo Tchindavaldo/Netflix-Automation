@@ -4,7 +4,7 @@ const cors = require( 'cors' );  // Assurez-vous d'importer le package cors
 const { PlaywrightService } = require( './playwrightService' );
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 const playwrightService = new PlaywrightService();
 
 

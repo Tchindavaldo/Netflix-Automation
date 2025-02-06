@@ -17,11 +17,10 @@ class PlaywrightService
 
        async initBrowser()
        {
-              // this.browser = await chromium.launch( { headless: false } );
-              const browser = await chromium.launch( { executablePath: '/usr/bin/google-chrome-stable' } );
+              // this.browser = await chromium.launch( { headless: false } ); 
 
               this.browser = await chromium.launch( {
-                     executablePath: '/usr/bin/google-chrome-stable',
+                     // executablePath: '/usr/bin/google-chrome-stable',
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
                      headless: true // Important pour Render
               } );;
@@ -31,7 +30,7 @@ class PlaywrightService
        {
 
               const page = await this.browser.newPage();
-              await page.setDefaultTimeout( 2400000 ); // Définit un timeout global de 60 secondes
+              await page.setDefaultTimeout( 60000 ); // Définit un timeout global de 60 secondes
 
               try
               {
