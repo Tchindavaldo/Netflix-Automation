@@ -3,11 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "dotenv -e .env.dev node index.js",
-    "start:prod": "dotenv -e .env.prod node index.js",
-    "start:dev": "dotenv -e .env.dev nodemon index.js"
-
-
+    "start": "cross-env NODE_ENV=development node index.js",
+    "start:prod": "cross-env NODE_ENV=production node index.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon index.js"
   },
   "keywords": [],
   "author": "",
@@ -15,14 +13,13 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.48.1",
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.7"
-
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "playwright": "^1.48.1"
-    
   }
 }

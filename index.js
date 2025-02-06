@@ -1,4 +1,12 @@
-require( 'dotenv' ).config(); // Charge les variables d'environnement depuis le fichier .env
+// Charge les variables d'environnement en fonction de NODE_ENV
+if ( process.env.NODE_ENV === 'production' )
+{
+       require( 'dotenv' ).config( { path: '.env.prod' } );  // Pour la production
+} else
+{
+       require( 'dotenv' ).config( { path: '.env.dev' } );   // Pour le développement
+}
+
 const express = require( 'express' );
 const cors = require( 'cors' );  // Assurez-vous d'importer le package cors
 const { PlaywrightService } = require( './playwrightService' );
