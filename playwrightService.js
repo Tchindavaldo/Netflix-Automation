@@ -145,30 +145,47 @@ class PlaywrightService
               const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
               // await checkbox.waitFor( { state: 'visible' } );
 
-              console.log( 'Checkbox found:', await checkbox.count() ); // Devrait afficher "1" si l'élément est trouvé
+              const checkboxCount = await checkbox.count();
+              console.log( '📌 Checkbox found:', checkboxCount );
 
-              const isDisabled = await checkbox.isDisabled();
-              console.log( 'Checkbox is disabled:', isDisabled );
+              if ( checkboxCount === 0 )
+              {
+                     console.error( '❌ Aucune checkbox trouvée sur la page' );
 
+                     // Capturer le HTML de la page pour debug
+                     const pageHTML = await page.content();
+                     fs.writeFileSync( 'page_error.html', pageHTML );
+                     console.log( '📂 HTML de la page sauvegardé dans "page_error.html"' );
 
+                     throw new Error( "La checkbox n'a pas été trouvée, impossible de continuer." );
+              }
 
-              // await checkbox.click( { force: true } );
               try
               {
-                     await checkbox.waitFor( { state: 'visible' } );
+                     await checkbox.waitFor( { state: 'visible', timeout: 15000 } );
+
+                     const isDisabled = await checkbox.isDisabled();
+                     console.log( '🚫 Checkbox is disabled:', isDisabled );
+
+                     if ( isDisabled )
+                     {
+                            throw new Error( "⚠️ La checkbox est désactivée, impossible de la cocher." );
+                     }
+
                      await checkbox.click( { force: true } );
-                     console.log( 'Case cochée' );
+                     console.log( '✅ Case cochée avec succès' );
               } catch ( error )
               {
-                     console.error( 'Erreur lors de l\'interaction avec la checkbox:', error );
+                     console.error( '❌ Erreur lors de l\'interaction avec la checkbox:', error );
+
+                     // Sauvegarde du HTML en cas d'erreur
+                     const pageHTML = await page.content();
+                     fs.writeFileSync( 'page_error.html', pageHTML );
+                     console.log( '📂 HTML sauvegardé dans "page_error.html" pour analyse.' );
+
+                     throw error; // Relever l'erreur pour que le serveur la capture
               }
 
-              console.log( 'Case cochée avec un clic forcé' );
-
-              if ( isDisabled )
-              {
-                     throw new Error( "La case à cocher n'est pas activable" );
-              }
 
 
               // const emailMeSpecialOffer = 'Yes, please email me Netflix special offers.';
