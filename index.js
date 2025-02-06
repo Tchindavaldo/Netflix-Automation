@@ -1,4 +1,4 @@
-// require( 'dotenv' ).config(); // Charge les variables d'environnement depuis le fichier .env
+require( 'dotenv' ).config(); // Charge les variables d'environnement depuis le fichier .env
 const express = require( 'express' );
 const cors = require( 'cors' );  // Assurez-vous d'importer le package cors
 const { PlaywrightService } = require( './playwrightService' );
