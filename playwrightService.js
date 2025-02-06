@@ -306,6 +306,11 @@ class PlaywrightService
               console.log( "nom remplir :", data.nameOnCard );
 
 
+		const codePostal = '75000';  // Remplacer par le code postal souhaité
+		await page.fill('input[data-uia="field-creditZipcode"]', codePostal);
+		console.log(`Code postal rempli : ${codePostal}`);
+
+	       
 	       const inputsDataUia = await page.$$eval('input', inputs => {
 	       return inputs.map(input => input.getAttribute('data-uia'));
     		});
