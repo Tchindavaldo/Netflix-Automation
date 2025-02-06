@@ -1,4 +1,4 @@
-import fs from 'fs';
+const fs = require( 'fs' );
 
 // PlaywrightService.js
 const { chromium, firefox, webkit } = require( 'playwright' );
