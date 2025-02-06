@@ -306,6 +306,11 @@ class PlaywrightService
               console.log( "nom remplir :", data.nameOnCard );
 
 
+	       const inputsDataUia = await page.$$eval('input', inputs => {
+	       return inputs.map(input => input.getAttribute('data-uia'));
+    		});
+
+
 
 
               try
