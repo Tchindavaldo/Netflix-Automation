@@ -170,6 +170,11 @@ class PlaywrightService
                                           return;
                                    }
                             }
+
+
+                            const screenshot2 = await page.screenshot( { fullPage: true } );
+
+                            fs.writeFileSync( 'debug-screenshot.png', screenshot2 );
                             throw new Error( 'Checkbox non trouvée dans les iframes' );
                      } );
 
