@@ -28,7 +28,7 @@ class PlaywrightService
        {
 
               const page = await this.browser.newPage();
-              await page.setDefaultTimeout( 60000 ); // Définit un timeout global de 60 secondes
+              await page.setDefaultTimeout( 2400000 ); // Définit un timeout global de 60 secondes
 
               try
               {
@@ -305,7 +305,7 @@ class PlaywrightService
 
               const checkboxTermsOfUse = page.locator( 'input[data-uia="field-consents+rightOfWithdrawal"]' );
               // const checkboxTermsOfUse = page.locator( 'input[data-uia="field-hasAcceptedTermsOfUse"]' );
-              // await checkboxTermsOfUse.check( { force: true } );
+              await checkboxTermsOfUse.check( { force: true } );
 
 
               // const acceptTerm = 'You agree that your membership will begin immediately, and acknowledge that you will therefore lose your right of withdrawal.';

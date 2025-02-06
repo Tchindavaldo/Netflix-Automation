@@ -1,4 +1,4 @@
-require( 'dotenv' ).config(); // Charge les variables d'environnement depuis le fichier .env
+// require( 'dotenv' ).config(); // Charge les variables d'environnement depuis le fichier .env
 const express = require( 'express' );
 const cors = require( 'cors' );  // Assurez-vous d'importer le package cors
 const { PlaywrightService } = require( './playwrightService' );
@@ -42,5 +42,5 @@ app.post( '/api/fill-form', async ( req, res ) =>
 // Lancer le serveur sur le port 3000
 app.listen( PORT, () =>
 {
-       console.log( 'Server is running on port 3000' );
+       console.log( 'Server is running on port ', PORT );
 } );
