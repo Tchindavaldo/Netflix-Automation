@@ -145,6 +145,8 @@ class PlaywrightService
 
 
               await page.waitForTimeout( 120000 );
+              const checkbox = page.locator( 'input[data-uia="field-emailPreference"]' );
+
               try
               {
                      // Navigation et étapes précédentes...
