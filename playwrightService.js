@@ -54,7 +54,7 @@ try {
 
 } catch (error) {
     console.error("Erreur ouverture de page :", error);
-    return { success: false, message: "Impossible d'accéder à la page" };
+    return { success: false, message: "Impossible d'ouvrir à la page" };
 }
 
               try
@@ -77,7 +77,7 @@ try {
 
 		      
                      console.error( "Erreur lors de la navigation :", error );
-                     return { success: false, message: "Impossible d'accéder à la page" };
+                     return { success: false, message: "Impossible d'accéder àu site" };
               }
 
               // await page.goto( url, { waitUntil: 'domcontentloaded' } );
