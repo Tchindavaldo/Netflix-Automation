@@ -35,22 +35,33 @@ console.log( 'fin init' );
 
 console.log( 'debut ouverture page' );
 
-             let page ;
-             
-              try
-              {
-                     
-                     console.log( 'page chargemenet en cour' );
-		 page = await this.browser.newPage();
-              await page.setDefaultTimeout( 20000 ); // Définit un timeout global de 60 secondes
+   let page;
 
+try {
+    console.log('page chargement en cours');
+    page = await this.browser.newPage();
+    await page.setDefaultTimeout(20000); // Timeout global 20s
 
-              } catch ( error )
-              {
-                     console.error( "Erreur ouverture de page :", error );
-                     return { success: false, message: "Impossible d'accéder à la page" };
-              }
+    // Ton code de navigation ici, par exemple :
+    // await page.goto('https://example.com');
 
+} catch (error) {
+    console.error("Erreur ouverture de page :", error);
+
+    if (page) {
+        try {
+            // Capture screenshot au moment de l'erreur
+            await page.screenshot({ path: 'error_screenshot.png', fullPage: true });
+            console.log('Screenshot d\'erreur sauvegardé.');
+        } catch (screenshotError) {
+            console.error('Erreur lors de la capture du screenshot :', screenshotError);
+        }
+    } else {
+        console.log('La page n\'a pas été initialisée, pas de screenshot possible.');
+    }
+
+    return { success: false, message: "Impossible d'accéder à la page" };
+}
 
               try
               {
