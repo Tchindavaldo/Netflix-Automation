@@ -12,8 +12,10 @@ class PlaywrightService {
   async initBrowser() {
     // this.browser = await chromium.launch( { headless: false } );
     console.log("debut init");
-    this.browser = await chromium.launch({
-      executablePath: "/usr/bin/google-chrome-stable",
+
+    //     this.browser = await chromium.launch({
+    this.browser = await firefox.launch({
+      //       executablePath: "/usr/bin/google-chrome-stable",
 
       // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
       headless: true, // Important pour Render
@@ -24,14 +26,38 @@ class PlaywrightService {
   async fillForm(url, data) {
     console.log("debut ouverture page");
 
-    let page = await this.browser.newPage();
+    let page;
 
     try {
-      console.log("page chargemenet en cour");
+      console.log("page chargement en cours");
       page = await this.browser.newPage();
-      await page.setDefaultTimeout(20000); // Définit un timeout global de 60 secondes
+      await page.setDefaultTimeout(20000); // Timeout global 20s
+
+      // Ton code de navigation ici, par exemple :
+      // await page.goto('https://example.com');
     } catch (error) {
       console.error("Erreur ouverture de page :", error);
+
+      if (page) {
+        try {
+          // Capture screenshot au moment de l'erreur
+          await page.screenshot({
+            path: "error_screenshot.png",
+            fullPage: true,
+          });
+          console.log("Screenshot d'erreur sauvegardé.");
+        } catch (screenshotError) {
+          console.error(
+            "Erreur lors de la capture du screenshot :",
+            screenshotError
+          );
+        }
+      } else {
+        console.log(
+          "La page n'a pas été initialisée, pas de screenshot possible."
+        );
+      }
+
       return { success: false, message: "Impossible d'accéder à la page" };
     }
 
@@ -40,6 +66,20 @@ class PlaywrightService {
       // await page.goto( url, { waitUntil: 'domcontentloaded', timeout: 60000 } );
       console.log("page charger completment");
     } catch (error) {
+      console.error("Erreur 11 lors de la navigation :", error);
+      try {
+        await page.screenshot({
+          path: "error_screenshot_navigation.png",
+          fullPage: true,
+        });
+        console.log("Screenshot d'erreur sauvegardé après navigation.");
+      } catch (screenshotError) {
+        console.error(
+          "Erreur lors de la capture du screenshot de navigation:",
+          screenshotError
+        );
+      }
+
       console.error("Erreur lors de la navigation :", error);
       return { success: false, message: "Impossible d'accéder à la page" };
     }
