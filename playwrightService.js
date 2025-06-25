@@ -38,7 +38,7 @@ class PlaywrightService
       
       console.log('debut init');
       this.browser = await chromium.launch({
-        executablePath: '/usr/bin/google-chrome-stable',
+        // executablePath: '/usr/bin/google-chrome-stable',
         headless: true,
       });
       console.log('fin init');
