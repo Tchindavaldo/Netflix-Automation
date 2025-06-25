@@ -35,7 +35,7 @@ console.log( 'fin init' );
 
 console.log( 'debut ouverture page' );
 
-             let page = await this.browser.newPage();
+             let page ;
              
               try
               {
