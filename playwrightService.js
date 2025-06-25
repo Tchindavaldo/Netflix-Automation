@@ -18,22 +18,39 @@ class PlaywrightService
        async initBrowser()
        {
               // this.browser = await chromium.launch( { headless: false } ); 
-
+console.log( 'debut init' );
               this.browser = await chromium.launch( {
 
 
-                     executablePath: '/usr/bin/google-chrome-stable',
+                   //  executablePath: '/usr/bin/google-chrome-stable',
 
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
                      headless: true // Important pour Render
               } );;
+console.log( 'fin init' );
        }
 
        async fillForm( url, data ) 
        {
 
-              const page = await this.browser.newPage();
-              await page.setDefaultTimeout( 60000 ); // Définit un timeout global de 60 secondes
+console.log( 'debut ouverture page' );
+
+             let page = await this.browser.newPage();
+             
+              try
+              {
+                     
+                     console.log( 'page chargemenet en cour' );
+		 page = await this.browser.newPage();
+              await page.setDefaultTimeout( 20000 ); // Définit un timeout global de 60 secondes
+
+
+              } catch ( error )
+              {
+                     console.error( "Erreur ouverture de page :", error );
+                     return { success: false, message: "Impossible d'accéder à la page" };
+              }
+
 
               try
               {

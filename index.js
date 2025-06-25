@@ -28,6 +28,7 @@ app.use( cors( {
 
 app.get( '/health', ( req, res ) =>
 {
+console.log('status verifier ok avec success');
        res.status( 200 ).send( 'OK' );
 } );
 
