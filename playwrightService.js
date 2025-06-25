@@ -11,16 +11,29 @@ class PlaywrightService
     this.browser = null;
   }
 
-  async initBrowser() {
-    if (!this.browser) {
-      console.log('debut init');
-      this.browser = await chromium.launch({
-        executablePath: '/usr/bin/google-chrome-stable',
-        headless: true,
-      });
-      console.log('fin init');
+ async isBrowserValid() {
+    try {
+        if (!this.browser) return false;
+        const context = await this.browser.newContext();
+        await context.close();
+        return true;
+    } catch (e) {
+        return false;
     }
-  }
+}
+
+async initBrowser() {
+    const isValid = await this.isBrowserValid();
+    if (!isValid) {
+        console.log('debut init');
+        this.browser = await chromium.launch({
+            executablePath: '/usr/bin/google-chrome-stable',
+            headless: true,
+        });
+        console.log('fin init');
+    }
+}
+
 
   async fillForm(url, data) {
     // Assure-toi que le navigateur est lancé
