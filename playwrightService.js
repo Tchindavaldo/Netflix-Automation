@@ -11,41 +11,61 @@ class PlaywrightService
     this.browser = null;
   }
 
- async isBrowserValid() {
+  async isBrowserValid() {
     try {
-        if (!this.browser) return false;
-        const context = await this.browser.newContext();
-        await context.close();
-        return true;
-    } catch (e) {
+      if (!this.browser) return false;
+      
+      // Check if browser is connected and not closed
+      if (this.browser.isConnected && !this.browser.isConnected()) {
         return false;
+      }
+      
+      // Try to get browser contexts to verify it's working
+      const contexts = this.browser.contexts();
+      return true;
+    } catch (e) {
+      console.log('Browser validation failed:', e.message);
+      return false;
     }
-}
+  }
 
-async initBrowser() {
+  async initBrowser() {
+    try {
+      // Always close existing browser if it exists
+      if (this.browser) {
+        await this.closeBrowser();
+      }
+      
+      console.log('debut init');
+      this.browser = await chromium.launch({
+        executablePath: '/usr/bin/google-chrome-stable',
+        headless: true,
+      });
+      console.log('fin init');
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize browser:', error);
+      return false;
+    }
+  }
+
+  async ensureBrowser() {
     const isValid = await this.isBrowserValid();
     if (!isValid) {
-        console.log('debut init');
-        this.browser = await chromium.launch({
-            executablePath: '/usr/bin/google-chrome-stable',
-            headless: true,
-        });
-        console.log('fin init');
+      const initSuccess = await this.initBrowser();
+      if (!initSuccess) {
+        throw new Error('Failed to initialize browser');
+      }
     }
-}
-
+  }
 
   async fillForm(url, data) {
-    // Assure-toi que le navigateur est lancé
-    if (!this.browser) {
-      await this.initBrowser();
-    }
-
-
-   let page;
-
-try {
-    console.log('page chargement en cours');
+    let page = null;
+    
+    try {
+      // Ensure browser is ready
+      await this.ensureBrowser(); 
     page = await this.browser.newPage();
     await page.setDefaultTimeout(20000); // Timeout global 20s
 
