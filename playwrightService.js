@@ -7,35 +7,27 @@ let niveauDeClick = 'initialisation';
 
 class PlaywrightService
 {
+  constructor() {
+    this.browser = null;
+  }
 
+  async initBrowser() {
+    if (!this.browser) {
+      console.log('debut init');
+      this.browser = await chromium.launch({
+        executablePath: '/usr/bin/google-chrome-stable',
+        headless: true,
+      });
+      console.log('fin init');
+    }
+  }
 
-       constructor()
-       {
-              this.initBrowser();
-       }
+  async fillForm(url, data) {
+    // Assure-toi que le navigateur est lancé
+    if (!this.browser) {
+      await this.initBrowser();
+    }
 
-
-       async initBrowser()
-       {
-              // this.browser = await chromium.launch( { headless: false } ); 
-console.log( 'debut init' );
-	       
-              this.browser = await chromium.launch( {
-              // this.browser = await firefox.launch( {
-
-
-                    executablePath: '/usr/bin/google-chrome-stable',
-
-                     // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
-                     headless: true // Important pour Render
-              } );;
-console.log( 'fin init' );
-       }
-
-       async fillForm( url, data ) 
-       {
-
-console.log( 'debut ouverture page' );
 
    let page;
 
