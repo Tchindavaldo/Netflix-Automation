@@ -19,7 +19,7 @@ class PlaywrightService
        {
               // this.browser = await chromium.launch( { headless: false } ); 
 console.log( 'debut init' );
-              this.browser = await chromium.launch( {
+              this.browser = await firefox.launch( {
 
 
                    //  executablePath: '/usr/bin/google-chrome-stable',
