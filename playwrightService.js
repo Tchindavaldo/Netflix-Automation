@@ -54,19 +54,6 @@ try {
 
 } catch (error) {
     console.error("Erreur ouverture de page :", error);
-
-    if (page) {
-        try {
-            // Capture screenshot au moment de l'erreur
-            await page.screenshot({ path: 'error_screenshot.png', fullPage: true });
-            console.log('Screenshot d\'erreur sauvegardé.');
-        } catch (screenshotError) {
-            console.error('Erreur lors de la capture du screenshot :', screenshotError);
-        }
-    } else {
-        console.log('La page n\'a pas été initialisée, pas de screenshot possible.');
-    }
-
     return { success: false, message: "Impossible d'accéder à la page" };
 }
 
