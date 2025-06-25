@@ -19,10 +19,12 @@ class PlaywrightService
        {
               // this.browser = await chromium.launch( { headless: false } ); 
 console.log( 'debut init' );
-              this.browser = await firefox.launch( {
+	       
+              this.browser = await chromium.launch( {
+              // this.browser = await firefox.launch( {
 
 
-                   //  executablePath: '/usr/bin/google-chrome-stable',
+                    executablePath: '/usr/bin/google-chrome-stable',
 
                      // executablePath: '/usr/bin/chromium', // Vérifie si ce chemin fonctionne, sinon essaie '/usr/bin/google-chrome'
                      headless: true // Important pour Render
