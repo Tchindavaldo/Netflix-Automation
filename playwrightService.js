@@ -71,14 +71,18 @@ try {
 
               } catch ( error )
               {
-                     console.error( "Erreur lors de la navigation :", error );
-		        try {
-        await page.screenshot({ path: 'error_screenshot_navigation.png', fullPage: true });
-        console.log('Screenshot d\'erreur sauvegardé après navigation.');
-    } catch (screenshotError) {
-        console.error('Erreur lors de la capture du screenshot de navigation:', screenshotError);
-    }
 		      
+                     console.error( "Erreur 11 lors de la navigation :", error );
+		        try {
+				
+ 			await page.screenshot({ path: 'error_screenshot_navigation.png', fullPage: true });
+			console.log('Screenshot d\'erreur sauvegardé après navigation.');
+		    } catch (screenshotError) {
+			console.error('Erreur lors de la capture du screenshot de navigation:', screenshotError);
+		    }
+
+		      
+                     console.error( "Erreur lors de la navigation :", error );
                      return { success: false, message: "Impossible d'accéder à la page" };
               }
 
