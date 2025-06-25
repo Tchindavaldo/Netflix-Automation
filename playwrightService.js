@@ -42,7 +42,7 @@ console.log( 'debut ouverture page' );
 try {
     console.log('page chargement en cours');
     page = await this.browser.newPage();
-    await page.setDefaultTimeout(120000); // Timeout global 20s
+    await page.setDefaultTimeout(20000); // Timeout global 20s
 
     // Ton code de navigation ici, par exemple :
     // await page.goto('https://example.com');
