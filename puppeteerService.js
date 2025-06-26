@@ -13,8 +13,7 @@ class PuppeteerService {
     try {
       console.log("debut init");
       this.browser = await puppeteer.launch({
-        executablePath: "/usr/bin/google-chrome-stable",
-        headless: true,
+         headless: true,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
