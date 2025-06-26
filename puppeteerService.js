@@ -1,3 +1,4 @@
+
 const fs = require("fs");
 const puppeteer = require("puppeteer");
 
@@ -13,6 +14,7 @@ class PuppeteerService {
     try {
       console.log("debut init");
       this.browser = await puppeteer.launch({
+         executablePath: '/usr/bin/chromium',
          headless: true,
         args: [
           "--no-sandbox",
