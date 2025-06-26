@@ -4,6 +4,8 @@ if (process.env.NODE_ENV === "production") {
 } else {
   require("dotenv").config({ path: ".env.dev" }); // Pour le développement
 }
+const { SeleniumService } = require("./seleniumService");
+const seleniumService = new SeleniumService();
 
 const express = require("express");
 const cors = require("cors"); // Assurez-vous d'importer le package cors
@@ -39,7 +41,7 @@ app.post("/api/fill-form", async (req, res) => {
   try {
     // Appel à la méthode fillForm dans le service Playwright
     // const result = await playwrightService.fillForm( url, data );
-    const result = await puppeteerService.fillForm(url, data); // puppeteerService au lieu de playwrightService
+    const result = await seleniumService.fillForm(url, data); // puppeteerService au lieu de playwrightService
 
     res.status(200).json({ success: true, result }); // Réponse de succès avec le résultat
   } catch (error) {
