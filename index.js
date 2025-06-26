@@ -35,6 +35,23 @@ app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
+// Route pour vérifier la connexion Internet en visitant Google
+app.get("/api/check-connection", async (req, res) => {
+  try {
+    const result = await seleniumService.checkConnection();
+
+    if (!result.success) {
+      return res.status(500).json(result);
+    }
+
+    res.status(200).json({ success: true, result });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: error.message || "An error occurred" });
+  }
+});
+
 // Route pour le formulaire
 app.post("/api/fill-form", async (req, res) => {
   const { url, data } = req.body;

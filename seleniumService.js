@@ -397,6 +397,27 @@ class SeleniumService {
     return objectToReturn;
   }
 
+  // Méthode pour vérifier la connexion Internet en se rendant sur Google
+  async checkConnection() {
+    try {
+      // Vérifier si le driver est initialisé
+      if (!this.driver) {
+        await this.initBrowser();
+      }
+
+      // Aller sur Google
+      await this.driver.get("https://www.google.com");
+
+      // Attendre que le titre contienne 'Google'
+      await this.driver.wait(until.titleContains("Google"), 10000);
+
+      return { success: true, message: "Connexion Internet fonctionnelle" };
+    } catch (error) {
+      console.error("Erreur lors de la vérification de la connexion:", error);
+      return { success: false, message: "Connexion Internet échouée", error: error.message };
+    }
+  }
+
   async closeBrowser() {
     if (this.driver) {
       await this.driver.quit();
