@@ -18,7 +18,7 @@ class SeleniumService {
       const options = new firefox.Options();
 
       // AVEC interface graphique (commentez ces lignes pour voir Firefox s'ouvrir)
-      options.addArguments("--headless");
+      // options.addArguments("--headless");
 
       // Options pour la stabilité
       options.addArguments("--no-sandbox");
