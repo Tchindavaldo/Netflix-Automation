@@ -7,14 +7,14 @@ if (process.env.NODE_ENV === "production") {
 
 const express = require("express");
 const cors = require("cors"); // Assurez-vous d'importer le package cors
-const { PlaywrightService } = require("./playwrightService");
+// const { PlaywrightService } = require("./playwrightService");
 
 const { PuppeteerService } = require("./puppeteerService");
 const puppeteerService = new PuppeteerService();
 
 const app = express();
 const PORT = 3000;
-const playwrightService = new PlaywrightService();
+// const playwrightService = new PlaywrightService();
 
 // Utiliser express.json() pour parser les requêtes avec body en JSON
 app.use(express.json());
