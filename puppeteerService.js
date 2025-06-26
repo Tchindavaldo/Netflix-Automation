@@ -13,7 +13,7 @@ class PuppeteerService {
     try {
       console.log("debut init");
       this.browser = await puppeteer.launch({
-          executablePath: '/usr/bin/chromium-browser',
+        executablePath: "/usr/bin/google-chrome-stable",
         headless: true,
         args: [
           "--no-sandbox",
