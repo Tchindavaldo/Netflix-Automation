@@ -1,0 +1,32 @@
+{
+  "firstName": {
+    "selectorType": "css",
+    "selector": "input[name=\"firstName\"]",
+    "updatedAt": "2025-08-18T09:56:37.456Z"
+  },
+  "cardNumber": {
+    "selectorType": "css",
+    "selector": "input[name=\"creditCardNumber\"]",
+    "updatedAt": "2025-08-18T10:01:38.080Z"
+  },
+  "expiryCombined": {
+    "selectorType": "css",
+    "selector": "input[name=\"creditExpirationMonth\"]",
+    "updatedAt": "2025-08-18T10:01:38.217Z"
+  },
+  "cvv": {
+    "selectorType": "css",
+    "selector": "input[name=\"creditCardSecurityCode\"]",
+    "updatedAt": "2025-08-18T10:01:38.353Z"
+  },
+  "agreeCheckbox": {
+    "selectorType": "css",
+    "selector": "input[name=\"hasAcceptedTermsOfUse\"]",
+    "updatedAt": "2025-08-18T10:01:38.617Z"
+  },
+  "submitButton": {
+    "selectorType": "css",
+    "selector": "button[data-uia=\"action-submit-payment\"]",
+    "updatedAt": "2025-08-18T10:01:38.626Z"
+  }
+}

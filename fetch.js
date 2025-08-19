@@ -1,0 +1,54 @@
+fetch("https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0", {
+  method: "POST",
+  headers: {
+    Accept: "*/*",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Content-Type": "application/x-www-form-urlencoded",
+    DNT: "1",
+    Origin: "https://www.netflix.com",
+    Referer: "https://www.netflix.com/signup/creditoption",
+    "User-Agent": navigator.userAgent,
+    "X-Netflix.browserName": "Firefox",
+    "X-Netflix.browserVersion": "128",
+    "x-netflix.clientType": "akira",
+    "x-netflix.nq.stack": "prod",
+    "X-Netflix.osFullName": "Linux",
+    "X-Netflix.osName": "Linux",
+    "X-Netflix.osVersion": "0.0.0",
+    "x-netflix.request.attempt": "1",
+    "x-netflix.request.client.context": '{"appstate":"foreground"}',
+    "x-netflix.request.id": "3b81b1b678de41748bea841a0d5982de",
+    "x-netflix.request.routing":
+      '{"path":"/nq/aui/endpoint/%5E1.0.0-web/pathEvaluator","control_tag":"auinqweb"}',
+    "X-Netflix.uiVersion": "v7287ca98",
+  },
+  body: new URLSearchParams({
+    param: JSON.stringify({
+      flow: "signupSimplicity",
+      mode: "creditOptionMode",
+      action: "nextAction",
+      fields: {
+        firstName: { value: "John" },
+        lastName: { value: "Doe" },
+        hasAcceptedTermsOfUse: { value: true },
+        creditCardNumber: { value: "4111111111111111" },
+        creditExpirationMonth: 12,
+        creditExpirationYear: 2028,
+        creditCardSecurityCode: { value: "123" },
+        recaptchaResponseToken: {
+          value:
+            "0cAFcWeA69Yxx_8qv99QkGjj3gKcYGaXUhwSQZ8i-Q12iGScycmEE9SA5WLkS8o5kmtNKDtqc1Uutx3O0_AL3rNP3A_KnAlu-P_YNuZkdiYDURc3PiRB-4OSUaKS68hR8yRFP4ZMKs2-3Up21n-04ewydgdsUgzNoA2mUeUxkkiVd4hvDcOd28tgoB2aW0DlvPfeyy8qZ8Uk3s0DwPLqWOe3LwtrwE6UtEE9njGDfeLtQchFXwmXz8Jr1KTN1GVY3fU-18mw4vIGnYg9GY7GvbIBUWvVHlEAb9AN6hNx0uJjBTFdwuNyNwhK914sPxEoTP9hFydhIWMuxvcRoxPrxGV7TRjKBXg6U7YDMPJWSQfLNqMcQdLr0-Cf1OMOeL6O-n9PjrevQD7fv5OCW4n_ZenshsqhhnD7vco7V38TwBA8CB7BZ52HRFAEoqmsfarcGAFx5zCmvoz_bN1xw46CBUK-u2oD-NXNQzFYOwtCuCNlRaHfRH4FD1ApmZt8Fcd6RJM8pYfbaX0Di2mcgNnExnK1-vY45GrK4DsAiD6tsm4yZHSSDlZAni2O3vnIU3ZQxyK84S1aHMmdokvkW--WDpTc0niHEwFesiJmtvMYS4YpwICKMmpV8gVhXSbM2vwNLkv5fbXIVoRcmgsyWrkTa1d4oYWcsWskOzVhG2h8aQmQQYQthfyMOh6car1us4pWfYt1ZjmVvjQv9TmgQyJlenpJvarSrnQAg4UnjYDhoMJcs0AyDKFLNFjwfxTtNnNLH1bsflDX5nk-FhSvKjumqYrJuQinMiBpq_Ufi3FTss1bRfTM9I-C2ZGwKpe65JsIxV0L_VvaBRbpjBlP7HD59yDWddb5JvPeI28L_AgEv4PAa-2nSZRR9b3YRNp7hefgg39zuNw5HkveTx0hEhklJg8XA7Up73vPSUeR-deu0Uvrp6deJl5EaE9dhmjVcZ_MV2F1OpnIcxaAtLYK1EPrzUV-6JVMTczgFkRmSwqS4KAovX5MXCIVQKgt93sLWAnZVjyBGxOLvVWcMUdaFGq5EIzup6Eyd2i7IuqGAwaUaTmmiUm_NNunLJE-OIFTSdnMj4hHD7P8__y3wgKbur6TzcnmuY0Z0eInnP-O09qt3CFSHAPHugOK1uOfajEqUAv5X3oUNFG0GgYVPkeGAhpkkB3zRMtZF6r2c8Z7SuHIk_4eMi17qIIGKdCUv7v8X016sEIjqnKTkcacCaV90_U1ffzoCfZxYZxdmlEh5SBcsFjT1VY4sc29-7BX4v-Axe0UE0FTaMs6ij6viM9Ts-kPnu2jpqcaWDazxRsSV3qHM3yv1ltOadobrOkZUaNSfRJ8Ay3EQOJcHXDYkb86RFHiIaXfWfsdJ2Sd-ftURAoxkXAHSB7EgZuyvGdiWJCbCaH3HKaly6JorbS2FjJSjTRY6XCQlMfDAdjnvCawQ9GBr6xkBZPsFmFA0K3QrxV6ZnI2GEBoX4or8a0r009MXQRvhxJjUCXiaE5xZkVlrgpJPR8z5wgYVcRH7URK66MkP3r_0ZtYhaKjLJsddjjJgi5vascwyCFm24GjIyfSMHFR2J0wpM21RVqPey0tg6xx6tDUHdEUFIsBJZE83bdgf6s-NPOB-NW92hslexeF-5KOL6vkcA1Xe-VeUl1CS2qqDBGns5TDhrgpB0WVyCw2DzUPwu-IVBPY6KcYlTIqER1VNsoRBm3nmTW0uZp0cqH6tvRrnqpweqdooWJsL6p4zGAj4qoslp4fMyUPdakzChKUKdzH7XoLR8NBspGVvA7QAuTs7QKPE68yKxoiEHR0oh3AeNlEJj3TiNYB1maIeLf-qNpNtKGmdA0K-ysgkpnaG5o9WJmzd-VbnRi2argpPhOnuvHmowG0EdtmubiqibGGd2aAeBYY9F9QIsgGSQkojNe5M2gENob72WMdQRk2FBLIYdZaRJL0MpbAjQriGPaqhTqObRWPsQ1RgOhqtRVc3mw3PAFqzYhQ2gPTNeIHqNzkWg_I_k3bFfTwTyKZfTIuh6ItU7_gf45gNWQZ_KateAjxMCJe6kdyr0Omkvt8Jwif9dEj3QThg3DDaKuec9xIkUf2sZNkkfYvAcNYWMmz1p21ylS9tZrtY5w_yTsi0J8Z__nxavIWoLJkapSoI9r3dBzKu9JFfCdJaIHUuQHcbaWkCFtsdr9egU8RbW9JQLV92nqVWLU_u4nylQg-QBhxLPn8BC3A18YPr2wUcGKyvgjXM-QoUdpg_AGVpqHb1qa91ddKJ_l80Jr3tNm7CsssyvrrvnHKqQnD_-YkxvUwb0xlnFuAWHlyjpWqFVVR-0aABo3fclLDA_vn1vPw",
+        }, // ton token complet ici
+      },
+    }),
+    allocations: JSON.stringify({ 63451: 2 }),
+    tracingId: "v7287ca98",
+    tracingGroupId: "www.netflix.com",
+    authURL:
+      "c1.1755174134457.AgiMlOvcAxIgYILH2VVbVWBkmRLEG4MVrPXX7nzu+7GGpIZSdxlodEQYAg==",
+  }),
+})
+  .then((res) => res.text())
+  .then(console.log)
+  .catch(console.error);

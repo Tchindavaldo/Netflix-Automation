@@ -1,0 +1,7 @@
+{
+  "signupNext": {
+    "selectorType": "css",
+    "selector": "button[data-uia=\"continue-button\"]",
+    "updatedAt": "2025-08-18T07:57:53.958Z"
+  }
+}

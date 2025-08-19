@@ -7,22 +7,27 @@ let niveauDeClick = "initialisation";
 class PuppeteerService {
   constructor() {
     this.browser = null;
-    this.initBrowser();
+    // Lazy initialization: the browser will be started on first use
   }
 
   async initBrowser() {
     try {
       console.log("debut init");
+      // Contrôle via variable d'environnement: HEADLESS=false pour voir la fenêtre
+      const headlessEnv = process.env.HEADLESS;
+      const headless = headlessEnv ? headlessEnv.toLowerCase() !== "false" : true;
+      console.log(`Puppeteer Chromium mode: ${headless ? "headless" : "headed"}`);
+
       this.browser = await puppeteer.launch({
          executablePath: '/usr/bin/chromium',
-         headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-web-security",
-          "--disable-features=VizDisplayCompositor",
-        ],
+         headless,
+         args: [
+           "--no-sandbox",
+           "--disable-setuid-sandbox",
+           "--disable-dev-shm-usage",
+           "--disable-web-security",
+           "--disable-features=VizDisplayCompositor",
+         ],
       });
       console.log("fin init");
     } catch (error) {

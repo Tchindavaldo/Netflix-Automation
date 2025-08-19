@@ -7,7 +7,7 @@ let niveauDeClick = "initialisation";
 class SeleniumService {
   constructor() {
     this.driver = null;
-    this.initBrowser();
+    // Lazy initialization: the browser will be started on first use
   }
 
   async initBrowser() {
@@ -17,8 +17,13 @@ class SeleniumService {
       // Configuration Firefox
       const options = new firefox.Options();
 
-      // AVEC interface graphique (commentez ces lignes pour voir Firefox s'ouvrir)
-      options.addArguments("--headless");
+      // Contrôle via variable d'environnement: HEADLESS=false pour voir la fenêtre
+      const headlessEnv = process.env.HEADLESS;
+      const headless = headlessEnv ? headlessEnv.toLowerCase() !== "false" : true;
+      if (headless) {
+        options.headless();
+      }
+      console.log(`Selenium Firefox mode: ${headless ? "headless" : "headed"}`);
 
       // Options pour la stabilité
       options.addArguments("--no-sandbox");
@@ -414,7 +419,11 @@ class SeleniumService {
       return { success: true, message: "Connexion Internet fonctionnelle" };
     } catch (error) {
       console.error("Erreur lors de la vérification de la connexion:", error);
-      return { success: false, message: "Connexion Internet échouée", error: error.message };
+      return {
+        success: false,
+        message: "Connexion Internet échouée",
+        error: error.message,
+      };
     }
   }
 
