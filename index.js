@@ -108,19 +108,22 @@ app.post("/api/netflix/payment/autofill-submit", async (req, res) => {
       });
     }
 
-    const details = req.body || {};
-    console.log('🧾 Autofill paiement (creditoption) avec details:', {
+    const body = req.body || {};
+    const { selectors, submit } = body;
+    const details = body;
+    console.log('🧾 Autofill paiement (creditoption):', {
       hasCardNumber: !!details.cardNumber,
-      expMonth: details.expMonth,
-      expYear: details.expYear,
-      hasCVV: !!details.cvv,
-      firstName: details.firstName,
-      lastName: details.lastName,
-      agree: details.agree,
-      email: details.email
+      hasExpiry: !!(details.expMonth || details.expYear || details.expiryCombined),
+      hasCvv: !!details.cvv,
+      email: details.email || null,
+      overrideSelectors: selectors ? Object.keys(selectors) : [],
+      willSubmit: (typeof submit === 'boolean') ? submit : true,
     });
 
-    const result = await netflixCookieService.autoFillAndSubmitCreditOption(details);
+    const result = await netflixCookieService.autoFillAndSubmitCreditOption(details, {
+      selectors: selectors || null,
+      submit: (typeof submit === 'boolean') ? submit : true,
+    });
     res.status(result.success ? 200 : 500).json(result);
   } catch (error) {
     console.error('❌ Erreur autofill paiement:', error);
