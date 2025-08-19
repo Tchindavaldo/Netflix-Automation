@@ -1,8 +1,8 @@
 // Service automatisé pour maintenir une session Netflix et récupérer les cookies
 const { Builder } = require("selenium-webdriver");
 const firefox = require("selenium-webdriver/firefox");
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 class NetflixCookieService {
   constructor() {
@@ -18,18 +18,29 @@ class NetflixCookieService {
    * details: { cardNumber, expMonth, expYear, cvv, firstName, lastName, agree }
    */
   async autoFillAndSubmitCreditOption(details) {
-    const { By, until } = require('selenium-webdriver');
+    const { By, until } = require("selenium-webdriver");
 
     // Validation basique et extraction des valeurs
-    const { cardNumber, expMonth, expYear, cvv, firstName = '', lastName = '', agree = true, email = '' } = details || {};
-    if (!this.driver) throw new Error('Session non initialisée');
+    const {
+      cardNumber,
+      expMonth,
+      expYear,
+      cvv,
+      firstName = "",
+      lastName = "",
+      agree = true,
+      email = "",
+    } = details || {};
+    if (!this.driver) throw new Error("Session non initialisée");
     if (!cardNumber || !expMonth || !expYear || !cvv) {
-      throw new Error('Champs requis manquants: cardNumber, expMonth, expYear, cvv');
+      throw new Error(
+        "Champs requis manquants: cardNumber, expMonth, expYear, cvv"
+      );
     }
 
     // Helpers
     const switchToFrameContaining = async (selectors) => {
-      const frames = await this.driver.findElements(By.css('iframe'));
+      const frames = await this.driver.findElements(By.css("iframe"));
       for (let i = 0; i < frames.length; i++) {
         try {
           await this.driver.switchTo().defaultContent();
@@ -58,132 +69,198 @@ class NetflixCookieService {
       if (!selectors || !selectors.length) return null;
       await this.driver.switchTo().defaultContent();
       const found = await findFirst(selectors);
-      if (found && found.el) return { ...found, ctx: 'main' };
+      if (found && found.el) return { ...found, ctx: "main" };
       const frameFound = await switchToFrameContaining(selectors);
       if (frameFound) {
         const found2 = await findFirst([frameFound.selector]);
-        if (found2 && found2.el) return { ...found2, ctx: `iframe#${frameFound.frameIndex}` };
+        if (found2 && found2.el)
+          return { ...found2, ctx: `iframe#${frameFound.frameIndex}` };
       }
       await this.driver.switchTo().defaultContent();
       return null;
     };
 
-    const fillPreferredThenAuto = async (preferredSelectors, genericSelectors, value) => {
+    const fillPreferredThenAuto = async (
+      preferredSelectors,
+      genericSelectors,
+      value
+    ) => {
       let f = await trySelectors(preferredSelectors);
       if (!f) {
         f = await trySelectors(genericSelectors);
         if (!f) return false;
-        try { await f.el.clear(); } catch {}
+        try {
+          await f.el.clear();
+        } catch {}
         await f.el.sendKeys(value);
-        console.log(`✍️ Rempli via génériques: ${f.selector}${f.ctx ? ' ('+f.ctx+')' : ''}`);
+        console.log(
+          `✍️ Rempli via génériques: ${f.selector}${
+            f.ctx ? " (" + f.ctx + ")" : ""
+          }`
+        );
         await this.driver.switchTo().defaultContent();
         return true;
       }
-      try { await f.el.clear(); } catch {}
+      try {
+        await f.el.clear();
+      } catch {}
       await f.el.sendKeys(value);
-      console.log(`✍️ Rempli via préférés: ${f.selector}${f.ctx ? ' ('+f.ctx+')' : ''}`);
+      console.log(
+        `✍️ Rempli via préférés: ${f.selector}${
+          f.ctx ? " (" + f.ctx + ")" : ""
+        }`
+      );
       await this.driver.switchTo().defaultContent();
       return true;
     };
 
-    const clickPreferredThenAuto = async (preferredSelectors, genericSelectors) => {
+    const clickPreferredThenAuto = async (
+      preferredSelectors,
+      genericSelectors
+    ) => {
       let f = await trySelectors(preferredSelectors);
       if (!f) {
         f = await trySelectors(genericSelectors);
         if (!f) return null;
         await f.el.click();
-        console.log(`✅ Click via génériques: ${f.selector}${f.ctx ? ' ('+f.ctx+')' : ''}`);
+        console.log(
+          `✅ Click via génériques: ${f.selector}${
+            f.ctx ? " (" + f.ctx + ")" : ""
+          }`
+        );
         await this.driver.switchTo().defaultContent();
         return f.el;
       }
       await f.el.click();
-      console.log(`✅ Click via préférés: ${f.selector}${f.ctx ? ' ('+f.ctx+')' : ''}`);
+      console.log(
+        `✅ Click via préférés: ${f.selector}${f.ctx ? " (" + f.ctx + ")" : ""}`
+      );
       await this.driver.switchTo().defaultContent();
       return f.el;
     };
 
-    console.log('🧾 Remplissage du formulaire de paiement...');
+    console.log("🧾 Remplissage du formulaire de paiement...");
 
     // Sélecteurs préférés fournis
     const preferred = {
       number: [
         'input[name="creditCardNumber"]',
         'input[data-uia="field-creditCardNumber"]',
-        'input[autocomplete="cc-number"]'
+        'input[autocomplete="cc-number"]',
       ],
       expiryCombined: [
         'input[name="creditExpirationMonth"]',
         'input[data-uia="field-creditExpirationMonth"]',
         'input[autocomplete="cc-exp"]',
-        'input[placeholder="MM/YY"]'
+        'input[placeholder="MM/YY"]',
       ],
       cvv: [
         'input[name="creditCardSecurityCode"]',
         'input[data-uia="field-creditCardSecurityCode"]',
-        'input[autocomplete="cc-csc"]'
+        'input[autocomplete="cc-csc"]',
       ],
       firstName: [
         'input[name="firstName"]',
         'input[data-uia="field-name"]',
-        'input[autocomplete="cc-name"]'
+        'input[autocomplete="cc-name"]',
       ],
       agree: [
         'input[name="hasAcceptedTermsOfUse"]',
-        'input[data-uia="field-hasAcceptedTermsOfUse"]'
+        'input[data-uia="field-hasAcceptedTermsOfUse"]',
       ],
-      submit: [
-        'button[data-uia="action-submit-payment"]'
-      ]
+      submit: ['button[data-uia="action-submit-payment"]'],
     };
 
     // Sélecteurs génériques (fallback automatique si préférés échouent)
     const generic = {
       number: [
-        'input[autocomplete="cc-number"]', 'input[name*="card" i][name*="number" i]', '#card-number', '#cc-number'
+        'input[autocomplete="cc-number"]',
+        'input[name*="card" i][name*="number" i]',
+        "#card-number",
+        "#cc-number",
       ],
       expiryCombined: [
-        'input[autocomplete="cc-exp"]', 'input[placeholder*="MM" i]', '#card-expiry', '#cc-exp'
+        'input[autocomplete="cc-exp"]',
+        'input[placeholder*="MM" i]',
+        "#card-expiry",
+        "#cc-exp",
       ],
       cvv: [
-        'input[autocomplete="cc-csc"]', 'input[name*="cvc" i], input[name*="cvv" i]', '#card-cvc', '#cc-cvv'
+        'input[autocomplete="cc-csc"]',
+        'input[name*="cvc" i], input[name*="cvv" i]',
+        "#card-cvc",
+        "#cc-cvv",
       ],
       firstName: [
-        'input[autocomplete="cc-name"]', 'input[name*="name" i]', '#firstName'
+        'input[autocomplete="cc-name"]',
+        'input[name*="name" i]',
+        "#firstName",
       ],
       agree: [
-        'input[type="checkbox"][name*="terms" i]', 'input[type="checkbox"][data-uia*="terms" i]', 'input[type="checkbox"][name*="accept" i]'
+        'input[type="checkbox"][name*="terms" i]',
+        'input[type="checkbox"][data-uia*="terms" i]',
+        'input[type="checkbox"][name*="accept" i]',
       ],
       submit: [
-        'button[type="submit"]', 'button.nf-btn-primary', 'button[data-uia*="submit" i]', 'button[data-uia*="next" i]'
-      ]
+        'button[type="submit"]',
+        "button.nf-btn-primary",
+        'button[data-uia*="submit" i]',
+        'button[data-uia*="next" i]',
+      ],
     };
 
     // Remplissage
-    const okFirst = firstName ? await fillPreferredThenAuto(preferred.firstName, generic.firstName, firstName) : true;
+    const okFirst = firstName
+      ? await fillPreferredThenAuto(
+          preferred.firstName,
+          generic.firstName,
+          firstName
+        )
+      : true;
     const okLast = true; // ignoré/masqué dans ce flow
-    console.log('👤 Names filled:', okFirst, okLast);
+    console.log("👤 Names filled:", okFirst, okLast);
 
-    const okNumber = await fillPreferredThenAuto(preferred.number, generic.number, cardNumber);
-    console.log('🧩 Card number filled:', okNumber);
+    const okNumber = await fillPreferredThenAuto(
+      preferred.number,
+      generic.number,
+      cardNumber
+    );
+    console.log("🧩 Card number filled:", okNumber);
 
-    const expValue = `${String(expMonth).padStart(2,'0')}/${String(expYear).slice(-2)}`;
-    const okExp = await fillPreferredThenAuto(preferred.expiryCombined, generic.expiryCombined, expValue);
-    console.log('🗓️ Expiration filled:', okExp);
+    const expValue = `${String(expMonth).padStart(2, "0")}/${String(
+      expYear
+    ).slice(-2)}`;
+    const okExp = await fillPreferredThenAuto(
+      preferred.expiryCombined,
+      generic.expiryCombined,
+      expValue
+    );
+    console.log("🗓️ Expiration filled:", okExp);
 
     const okCvv = await fillPreferredThenAuto(preferred.cvv, generic.cvv, cvv);
-    console.log('🔒 CVV filled:', okCvv);
+    console.log("🔒 CVV filled:", okCvv);
 
     if (agree) {
-      const clickedEl = await clickPreferredThenAuto(preferred.agree, generic.agree);
-      console.log('☑️ Agreement checked:', !!clickedEl);
+      const clickedEl = await clickPreferredThenAuto(
+        preferred.agree,
+        generic.agree
+      );
+      console.log("☑️ Agreement checked:", !!clickedEl);
     }
 
     const beforeUrl = await this.driver.getCurrentUrl();
-    const submitBtn = await clickPreferredThenAuto(preferred.submit, generic.submit);
-    if (!submitBtn) throw new Error('Bouton de soumission introuvable');
-    try { await this.driver.wait(until.elementIsEnabled(submitBtn), 4000); } catch {}
-    try { await submitBtn.click(); } catch {}
-    console.log('🚀 Bouton de paiement cliqué');
+    const submitBtn = await clickPreferredThenAuto(
+      preferred.submit,
+      generic.submit
+    );
+    if (!submitBtn) throw new Error("Bouton de soumission introuvable");
+    try {
+      await this.driver.wait(until.elementIsEnabled(submitBtn), 4000);
+    } catch {}
+    try {
+      await submitBtn.click();
+    } catch {}
+    console.log("🚀 Bouton de paiement cliqué");
 
     // Attendre une éventuelle redirection (changement d'URL)
     let redirected = false;
@@ -200,53 +277,88 @@ class NetflixCookieService {
     if (!redirected) {
       // Prendre une capture d'écran et l'enregistrer avec l'email comme nom de fichier
       try {
-        const screenshotsDir = path.resolve(process.cwd(), 'screenshots');
+        const screenshotsDir = path.resolve(process.cwd(), "screenshots");
         if (!fs.existsSync(screenshotsDir)) {
           fs.mkdirSync(screenshotsDir, { recursive: true });
         }
-        const safeEmail = (email || 'unknown').replace(/[^a-zA-Z0-9._-]+/g, '_');
+        const safeEmail = (email || "unknown").replace(
+          /[^a-zA-Z0-9._-]+/g,
+          "_"
+        );
         const filePath = path.join(screenshotsDir, `${safeEmail}.png`);
         const image = await this.driver.takeScreenshot();
-        fs.writeFileSync(filePath, image, 'base64');
+        fs.writeFileSync(filePath, image, "base64");
         console.log(`📸 Screenshot sauvegardé: ${filePath}`);
 
         // Fermer le navigateur même en cas d'échec
         try {
-          if (this.cookieUpdateInterval) { clearInterval(this.cookieUpdateInterval); this.cookieUpdateInterval = null; }
-          if (this.sessionCheckInterval) { clearInterval(this.sessionCheckInterval); this.sessionCheckInterval = null; }
+          if (this.cookieUpdateInterval) {
+            clearInterval(this.cookieUpdateInterval);
+            this.cookieUpdateInterval = null;
+          }
+          if (this.sessionCheckInterval) {
+            clearInterval(this.sessionCheckInterval);
+            this.sessionCheckInterval = null;
+          }
           await this.driver.quit();
           this.driver = null;
           this.isSessionActive = false;
-          console.log('🧹 Navigateur fermé après échec (pas de redirection)');
+          console.log("🧹 Navigateur fermé après échec (pas de redirection)");
         } catch (e2) {
-          console.log('⚠️ Impossible de fermer le navigateur proprement (échec):', e2.message);
+          console.log(
+            "⚠️ Impossible de fermer le navigateur proprement (échec):",
+            e2.message
+          );
         }
 
-        return { success: false, message: 'Soumission non redirigée, possible erreur de paiement', screenshot: filePath };
+        return {
+          success: false,
+          message: "Soumission non redirigée, possible erreur de paiement",
+          screenshot: filePath,
+        };
       } catch (e) {
         // Essayer quand même de fermer le navigateur
         try {
-          if (this.cookieUpdateInterval) { clearInterval(this.cookieUpdateInterval); this.cookieUpdateInterval = null; }
-          if (this.sessionCheckInterval) { clearInterval(this.sessionCheckInterval); this.sessionCheckInterval = null; }
+          if (this.cookieUpdateInterval) {
+            clearInterval(this.cookieUpdateInterval);
+            this.cookieUpdateInterval = null;
+          }
+          if (this.sessionCheckInterval) {
+            clearInterval(this.sessionCheckInterval);
+            this.sessionCheckInterval = null;
+          }
           await this.driver.quit();
           this.driver = null;
           this.isSessionActive = false;
         } catch {}
-        return { success: false, message: 'Soumission non redirigée et échec screenshot', error: e.message };
+        return {
+          success: false,
+          message: "Soumission non redirigée et échec screenshot",
+          error: e.message,
+        };
       }
     }
 
     const afterUrl = await this.driver.getCurrentUrl();
     // Fermer le navigateur avant de répondre succès
     try {
-      if (this.cookieUpdateInterval) { clearInterval(this.cookieUpdateInterval); this.cookieUpdateInterval = null; }
-      if (this.sessionCheckInterval) { clearInterval(this.sessionCheckInterval); this.sessionCheckInterval = null; }
+      if (this.cookieUpdateInterval) {
+        clearInterval(this.cookieUpdateInterval);
+        this.cookieUpdateInterval = null;
+      }
+      if (this.sessionCheckInterval) {
+        clearInterval(this.sessionCheckInterval);
+        this.sessionCheckInterval = null;
+      }
       await this.driver.quit();
       this.driver = null;
       this.isSessionActive = false;
-      console.log('🧹 Navigateur fermé après redirection réussie');
+      console.log("🧹 Navigateur fermé après redirection réussie");
     } catch (e) {
-      console.log('⚠️ Impossible de fermer le navigateur proprement:', e.message);
+      console.log(
+        "⚠️ Impossible de fermer le navigateur proprement:",
+        e.message
+      );
     }
     return { success: true, redirected: true, url: afterUrl };
   }
@@ -256,78 +368,83 @@ class NetflixCookieService {
    */
   async callNetflixAPICreditOption(params = {}, headerOverrides = {}) {
     try {
-      if (!this.driver) throw new Error('Session non initialisée');
+      if (!this.driver) throw new Error("Session non initialisée");
 
-      console.log('💳 Appel API Netflix (creditoption) depuis le navigateur...');
+      console.log(
+        "💳 Appel API Netflix (creditoption) depuis le navigateur..."
+      );
 
       // S'assurer d'être sur /signup/creditoption
       let currentUrl = await this.driver.getCurrentUrl();
-      if (!currentUrl.includes('/signup/creditoption')) {
+      if (!currentUrl.includes("/signup/creditoption")) {
         // Assurer le flow minimal: /signup/planform => /signup/regform => /signup/creditoption
-        if (!currentUrl.includes('/signup/regform')) {
-          await this.driver.get('https://www.netflix.com/signup/regform');
+        if (!currentUrl.includes("/signup/regform")) {
+          await this.driver.get("https://www.netflix.com/signup/regform");
           await this.driver.sleep(800);
         }
-        await this.driver.get('https://www.netflix.com/signup/creditoption');
+        await this.driver.get("https://www.netflix.com/signup/creditoption");
         await this.driver.sleep(1200);
       }
 
       // Ready
       await this.driver.wait(async () => {
-        const rs = await this.driver.executeScript('return document.readyState');
-        return rs === 'complete';
+        const rs = await this.driver.executeScript(
+          "return document.readyState"
+        );
+        return rs === "complete";
       }, 12000);
 
-      console.log('📄 Page creditoption prête');
+      console.log("📄 Page creditoption prête");
 
       // Mode redirection seule: ne pas exécuter la requête pathEvaluator, juste confirmer l'URL
       if (params && params.redirectOnly) {
         return {
           success: true,
           redirectedOnly: true,
-          url: await this.driver.getCurrentUrl()
+          url: await this.driver.getCurrentUrl(),
         };
       }
 
       // Defaults structure based on provided sample
       const defaultParams = {
-        flow: 'signupSimplicity',
-        mode: 'creditOptionMode',
-        action: 'nextAction',
+        flow: "signupSimplicity",
+        mode: "creditOptionMode",
+        action: "nextAction",
         fields: {
-          creditData: { value: '' },
-          paymentChoice: { value: 'creditOption' },
-          emvco3dsDeviceDataResponseFallback: { value: '' },
-          emvco3dsAuthenticationWindowSize: { value: '04' },
-          firstName: { value: '' },
-          lastName: { value: '' },
+          creditData: { value: "" },
+          paymentChoice: { value: "creditOption" },
+          emvco3dsDeviceDataResponseFallback: { value: "" },
+          emvco3dsAuthenticationWindowSize: { value: "04" },
+          firstName: { value: "" },
+          lastName: { value: "" },
           hasAcceptedTermsOfUse: { value: true },
-          recaptchaResponseToken: { value: '' },
+          recaptchaResponseToken: { value: "" },
           recaptchaError: {},
           recaptchaResponseTime: { value: 0 },
-          lastFour: { value: '' },
-          cardBin: { value: '' },
-          creditCardSecurityCode: { value: '' },
+          lastFour: { value: "" },
+          cardBin: { value: "" },
+          creditCardSecurityCode: { value: "" },
           cvvRequested: { value: true },
-          previousMode: ''
-        }
+          previousMode: "",
+        },
       };
       const { redirectOnly, ...rest } = params || {};
       const finalParams = { ...defaultParams, ...rest };
 
       // Build API URL
-      const apiUrl = 'https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0?' +
+      const apiUrl =
+        "https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0?" +
         new URLSearchParams({
-          landingURL: '/signup/creditoption',
-          landingOrigin: 'https://www.netflix.com',
-          inapp: 'false',
-          isConsumptionOnly: 'false',
-          logConsumptionOnly: 'false',
-          languages: 'en-US',
-          netflixClientPlatform: 'browser',
-          method: 'call',
+          landingURL: "/signup/creditoption",
+          landingOrigin: "https://www.netflix.com",
+          inapp: "false",
+          isConsumptionOnly: "false",
+          logConsumptionOnly: "false",
+          languages: "en-US",
+          netflixClientPlatform: "browser",
+          method: "call",
           callPath: '["aui","moneyball","next"]',
-          falcor_server: '0.1.0'
+          falcor_server: "0.1.0",
         }).toString();
 
       // Extract dynamic data from page (authURL, uiVersion)
@@ -360,16 +477,19 @@ class NetflixCookieService {
         `);
       } catch {}
 
-      const uiVersion = headerOverrides.uiVersion || pageMeta.uiVersion || 'vae8ea59a';
-      const authURL = pageMeta.authURL || headerOverrides.authURL || '';
+      const uiVersion =
+        headerOverrides.uiVersion || pageMeta.uiVersion || "vae8ea59a";
+      const authURL = pageMeta.authURL || headerOverrides.authURL || "";
 
       // Allocations and tracing defaults
-      const allocations = headerOverrides.allocations || '{}';
+      const allocations = headerOverrides.allocations || "{}";
       const tracingId = headerOverrides.tracingId || uiVersion; // often matches
-      const tracingGroupId = headerOverrides.tracingGroupId || 'www.netflix.com';
+      const tracingGroupId =
+        headerOverrides.tracingGroupId || "www.netflix.com";
 
       // Execute fetch in browser
-      const result = await this.driver.executeAsyncScript(`
+      const result = await this.driver.executeAsyncScript(
+        `
         const cb = arguments[arguments.length - 1];
         const apiUrl = arguments[0];
         const params = arguments[1];
@@ -410,19 +530,29 @@ class NetflixCookieService {
           })))
           .then(out => { try { out.data = JSON.parse(out.body); } catch { out.data = out.body; } cb(out); })
           .catch(err => cb({ success: false, error: err.message, status: 0 }));
-      `, apiUrl, finalParams, { authURL, uiVersion }, { allocations, tracingId, tracingGroupId, extra: headerOverrides.extra || {} });
+      `,
+        apiUrl,
+        finalParams,
+        { authURL, uiVersion },
+        {
+          allocations,
+          tracingId,
+          tracingGroupId,
+          extra: headerOverrides.extra || {},
+        }
+      );
 
-      console.log('✅ Réponse API (creditoption):', result.status);
+      console.log("✅ Réponse API (creditoption):", result.status);
       return {
         success: result.ok || result.status === 200,
         status: result.status,
         statusText: result.statusText,
         headers: result.headers,
         data: result.data,
-        fromBrowser: true
+        fromBrowser: true,
       };
     } catch (error) {
-      console.error('❌ Erreur appel API Netflix (creditoption):', error);
+      console.error("❌ Erreur appel API Netflix (creditoption):", error);
       return { success: false, message: error.message, fromBrowser: true };
     }
   }
@@ -433,112 +563,126 @@ class NetflixCookieService {
   async callNetflixAPIRegistration(params = {}) {
     try {
       if (!this.driver) {
-        throw new Error('Session non initialisée');
+        throw new Error("Session non initialisée");
       }
 
-      console.log('🚀 Appel API Netflix (regform) depuis le navigateur...');
+      console.log("🚀 Appel API Netflix (regform) depuis le navigateur...");
 
       // Assurer le flow: /signup -> click Next -> /signup/planform -> /signup/regform
       let currentUrl = await this.driver.getCurrentUrl();
-      if (!currentUrl.includes('/signup/regform')) {
-        console.log('📍 Mise en contexte regform...');
+      if (!currentUrl.includes("/signup/regform")) {
+        console.log("📍 Mise en contexte regform...");
 
         // Aller sur /signup si nécessaire
-        if (!currentUrl.includes('/signup')) {
-          await this.driver.get('https://www.netflix.com/signup');
+        if (!currentUrl.includes("/signup")) {
+          await this.driver.get("https://www.netflix.com/signup");
           await this.driver.sleep(1500);
         }
 
         // Si pas encore sur planform, réutiliser la logique de Next pour y aller
         currentUrl = await this.driver.getCurrentUrl();
-        if (!currentUrl.includes('/signup/planform')) {
-          console.log('➡️ Passage à planform...');
+        if (!currentUrl.includes("/signup/planform")) {
+          console.log("➡️ Passage à planform...");
           try {
-            const { By, until } = require('selenium-webdriver');
+            const { By, until } = require("selenium-webdriver");
 
             // Accepter les cookies si présents (best-effort)
             try {
               const cookieSelectors = [
                 'button[data-uia="cookie-disclosure-button-accept"]',
-                '#onetrust-accept-btn-handler'
+                "#onetrust-accept-btn-handler",
               ];
               for (const sel of cookieSelectors) {
                 const elements = await this.driver.findElements(By.css(sel));
-                if (elements && elements.length) { await elements[0].click(); break; }
+                if (elements && elements.length) {
+                  await elements[0].click();
+                  break;
+                }
               }
             } catch {}
 
             const nextSelectors = [
               'button[data-uia="continue-button"]',
               'button[data-uia="next-button"]',
-              'button[type="submit"]'
+              'button[type="submit"]',
             ];
             let nextBtn = null;
             for (const sel of nextSelectors) {
               try {
-                nextBtn = await this.driver.wait(until.elementLocated(By.css(sel)), 4000);
+                nextBtn = await this.driver.wait(
+                  until.elementLocated(By.css(sel)),
+                  4000
+                );
                 break;
               } catch {}
             }
             if (nextBtn) {
-              try { await this.driver.wait(until.elementIsEnabled(nextBtn), 2000); } catch {}
+              try {
+                await this.driver.wait(until.elementIsEnabled(nextBtn), 2000);
+              } catch {}
               await nextBtn.click();
               await this.driver.wait(async () => {
                 const url = await this.driver.getCurrentUrl();
-                return url.includes('/signup/planform');
+                return url.includes("/signup/planform");
               }, 10000);
             } else {
               // Fallback direct
-              await this.driver.get('https://www.netflix.com/signup/planform');
+              await this.driver.get("https://www.netflix.com/signup/planform");
             }
           } catch (e) {
-            console.log('⚠️ Échec passage planform, fallback direct:', e.message);
-            await this.driver.get('https://www.netflix.com/signup/planform');
+            console.log(
+              "⚠️ Échec passage planform, fallback direct:",
+              e.message
+            );
+            await this.driver.get("https://www.netflix.com/signup/planform");
           }
           await this.driver.sleep(1000);
         }
 
         // Maintenant tenter d'aller vers /signup/regform
-        console.log('➡️ Passage à regform...');
-        await this.driver.get('https://www.netflix.com/signup/regform');
+        console.log("➡️ Passage à regform...");
+        await this.driver.get("https://www.netflix.com/signup/regform");
         await this.driver.sleep(1000);
       }
 
       // Attendre readiness
       await this.driver.wait(async () => {
-        const readyState = await this.driver.executeScript('return document.readyState');
-        return readyState === 'complete';
+        const readyState = await this.driver.executeScript(
+          "return document.readyState"
+        );
+        return readyState === "complete";
       }, 10000);
 
-      console.log('📄 Page regform prête');
+      console.log("📄 Page regform prête");
 
       // Params par défaut registration
       const defaultParams = {
-        flow: 'signupSimplicity',
-        mode: 'registration',
-        action: 'registerOnlyAction',
+        flow: "signupSimplicity",
+        mode: "registration",
+        action: "registerOnlyAction",
         fields: {
-          email: { value: '' },
-          password: { value: '' },
+          email: { value: "" },
+          password: { value: "" },
           emailPreference: { value: false },
-          previousMode: 'registrationWithContext'
-        }
+          previousMode: "registrationWithContext",
+        },
       };
       const finalParams = { ...defaultParams, ...params };
 
       // Construire l'URL pour regform
-      const apiUrl = 'https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0?' +
+      const apiUrl =
+        "https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0?" +
         new URLSearchParams({
-          landingURL: '/signup/regform',
-          landingOrigin: 'https://www.netflix.com',
-          inapp: 'false',
-          isConsumptionOnly: 'false',
-          logConsumptionOnly: 'false',
-          languages: 'en-US',
-          netflixClientPlatform: 'browser',
-          method: 'call',
+          landingURL: "/signup/regform",
+          landingOrigin: "https://www.netflix.com",
+          inapp: "false",
+          isConsumptionOnly: "false",
+          logConsumptionOnly: "false",
+          languages: "en-US",
+          netflixClientPlatform: "browser",
+          method: "call",
           callPath: '["aui","moneyball","next"]',
-          falcor_server: '0.1.0'
+          falcor_server: "0.1.0",
         }).toString();
 
       // Récupérer l'authURL dynamique
@@ -561,7 +705,8 @@ class NetflixCookieService {
       } catch {}
 
       // Appel fetch depuis le navigateur
-      const result = await this.driver.executeAsyncScript(`
+      const result = await this.driver.executeAsyncScript(
+        `
         const callback = arguments[arguments.length - 1];
         const apiUrl = arguments[0];
         const params = arguments[1];
@@ -600,19 +745,23 @@ class NetflixCookieService {
           callback(result);
         })
         .catch(err => callback({ success: false, error: err.message, status: 0 }));
-      `, apiUrl, finalParams, authURL);
+      `,
+        apiUrl,
+        finalParams,
+        authURL
+      );
 
-      console.log('✅ Réponse API (regform):', result.status);
+      console.log("✅ Réponse API (regform):", result.status);
       return {
         success: result.ok || result.status === 200,
         status: result.status,
         statusText: result.statusText,
         headers: result.headers,
         data: result.data,
-        fromBrowser: true
+        fromBrowser: true,
       };
     } catch (error) {
-      console.error('❌ Erreur appel API Netflix (regform):', error);
+      console.error("❌ Erreur appel API Netflix (regform):", error);
       return { success: false, message: error.message, fromBrowser: true };
     }
   }
@@ -621,10 +770,15 @@ class NetflixCookieService {
     try {
       console.log("🔧 Initialisation du driver Selenium...");
       const options = new firefox.Options();
-      const headless = String(process.env.HEADLESS || 'true').toLowerCase() !== 'false';
+      const headless =
+        String(process.env.HEADLESS || "true").toLowerCase() !== "false";
       // Activer le mode headless si demandé
       if (headless) {
-        try { options.headless(); } catch (e) { options.addArguments("--headless"); }
+        try {
+          options.headless();
+        } catch (e) {
+          options.addArguments("--headless");
+        }
       }
 
       // Options pour la stabilité
@@ -648,7 +802,9 @@ class NetflixCookieService {
 
       // Vérifier et logger le User-Agent réel utilisé par Firefox
       try {
-        const ua = await this.driver.executeScript("return navigator.userAgent;");
+        const ua = await this.driver.executeScript(
+          "return navigator.userAgent;"
+        );
         console.log("🎯 UA détecté dans Firefox:", ua);
       } catch (e) {
         console.log("⚠️ Impossible de lire le UA:", e.message);
@@ -656,17 +812,22 @@ class NetflixCookieService {
 
       // Définir la taille de la fenêtre seulement en mode graphique
       if (!headless) {
-        await this.driver.manage().window().setRect({ width: 1366, height: 768 });
+        await this.driver
+          .manage()
+          .window()
+          .setRect({ width: 1366, height: 768 });
       }
 
       // Définir les timeouts (augmentés pour éviter les timeouts prématurés)
       await this.driver.manage().setTimeouts({
         implicit: 20000, // 20s pour trouver les éléments
-        pageLoad: 600000, // 2 minutes pour charger les pages
+        pageLoad: 20000, // 2 minutes pour charger les pages
         script: 30000, // 30s pour les scripts
       });
 
-      console.log(`✅ Driver Selenium initialisé (${headless ? 'headless' : 'graphique'})`);
+      console.log(
+        `✅ Driver Selenium initialisé (${headless ? "headless" : "graphique"})`
+      );
       return true;
     } catch (error) {
       console.error("❌ Erreur initialisation driver:", error);
@@ -674,12 +835,12 @@ class NetflixCookieService {
     }
   }
 
-/**
- * Initialise et ouvre Netflix signup
- */
-async initializeSession() {
-  try {
-    console.log("🚀 Initialisation de la session Netflix...");
+  /**
+   * Initialise et ouvre Netflix signup
+   */
+  async initializeSession() {
+    try {
+      console.log("🚀 Initialisation de la session Netflix...");
 
       // Initialiser le driver directement
       await this.initializeDriver();
@@ -691,26 +852,135 @@ async initializeSession() {
       const navigationPromise = this.driver.get(
         "https://www.netflix.com/signup"
       );
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(
-          () =>
-            reject(new Error("Timeout: Navigation trop longue (2 minutes)")),
-          600000 // 2 minutes, cohérent avec pageLoad timeout
-        )
+      // Promesses enveloppées pour identifier le gagnant de la course
+      const navWrapped = navigationPromise
+        .then(() => "navigated")
+        .catch(() => "nav_error");
+
+      // Afficher un décompte avant le dump partiel (5s)
+      let countdown = 5;
+      console.log(`⏳ Dump partiel dans: ${countdown}s`);
+      const countdownInterval = setInterval(() => {
+        countdown -= 1;
+        if (countdown > 0) {
+          console.log(`⏳ Dump partiel dans: ${countdown}s`);
+        } else {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+
+      // Promesse signalant le déclenchement du dump partiel
+      let resolvePartial;
+      const partialFired = new Promise((res) => {
+        resolvePartial = res;
+      });
+
+      // Après 5s, sauvegarder un dump partiel même si la page n'a pas fini de charger
+      const partialDumpTimer = setTimeout(async () => {
+        try {
+          clearInterval(countdownInterval);
+          const partialHtml = await this.driver.getPageSource();
+          fs.writeFileSync("netflix_partial.html", partialHtml);
+          const partialPng = await this.driver.takeScreenshot();
+          fs.writeFileSync("netflix_partial.png", partialPng, "base64");
+
+          // Afficher un extrait (4000 premiers caractères) du HTML dans la console (5s)
+          try {
+            const preview = (partialHtml || "").slice(0, 4000);
+            console.log("\n===== 🕒 PARTIAL HTML (5s) START (4000 chars) =====\n");
+            console.log(preview);
+            console.log("\n===== 🕒 PARTIAL HTML (5s) END — (contenu tronqué) =====\n");
+          } catch {}
+
+          // Diagnostics console (5s)
+          let rs = "";
+          let ua = "";
+          let title = "";
+          let urlNow = "";
+          try {
+            rs = await this.driver.executeScript("return document.readyState;");
+          } catch {}
+          try {
+            ua = await this.driver.executeScript("return navigator.userAgent;");
+          } catch {}
+          try {
+            title = await this.driver.getTitle();
+          } catch {}
+          try {
+            urlNow = await this.driver.getCurrentUrl();
+          } catch {}
+          const htmlLen = (partialHtml || "").length;
+          console.log(
+            `🕒 Dump partiel (5s): readyState=${rs} | URL=${urlNow} | title="${title}" | UA="${ua}" | html=${htmlLen} bytes | fichiers: netflix_partial.html, netflix_partial.png`
+          );
+          // Signaler que le dump partiel a eu lieu
+          try { if (resolvePartial) resolvePartial("partial"); } catch {}
+        } catch (e) {
+          console.log(
+            "⚠️ Impossible de sauvegarder le dump partiel (5s):",
+            e.message
+          );
+        }
+      }, 5000);
+      // Timeout qui RESOUT une valeur (pas d'exception) pour simplifier la course
+      const timeoutWrapped = new Promise((resolve) =>
+        setTimeout(() => resolve("timeout"), 20000)
       );
 
-      await Promise.race([navigationPromise, timeoutPromise]);
-      console.log("✅ Page Netflix chargée");
+      const winner = await Promise.race([navWrapped, timeoutWrapped, partialFired]);
+      clearTimeout(partialDumpTimer);
+      clearInterval(countdownInterval);
+      if (winner === "navigated") {
+        console.log("✅ Page Netflix chargée (avant 5s)");
+      } else if (winner === "partial") {
+        console.log("⛔ Navigation interrompue après 5s: dump partiel exécuté");
+        // On coupe ici: pas de dump final ni d'attente supplémentaire
+        return {
+          success: false,
+          message: "Dump partiel déclenché à 5s — attente interrompue",
+          partialDump: true,
+        };
+      } else if (winner === "timeout") {
+        console.log("⏰ Timeout 20s atteint avant chargement complet");
+      } else if (winner === "nav_error") {
+        console.log("⚠️ Erreur de navigation détectée avant 5s");
+      }
 
       // Sauvegarder l'HTML et une capture d'écran pour diagnostic immédiat
       try {
+        // Diagnostics (final)
+        let rs = "";
+        let ua = "";
+        let title = "";
+        let urlNow = "";
+        try {
+          rs = await this.driver.executeScript("return document.readyState;");
+        } catch {}
+        try {
+          ua = await this.driver.executeScript("return navigator.userAgent;");
+        } catch {}
+        try {
+          title = await this.driver.getTitle();
+        } catch {}
+        try {
+          urlNow = await this.driver.getCurrentUrl();
+        } catch {}
+
         const html = await this.driver.getPageSource();
-        // Log des 500 premiers caractères pour inspection rapide
-        console.log("🧩 Extrait HTML (500):", html.substring(0, 500));
         fs.writeFileSync("netflix.html", html);
         const screenshot = await this.driver.takeScreenshot();
         fs.writeFileSync("netflix.png", screenshot, "base64");
-        console.log("📄 HTML sauvegardé: netflix.html | 📸 Screenshot: netflix.png");
+        const htmlLen = (html || "").length;
+        console.log(
+          `📄 Dump final: readyState=${rs} | URL=${urlNow} | title="${title}" | UA="${ua}" | html=${htmlLen} bytes | fichiers: netflix.html, netflix.png`
+        );
+        // Aperçu console du HTML final (tronqué à 5000 caractères)
+        try {
+          const finalPreview = (html || "").slice(0, 5000);
+          console.log("\n===== 📄 FINAL HTML START (5000 chars) =====\n");
+          console.log(finalPreview);
+          console.log("\n===== 📄 FINAL HTML END — (contenu tronqué) =====\n");
+        } catch {}
       } catch (e) {
         console.log("⚠️ Impossible de sauvegarder HTML/screenshot:", e.message);
       }
@@ -945,316 +1215,390 @@ async initializeSession() {
    * Fait un appel API Netflix directement depuis le navigateur avec les cookies
    */
 
-/**
- * Récupère les cookies actuels
- */
-getCurrentCookies() {
-return {
-  success: this.isSessionActive,
-  cookies: this.cookies,
-  sessionActive: this.isSessionActive,
-  lastUpdated: this.cookies.lastUpdated || null,
-};
-}
-
-/**
- * Navigue vers une page spécifique de Netflix
- */
-async navigateToPage(path = "/signup") {
-try {
-  if (!this.driver) {
-    throw new Error("Session non initialisée");
+  /**
+   * Récupère les cookies actuels
+   */
+  getCurrentCookies() {
+    return {
+      success: this.isSessionActive,
+      cookies: this.cookies,
+      sessionActive: this.isSessionActive,
+      lastUpdated: this.cookies.lastUpdated || null,
+    };
   }
 
-  const url = `https://www.netflix.com${path}`;
-  console.log(`🧭 Navigation vers: ${url}`);
-
-  await this.driver.get(url);
-  await this.driver.sleep(2000);
-
-  // Mettre à jour les cookies après navigation
-  await this.updateCookies();
-
-  return {
-    success: true,
-    currentUrl: await this.driver.getCurrentUrl(),
-    cookies: this.cookies,
-  };
-} catch (error) {
-  console.error("❌ Erreur navigation:", error);
-  return {
-    success: false,
-    message: error.message,
-  };
-}
-}
-
-/**
- * Ferme la session et nettoie les ressources
- */
-async closeSession() {
-try {
-  console.log("🛑 Fermeture de la session Netflix...");
-
-  // Arrêter les intervalles
-  if (this.cookieUpdateInterval) {
-    clearInterval(this.cookieUpdateInterval);
-  }
-  if (this.sessionCheckInterval) {
-    clearInterval(this.sessionCheckInterval);
-  }
-
-  // Fermer le navigateur
-  if (this.driver) {
-    await this.driver.quit();
-  }
-
-  this.isSessionActive = false;
-  this.cookies = {};
-
-  console.log("✅ Session fermée avec succès");
-
-  return { success: true, message: "Session fermée" };
-} catch (error) {
-  console.error("❌ Erreur fermeture session:", error);
-  return { success: false, message: error.message };
-}
-}
-
-/**
- * Redémarre la session si nécessaire
- */
-async restartSession() {
-console.log("🔄 Redémarrage de la session...");
-await this.closeSession();
-await new Promise((resolve) => setTimeout(resolve, 2000));
-return await this.initializeSession();
-}
-
-/**
- * Fait un appel API Netflix directement depuis le navigateur avec les cookies
- */
-async callNetflixAPI(params = {}) {
-try {
-  if (!this.driver) {
-    throw new Error('Session non initialisée');
-  }
-
-  console.log('🚀 Appel API Netflix depuis le navigateur...');
-  
-  // D'abord, s'assurer qu'on est dans le bon contexte d'inscription
-  console.log('📍 Navigation vers le contexte d\'inscription...');
-  const currentUrl = await this.driver.getCurrentUrl();
-  
-  if (!currentUrl.includes('/signup/planform')) {
-    console.log('🔄 Démarrage du flow d\'inscription Netflix...');
-    
-    // Étape 1: Aller sur /signup
-    await this.driver.get('https://www.netflix.com/signup');
-    await this.driver.sleep(3000);
-    console.log('✅ Page /signup chargée');
-    
-    // Étape 2: Cliquer sur le bouton "Next" pour aller vers planform
+  /**
+   * Navigue vers une page spécifique de Netflix
+   */
+  async navigateToPage(path = "/signup") {
     try {
-      const { By, until } = require('selenium-webdriver');
+      if (!this.driver) {
+        throw new Error("Session non initialisée");
+      }
 
-      // Préparer cache sélecteur du bouton Next
-      const flowCacheDir = path.join(__dirname, 'selectors');
-      const flowCacheFile = path.join(flowCacheDir, 'flow-selectors.json');
-      let flowCache = {};
-      try { if (fs.existsSync(flowCacheFile)) flowCache = JSON.parse(fs.readFileSync(flowCacheFile, 'utf8') || '{}'); } catch {}
-      const saveFlowCache = () => {
-        try {
-          if (!fs.existsSync(flowCacheDir)) fs.mkdirSync(flowCacheDir, { recursive: true });
-          fs.writeFileSync(flowCacheFile, JSON.stringify(flowCache, null, 2), 'utf8');
-        } catch (e) { console.log('⚠️ Impossible d\'écrire flow-selectors:', e.message); }
+      const url = `https://www.netflix.com${path}`;
+      console.log(`🧭 Navigation vers: ${url}`);
+
+      await this.driver.get(url);
+      await this.driver.sleep(2000);
+
+      // Mettre à jour les cookies après navigation
+      await this.updateCookies();
+
+      return {
+        success: true,
+        currentUrl: await this.driver.getCurrentUrl(),
+        cookies: this.cookies,
       };
-      
-      // 1) Essayer le sélecteur mis en cache IMMÉDIATEMENT (optimisé)
-      let nextButton = null;
-      let navigatedFromCache = false;
-      let attemptedNextClick = false; // garde-fou anti double-clic
-      const cachedNext = flowCache['signupNext'];
-      if (cachedNext && cachedNext.selector) {
+    } catch (error) {
+      console.error("❌ Erreur navigation:", error);
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+  }
+
+  /**
+   * Ferme la session et nettoie les ressources
+   */
+  async closeSession() {
+    try {
+      console.log("🛑 Fermeture de la session Netflix...");
+
+      // Arrêter les intervalles
+      if (this.cookieUpdateInterval) {
+        clearInterval(this.cookieUpdateInterval);
+      }
+      if (this.sessionCheckInterval) {
+        clearInterval(this.sessionCheckInterval);
+      }
+
+      // Fermer le navigateur
+      if (this.driver) {
+        await this.driver.quit();
+      }
+
+      this.isSessionActive = false;
+      this.cookies = {};
+
+      console.log("✅ Session fermée avec succès");
+
+      return { success: true, message: "Session fermée" };
+    } catch (error) {
+      console.error("❌ Erreur fermeture session:", error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
+   * Redémarre la session si nécessaire
+   */
+  async restartSession() {
+    console.log("🔄 Redémarrage de la session...");
+    await this.closeSession();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    return await this.initializeSession();
+  }
+
+  /**
+   * Fait un appel API Netflix directement depuis le navigateur avec les cookies
+   */
+  async callNetflixAPI(params = {}) {
+    try {
+      if (!this.driver) {
+        throw new Error("Session non initialisée");
+      }
+
+      console.log("🚀 Appel API Netflix depuis le navigateur...");
+
+      // D'abord, s'assurer qu'on est dans le bon contexte d'inscription
+      console.log("📍 Navigation vers le contexte d'inscription...");
+      const currentUrl = await this.driver.getCurrentUrl();
+
+      if (!currentUrl.includes("/signup/planform")) {
+        console.log("🔄 Démarrage du flow d'inscription Netflix...");
+
+        // Étape 1: Aller sur /signup
+        await this.driver.get("https://www.netflix.com/signup");
+        await this.driver.sleep(3000);
+        console.log("✅ Page /signup chargée");
+
+        // Étape 2: Cliquer sur le bouton "Next" pour aller vers planform
         try {
-          const t0 = Date.now();
-          if (cachedNext.selectorType === 'xpath') {
-            const found = await this.driver.findElements(By.xpath(cachedNext.selector));
-            nextButton = found && found.length ? found[0] : null;
-          } else {
-            const found = await this.driver.findElements(By.css(cachedNext.selector));
-            nextButton = found && found.length ? found[0] : null;
-          }
-          if (nextButton) {
-            console.log(`♻️ Bouton Next trouvé via cache: ${cachedNext.selector}`);
+          const { By, until } = require("selenium-webdriver");
+
+          // Préparer cache sélecteur du bouton Next
+          const flowCacheDir = path.join(__dirname, "selectors");
+          const flowCacheFile = path.join(flowCacheDir, "flow-selectors.json");
+          let flowCache = {};
+          try {
+            if (fs.existsSync(flowCacheFile))
+              flowCache = JSON.parse(
+                fs.readFileSync(flowCacheFile, "utf8") || "{}"
+              );
+          } catch {}
+          const saveFlowCache = () => {
             try {
-              try { await this.driver.wait(until.elementIsEnabled(nextButton), 1500); } catch {}
-              attemptedNextClick = true;
-              await nextButton.click();
-              console.log('🎯 Bouton Next (cache) cliqué!');
-              await this.driver.wait(async () => {
-                const url = await this.driver.getCurrentUrl();
-                return url.includes('/signup/planform') || url.includes('/planform');
-              }, 6000);
-              const dt = Date.now() - t0;
-              console.log(`✅ Navigation vers planform réussie (via cache) ⏱ ${dt}ms`);
-              navigatedFromCache = true;
+              if (!fs.existsSync(flowCacheDir))
+                fs.mkdirSync(flowCacheDir, { recursive: true });
+              fs.writeFileSync(
+                flowCacheFile,
+                JSON.stringify(flowCache, null, 2),
+                "utf8"
+              );
             } catch (e) {
-              const emsg = e && e.message ? e.message : String(e);
-              if (emsg.toLowerCase().includes('stale')) {
-                console.log('ℹ️ StaleElement après clic cache; vérification de la navigation...');
+              console.log("⚠️ Impossible d'écrire flow-selectors:", e.message);
+            }
+          };
+
+          // 1) Essayer le sélecteur mis en cache IMMÉDIATEMENT (optimisé)
+          let nextButton = null;
+          let navigatedFromCache = false;
+          let attemptedNextClick = false; // garde-fou anti double-clic
+          const cachedNext = flowCache["signupNext"];
+          if (cachedNext && cachedNext.selector) {
+            try {
+              const t0 = Date.now();
+              if (cachedNext.selectorType === "xpath") {
+                const found = await this.driver.findElements(
+                  By.xpath(cachedNext.selector)
+                );
+                nextButton = found && found.length ? found[0] : null;
+              } else {
+                const found = await this.driver.findElements(
+                  By.css(cachedNext.selector)
+                );
+                nextButton = found && found.length ? found[0] : null;
+              }
+              if (nextButton) {
+                console.log(
+                  `♻️ Bouton Next trouvé via cache: ${cachedNext.selector}`
+                );
                 try {
+                  try {
+                    await this.driver.wait(
+                      until.elementIsEnabled(nextButton),
+                      1500
+                    );
+                  } catch {}
+                  attemptedNextClick = true;
+                  await nextButton.click();
+                  console.log("🎯 Bouton Next (cache) cliqué!");
                   await this.driver.wait(async () => {
                     const url = await this.driver.getCurrentUrl();
-                    return url.includes('/signup/planform') || url.includes('/planform');
-                  }, 3000);
+                    return (
+                      url.includes("/signup/planform") ||
+                      url.includes("/planform")
+                    );
+                  }, 6000);
                   const dt = Date.now() - t0;
-                  console.log(`✅ Navigation confirmée après stale (via cache) ⏱ ${dt}ms`);
+                  console.log(
+                    `✅ Navigation vers planform réussie (via cache) ⏱ ${dt}ms`
+                  );
                   navigatedFromCache = true;
-                } catch {
-                  console.log('❌ StaleElement sans navigation détectée (mode strict): aucun retry de clic.');
-                  return { success: false, message: 'StaleElement après clic Next (cache) sans navigation' };
+                } catch (e) {
+                  const emsg = e && e.message ? e.message : String(e);
+                  if (emsg.toLowerCase().includes("stale")) {
+                    console.log(
+                      "ℹ️ StaleElement après clic cache; vérification de la navigation..."
+                    );
+                    try {
+                      await this.driver.wait(async () => {
+                        const url = await this.driver.getCurrentUrl();
+                        return (
+                          url.includes("/signup/planform") ||
+                          url.includes("/planform")
+                        );
+                      }, 3000);
+                      const dt = Date.now() - t0;
+                      console.log(
+                        `✅ Navigation confirmée après stale (via cache) ⏱ ${dt}ms`
+                      );
+                      navigatedFromCache = true;
+                    } catch {
+                      console.log(
+                        "❌ StaleElement sans navigation détectée (mode strict): aucun retry de clic."
+                      );
+                      return {
+                        success: false,
+                        message:
+                          "StaleElement après clic Next (cache) sans navigation",
+                      };
+                    }
+                  }
+                  if (!navigatedFromCache) {
+                    console.log(
+                      "⚠️ Clic via sélecteur cache a échoué, on retombe sur la détection…"
+                    );
+                    nextButton = null;
+                  }
                 }
               }
-              if (!navigatedFromCache) {
-                console.log('⚠️ Clic via sélecteur cache a échoué, on retombe sur la détection…');
-                nextButton = null;
+            } catch {}
+          }
+
+          // Déclaration des sélecteurs fallback
+          const nextButtonSelectors = [
+            'button[data-uia="continue-button"]',
+            'button[data-uia="next-button"]',
+            "button.nf-btn-primary",
+            "button.nf-btn-continue",
+            ".btn-continue",
+            ".continue-button",
+            'button[type="submit"]',
+          ];
+
+          if (!navigatedFromCache && !attemptedNextClick) {
+            if (!nextButton) {
+              console.log("🔍 Recherche du bouton Next (fallback)...");
+              for (const selector of nextButtonSelectors) {
+                try {
+                  const btn = await this.driver.wait(
+                    until.elementLocated(By.css(selector)),
+                    3000
+                  );
+                  nextButton = btn;
+                  console.log(`✅ Bouton trouvé avec sélecteur: ${selector}`);
+                  // Sauver dans le cache
+                  flowCache["signupNext"] = {
+                    selectorType: "css",
+                    selector,
+                    updatedAt: new Date().toISOString(),
+                  };
+                  saveFlowCache();
+                  break;
+                } catch (e) {
+                  // console.log(`⚠️ Sélecteur ${selector} non trouvé`);
+                }
               }
             }
-          }
-        } catch {}
-      }
 
-      // Déclaration des sélecteurs fallback
-      const nextButtonSelectors = [
-        'button[data-uia="continue-button"]',
-        'button[data-uia="next-button"]',
-        'button.nf-btn-primary',
-        'button.nf-btn-continue',
-        '.btn-continue',
-        '.continue-button',
-        'button[type="submit"]'
-      ];
-      
-      if (!navigatedFromCache && !attemptedNextClick) {
-        if (!nextButton) {
-          console.log('🔍 Recherche du bouton Next (fallback)...');
-          for (const selector of nextButtonSelectors) {
-            try {
-              const btn = await this.driver.wait(
-                until.elementLocated(By.css(selector)), 
-                3000
+            // Si non trouvé via CSS, tenter via XPath par texte
+            if (!nextButton) {
+              console.log(
+                "🔍 Recherche du bouton Next par texte (fallback XPath)..."
               );
-              nextButton = btn;
-              console.log(`✅ Bouton trouvé avec sélecteur: ${selector}`);
-              // Sauver dans le cache
-              flowCache['signupNext'] = { selectorType: 'css', selector, updatedAt: new Date().toISOString() };
-              saveFlowCache();
-              break;
-            } catch (e) {
-              // console.log(`⚠️ Sélecteur ${selector} non trouvé`);
+              const xpaths = [
+                "//button[normalize-space()='Next']",
+                "//button[normalize-space()='Continue']",
+                "//button[normalize-space()='Suivant']",
+                "//button[normalize-space()='Continuer']",
+                "//button//*[text()[contains(.,'Next')]]/ancestor::button",
+                "//button//*[text()[contains(.,'Continue')]]/ancestor::button",
+              ];
+              for (const xp of xpaths) {
+                try {
+                  const btn = await this.driver.wait(
+                    until.elementLocated(By.xpath(xp)),
+                    3000
+                  );
+                  nextButton = btn;
+                  console.log(`✅ Bouton trouvé avec XPath: ${xp}`);
+                  // Sauver dans le cache
+                  flowCache["signupNext"] = {
+                    selectorType: "xpath",
+                    selector: xp,
+                    updatedAt: new Date().toISOString(),
+                  };
+                  saveFlowCache();
+                  break;
+                } catch (e) {
+                  // console.log(`⚠️ XPath non trouvé: ${xp}`);
+                }
+              }
             }
-          }
-        }
 
-        // Si non trouvé via CSS, tenter via XPath par texte
-        if (!nextButton) {
-          console.log('🔍 Recherche du bouton Next par texte (fallback XPath)...');
-          const xpaths = [
-            "//button[normalize-space()='Next']",
-            "//button[normalize-space()='Continue']",
-            "//button[normalize-space()='Suivant']",
-            "//button[normalize-space()='Continuer']",
-            "//button//*[text()[contains(.,'Next')]]/ancestor::button",
-            "//button//*[text()[contains(.,'Continue')]]/ancestor::button"
-          ];
-          for (const xp of xpaths) {
-            try {
-              const btn = await this.driver.wait(
-                until.elementLocated(By.xpath(xp)),
-                3000
+            if (nextButton && !attemptedNextClick) {
+              // Attendre que le bouton soit cliquable (meilleur effort)
+              try {
+                await this.driver.wait(
+                  until.elementIsEnabled(nextButton),
+                  3000
+                );
+              } catch {}
+              // Cliquer le bouton
+              attemptedNextClick = true;
+              await nextButton.click();
+              console.log("🎯 Bouton Next cliqué!");
+              // Attendre la navigation vers planform
+              await this.driver.wait(async () => {
+                const url = await this.driver.getCurrentUrl();
+                return (
+                  url.includes("/signup/planform") || url.includes("/planform")
+                );
+              }, 10000);
+              console.log("✅ Navigation vers planform réussie");
+            } else {
+              console.log(
+                "❌ Bouton Next non trouvé (mode strict): aucun accès direct ni autre clic."
               );
-              nextButton = btn;
-              console.log(`✅ Bouton trouvé avec XPath: ${xp}`);
-              // Sauver dans le cache
-              flowCache['signupNext'] = { selectorType: 'xpath', selector: xp, updatedAt: new Date().toISOString() };
-              saveFlowCache();
-              break;
-            } catch (e) {
-              // console.log(`⚠️ XPath non trouvé: ${xp}`);
+              return {
+                success: false,
+                message:
+                  "Next/Continue introuvable: mode strict sans navigation forcée",
+              };
             }
+          } else {
+            console.log(
+              "🛑 Mode strict: navigation via cache confirmée, aucune autre interaction."
+            );
           }
-        }
-
-        if (nextButton && !attemptedNextClick) {
-          // Attendre que le bouton soit cliquable (meilleur effort)
-          try { await this.driver.wait(until.elementIsEnabled(nextButton), 3000); } catch {}
-          // Cliquer le bouton
-          attemptedNextClick = true;
-          await nextButton.click();
-          console.log('🎯 Bouton Next cliqué!');
-          // Attendre la navigation vers planform
-          await this.driver.wait(async () => {
-            const url = await this.driver.getCurrentUrl();
-            return url.includes('/signup/planform') || url.includes('/planform');
-          }, 10000);
-          console.log('✅ Navigation vers planform réussie');
-        } else {
-          console.log('❌ Bouton Next non trouvé (mode strict): aucun accès direct ni autre clic.');
-          return { success: false, message: 'Next/Continue introuvable: mode strict sans navigation forcée' };
-        }
-      } else {
-        console.log('🛑 Mode strict: navigation via cache confirmée, aucune autre interaction.');
-      }
-          
         } catch (error) {
-          console.log('⚠️ Erreur lors du clic Next:', error.message);
-          console.log('⛔ Mode strict: aucun accès direct ni second clic.');
-          return { success: false, message: `Erreur clic Next (mode strict): ${error.message}` };
+          console.log("⚠️ Erreur lors du clic Next:", error.message);
+          console.log("⛔ Mode strict: aucun accès direct ni second clic.");
+          return {
+            success: false,
+            message: `Erreur clic Next (mode strict): ${error.message}`,
+          };
         }
-        
-        console.log('✅ Contexte planform établi (fin de l\'étape)');
+
+        console.log("✅ Contexte planform établi (fin de l'étape)");
       }
-      
+
       // Attendre que la page soit complètement chargée
       await this.driver.wait(async () => {
-        const readyState = await this.driver.executeScript('return document.readyState');
-        return readyState === 'complete';
+        const readyState = await this.driver.executeScript(
+          "return document.readyState"
+        );
+        return readyState === "complete";
       }, 10000);
-      
-      console.log('📄 Page prête pour l\'appel API');
+
+      console.log("📄 Page prête pour l'appel API");
 
       // Paramètres par défaut
       const defaultParams = {
         flow: "signupSimplicity",
-        mode: "planSelection", 
+        mode: "planSelection",
         action: "planSelectionAction",
         fields: {
           planChoice: { value: "4120" },
-          previousMode: "planSelectionWithContext"
-        }
+          previousMode: "planSelectionWithContext",
+        },
       };
 
       // Merger avec les paramètres fournis
       const finalParams = { ...defaultParams, ...params };
 
       // Construire l'URL de l'API Netflix
-      const apiUrl = 'https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0?' + 
+      const apiUrl =
+        "https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0?" +
         new URLSearchParams({
-          landingURL: '/signup/planform',
-          landingOrigin: 'https://www.netflix.com',
-          inapp: 'false',
-          isConsumptionOnly: 'false',
-          logConsumptionOnly: 'false',
-          languages: 'en-US',
-          netflixClientPlatform: 'browser',
-          method: 'call',
+          landingURL: "/signup/planform",
+          landingOrigin: "https://www.netflix.com",
+          inapp: "false",
+          isConsumptionOnly: "false",
+          logConsumptionOnly: "false",
+          languages: "en-US",
+          netflixClientPlatform: "browser",
+          method: "call",
           callPath: '["aui","moneyball","next"]',
-          falcor_server: '0.1.0'
+          falcor_server: "0.1.0",
         }).toString();
 
       // Récupérer l'authURL dynamique depuis la page
-      let authURL = 'c1.1755167206419.AgiMlOvcAxIgiwRrZHLkx4IzxQFQw5QHkv1uZ2QSEeNcdx7aStj1uf4YAg==';
+      let authURL =
+        "c1.1755167206419.AgiMlOvcAxIgiwRrZHLkx4IzxQFQw5QHkv1uZ2QSEeNcdx7aStj1uf4YAg==";
       try {
         authURL = await this.driver.executeScript(`
           // Chercher l'authURL dans les scripts ou variables globales
@@ -1274,19 +1618,23 @@ try {
           
           return null;
         `);
-        
+
         if (authURL) {
-          console.log('🔑 AuthURL dynamique récupéré');
+          console.log("🔑 AuthURL dynamique récupéré");
         } else {
-          console.log('⚠️ AuthURL dynamique non trouvé, utilisation de la valeur par défaut');
-          authURL = 'c1.1755167206419.AgiMlOvcAxIgiwRrZHLkx4IzxQFQw5QHkv1uZ2QSEeNcdx7aStj1uf4YAg==';
+          console.log(
+            "⚠️ AuthURL dynamique non trouvé, utilisation de la valeur par défaut"
+          );
+          authURL =
+            "c1.1755167206419.AgiMlOvcAxIgiwRrZHLkx4IzxQFQw5QHkv1uZ2QSEeNcdx7aStj1uf4YAg==";
         }
       } catch (error) {
-        console.log('⚠️ Erreur récupération authURL:', error.message);
+        console.log("⚠️ Erreur récupération authURL:", error.message);
       }
 
       // Faire la requête depuis le navigateur avec fetch
-      const result = await this.driver.executeAsyncScript(`
+      const result = await this.driver.executeAsyncScript(
+        `
         const callback = arguments[arguments.length - 1];
         const apiUrl = arguments[0];
         const params = arguments[1];
@@ -1340,25 +1688,28 @@ try {
             status: 0
           });
         });
-      `, apiUrl, finalParams, authURL);
+      `,
+        apiUrl,
+        finalParams,
+        authURL
+      );
 
-      console.log('✅ Réponse API Netflix reçue:', result.status);
-      
+      console.log("✅ Réponse API Netflix reçue:", result.status);
+
       return {
         success: result.ok || result.status === 200,
         status: result.status,
         statusText: result.statusText,
         headers: result.headers,
         data: result.data,
-        fromBrowser: true
+        fromBrowser: true,
       };
-
     } catch (error) {
-      console.error('❌ Erreur appel API Netflix:', error);
+      console.error("❌ Erreur appel API Netflix:", error);
       return {
         success: false,
         message: error.message,
-        fromBrowser: true
+        fromBrowser: true,
       };
     }
   }
