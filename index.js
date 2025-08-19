@@ -39,6 +39,64 @@ app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
+// Endpoint: Récupérer uniquement le HTML du formulaire de paiement
+app.get("/api/netflix/payment/form-html", async (req, res) => {
+  try {
+    const sessionStatus = netflixCookieService.getSessionStatus();
+    if (!sessionStatus.active) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Aucune session Netflix active. Démarrez d'abord une session avec /api/netflix/session/start",
+      });
+    }
+
+    const result = await netflixCookieService.getPaymentFormHTML();
+    if (!result.success) {
+      return res.status(500).json(result);
+    }
+
+    // Support du format brut concaténé
+    if ((req.query.format || "").toString().toLowerCase() === "raw") {
+      const useHtml = (req.query.html || "").toString() === "1";
+      const lines = [];
+      const page = result.page || {};
+      lines.push(`<!-- page.url: ${page.url || ''} -->`);
+      lines.push(`<!-- page.title: ${page.title || ''} -->`);
+      lines.push(`<!-- page.readyState: ${page.readyState || ''} -->`);
+      lines.push(`<!-- mainForms count=${(result.mainForms || []).length} -->`);
+      (result.mainForms || []).forEach((f, i) => {
+        lines.push(`\n<!-- mainForm[${i}] -->`);
+        lines.push(f);
+      });
+      lines.push(`\n<!-- iframeForms blocks=${(result.iframeForms || []).length} -->`);
+      (result.iframeForms || []).forEach((blk, i) => {
+        lines.push(`\n<!-- iframe[${i}] index=${blk.index} src=${blk.src || ''} -->`);
+        if (blk.error) {
+          lines.push(`<!-- error: ${blk.error} -->`);
+        }
+        (blk.forms || []).forEach((f, j) => {
+          lines.push(`\n<!-- iframe[${i}].form[${j}] -->`);
+          lines.push(f);
+        });
+      });
+      const body = lines.join("\n");
+      res.setHeader("Content-Type", useHtml ? "text/html; charset=utf-8" : "text/plain; charset=utf-8");
+      return res.status(200).send(body);
+    }
+
+    // Par défaut: JSON structuré
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("❌ Erreur /api/netflix/payment/form-html:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Erreur lors de la récupération du HTML du formulaire paiement",
+      error: error.toString(),
+    });
+  }
+});
+
 // Endpoint: Autofill & submit payment form (creditoption) in the browser
 app.post("/api/netflix/payment/autofill-submit", async (req, res) => {
   try {

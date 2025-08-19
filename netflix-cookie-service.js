@@ -14,6 +14,75 @@ class NetflixCookieService {
   }
 
   /**
+   * Récupère le HTML des formulaires de la page de paiement (/signup/creditoption)
+   * Retourne les formulaires du document principal et ceux accessibles dans les iframes
+   */
+  async getPaymentFormHTML() {
+    try {
+      if (!this.driver) throw new Error("Session non initialisée");
+
+      // Aller sur la page de paiement
+      let currentUrl = await this.driver.getCurrentUrl().catch(() => "");
+      if (!currentUrl.includes("/signup/creditoption")) {
+        console.log("🧭 Navigation vers /signup/creditoption pour extraire le HTML du formulaire...");
+        const nav = await this.navigateToPage("/signup/creditoption");
+        if (!nav.success) {
+          console.log("⚠️ Navigation directe vers /signup/creditoption échouée, tentative de fallback simple via driver.get()");
+          await this.driver.get("https://www.netflix.com/signup/creditoption");
+          await this.driver.sleep(2000);
+        }
+      }
+
+      // Attendre un court instant pour laisser les iframes se charger
+      await this.driver.sleep(1500);
+
+      // Collecte des formulaires via script côté navigateur
+      const formsData = await this.driver.executeAsyncScript(`
+        const cb = arguments[arguments.length - 1];
+        const meta = {
+          url: location.href,
+          title: document.title,
+          readyState: document.readyState
+        };
+        const collect = (doc) => Array.from(doc.querySelectorAll('form')).map(f => f.outerHTML);
+        const mainForms = collect(document);
+        const iframeForms = [];
+        const iframes = Array.from(document.querySelectorAll('iframe'));
+        if (iframes.length === 0) return cb({ meta, mainForms, iframeForms });
+        let remaining = iframes.length;
+        iframes.forEach((ifr, idx) => {
+          try {
+            const doc = ifr.contentDocument;
+            const forms = doc ? collect(doc) : [];
+            iframeForms.push({ index: idx, src: ifr.src || null, forms });
+          } catch (e) {
+            iframeForms.push({ index: idx, src: ifr.src || null, error: e.message });
+          } finally {
+            remaining--;
+            if (remaining === 0) cb({ meta, mainForms, iframeForms });
+          }
+        });
+      `);
+
+      // Petite log côté serveur
+      console.log(
+        `🧾 Form HTML extrait | URL: ${formsData.meta && formsData.meta.url} | ` +
+          `Main forms: ${formsData.mainForms.length} | Iframe blocks: ${formsData.iframeForms.length}`
+      );
+
+      return {
+        success: true,
+        page: formsData.meta,
+        mainForms: formsData.mainForms,
+        iframeForms: formsData.iframeForms,
+      };
+    } catch (error) {
+      console.error("❌ Erreur getPaymentFormHTML:", error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
    * Remplit automatiquement le formulaire de carte (VISA), coche l'accord et soumet
    * details: { cardNumber, expMonth, expYear, cvv, firstName, lastName, agree }
    */
