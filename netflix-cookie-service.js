@@ -13,6 +13,239 @@ class NetflixCookieService {
     this.cookieUpdateInterval = null;
   }
 
+  // ================= Session/Driver Lifecycle =================
+  async initializeDriver() {
+    try {
+      console.log("🔧 Initialisation du driver Selenium...");
+      const options = new firefox.Options();
+      const headless = String(process.env.HEADLESS || "true").toLowerCase() !== "false";
+      if (headless) {
+        try { options.headless(); } catch { options.addArguments("--headless"); }
+      }
+      options.addArguments("--no-sandbox");
+      options.addArguments("--disable-dev-shm-usage");
+      options.addArguments("--disable-web-security");
+
+      const NETFLIX_UA = process.env.NETFLIX_UA ||
+        "Mozilla/5.0 (X11; Linux x86_64; rv:117.0) Gecko/20100101 Firefox/117.0";
+      options.addArguments(`--user-agent=${NETFLIX_UA}`);
+      options.setPreference("general.useragent.override", NETFLIX_UA);
+
+      this.driver = await new Builder().forBrowser("firefox").setFirefoxOptions(options).build();
+
+      // Timeouts
+      await this.driver.manage().setTimeouts({ implicit: 20000, pageLoad: 20000, script: 30000 });
+
+      // Window only if not headless
+      if (!headless) {
+        await this.driver.manage().window().setRect({ width: 1366, height: 768 });
+      }
+
+      try {
+        const ua = await this.driver.executeScript("return navigator.userAgent;");
+        console.log("🎯 UA détecté dans Firefox:", ua);
+      } catch {}
+
+      console.log(`✅ Driver Selenium initialisé (${headless ? "headless" : "graphique"})`);
+      return true;
+    } catch (error) {
+      console.error("❌ Erreur initialisation driver:", error);
+      throw error;
+    }
+  }
+
+  /** Initialise et ouvre Netflix signup avec diagnostics (partial + final dump) */
+  async initializeSession() {
+    try {
+      console.log("🚀 Initialisation de la session Netflix...");
+      await this.initializeDriver();
+
+      console.log("📱 Navigation vers Netflix signup...");
+      const navigationPromise = this.driver.get("https://www.netflix.com/signup");
+      const navWrapped = navigationPromise.then(() => "navigated").catch(() => "nav_error");
+
+      // Countdown to partial dump (10s)
+      let countdown = 10;
+      console.log(`⏳ Dump partiel dans: ${countdown}s`);
+      const countdownInterval = setInterval(() => {
+        countdown -= 1;
+        if (countdown > 0) console.log(`⏳ Dump partiel dans: ${countdown}s`);
+        else clearInterval(countdownInterval);
+      }, 1000);
+
+      let resolvePartial;
+      const partialFired = new Promise((res) => { resolvePartial = res; });
+      const partialDumpTimer = setTimeout(async () => {
+        try {
+          clearInterval(countdownInterval);
+          const partialHtml = await this.driver.getPageSource();
+          fs.writeFileSync("netflix_partial.html", partialHtml);
+          const partialPng = await this.driver.takeScreenshot();
+          fs.writeFileSync("netflix_partial.png", partialPng, "base64");
+          const preview = (partialHtml || "").slice(0, 4000);
+          console.log("\n===== 🕒 PARTIAL HTML (10s) START (4000 chars) =====\n");
+          console.log(preview);
+          console.log("\n===== 🕒 PARTIAL HTML (10s) END — (contenu tronqué) =====\n");
+          let rs="", ua="", title="", urlNow="";
+          try { rs = await this.driver.executeScript("return document.readyState;"); } catch {}
+          try { ua = await this.driver.executeScript("return navigator.userAgent;"); } catch {}
+          try { title = await this.driver.getTitle(); } catch {}
+          try { urlNow = await this.driver.getCurrentUrl(); } catch {}
+          const htmlLen = (partialHtml || "").length;
+          console.log(`🕒 Dump partiel (10s): readyState=${rs} | URL=${urlNow} | title="${title}" | UA="${ua}" | html=${htmlLen} bytes | fichiers: netflix_partial.html, netflix_partial.png`);
+          if (resolvePartial) resolvePartial("partial");
+        } catch (e) {
+          console.log("⚠️ Impossible de sauvegarder le dump partiel (5s):", e.message);
+        }
+      }, 10000);
+      const timeoutWrapped = new Promise((resolve) => setTimeout(() => resolve("timeout"), 20000));
+
+      const winner = await Promise.race([navWrapped, timeoutWrapped, partialFired]);
+      clearTimeout(partialDumpTimer);
+      clearInterval(countdownInterval);
+
+      if (winner === "navigated") {
+        console.log("✅ Page Netflix chargée (avant 5s)");
+      } else if (winner === "partial") {
+        console.log("⛔ Navigation interrompue après 10s: dump partiel exécuté");
+        return { success: false, message: "Dump partiel déclenché à 10s — attente interrompue", partialDump: true };
+      } else if (winner === "timeout") {
+        console.log("⏰ Timeout 20s atteint avant chargement complet");
+      } else if (winner === "nav_error") {
+        console.log("⚠️ Erreur de navigation détectée avant 5s");
+      }
+
+      // Final dump
+      try {
+        let rs="", ua="", title="", urlNow="";
+        try { rs = await this.driver.executeScript("return document.readyState;"); } catch {}
+        try { ua = await this.driver.executeScript("return navigator.userAgent;"); } catch {}
+        try { title = await this.driver.getTitle(); } catch {}
+        try { urlNow = await this.driver.getCurrentUrl(); } catch {}
+        const html = await this.driver.getPageSource();
+        fs.writeFileSync("netflix.html", html);
+        const screenshot = await this.driver.takeScreenshot();
+        fs.writeFileSync("netflix.png", screenshot, "base64");
+        const htmlLen = (html || "").length;
+        console.log(`📄 Dump final: readyState=${rs} | URL=${urlNow} | title="${title}" | UA="${ua}" | html=${htmlLen} bytes | fichiers: netflix.html, netflix.png`);
+        const finalPreview = (html || "").slice(0, 5000);
+        console.log("\n===== 📄 FINAL HTML START (5000 chars) =====\n");
+        console.log(finalPreview);
+        console.log("\n===== 📄 FINAL HTML END — (contenu tronqué) =====\n");
+      } catch (e) {
+        console.log("⚠️ Impossible de sauvegarder HTML/screenshot:", e.message);
+      }
+
+      await this.driver.sleep(2000);
+      const currentUrl = await this.driver.getCurrentUrl();
+      if (!currentUrl.includes("netflix.com")) throw new Error(`URL inattendue: ${currentUrl}`);
+
+      console.log("🍪 Récupération des cookies initiaux...");
+      await this.updateCookies();
+      this.isSessionActive = true;
+      console.log("✅ Session Netflix initialisée avec succès!");
+
+      this.startCookieMonitoring();
+      this.startSessionKeepAlive();
+
+      return { success: true, message: "Session Netflix active - Fenêtre Firefox ouverte", cookies: this.cookies, url: currentUrl };
+    } catch (error) {
+      console.error("❌ Erreur lors de l'initialisation:", error);
+      return { success: false, message: error.message, cookies: {} };
+    }
+  }
+
+  /** Met à jour les cookies depuis le navigateur */
+  async updateCookies() {
+    try {
+      if (!this.driver) throw new Error("Driver non initialisé");
+      const browserCookies = await this.driver.manage().getCookies();
+      const cookieString = browserCookies.map((c) => `${c.name}=${c.value}`).join("; ");
+      const importantCookies = {};
+      const netflixCookieNames = [
+        "NetflixId","SecureNetflixId","nfvdid","flwssn","gsid","OptanonConsent","sawContext",
+      ];
+      browserCookies.forEach((c) => { if (netflixCookieNames.includes(c.name)) importantCookies[c.name] = c.value; });
+      this.cookies = { cookieString, individual: importantCookies, raw: browserCookies, lastUpdated: new Date().toISOString() };
+      console.log(`🍪 Cookies mis à jour: ${Object.keys(importantCookies).length} cookies Netflix trouvés`);
+      return this.cookies;
+    } catch (error) {
+      console.error("❌ Erreur mise à jour cookies:", error);
+      throw error;
+    }
+  }
+
+  /** Surveillance automatique des cookies */
+  startCookieMonitoring() {
+    console.log("👀 Démarrage surveillance cookies (toutes les 30s)...");
+    this.cookieUpdateInterval = setInterval(async () => {
+      try { if (this.isSessionActive && this.driver) await this.updateCookies(); }
+      catch (e) { console.error("⚠️ Erreur surveillance cookies:", e.message); }
+    }, 30000);
+  }
+
+  /** Keep-alive de la session */
+  startSessionKeepAlive() {
+    console.log("💓 Démarrage keep-alive session (toutes les 5 minutes)...");
+    this.sessionCheckInterval = setInterval(async () => {
+      try {
+        if (this.isSessionActive && this.driver) {
+          const currentUrl = await this.driver.getCurrentUrl();
+          if (!currentUrl.includes("netflix.com")) {
+            console.log("🔄 Retour vers Netflix...");
+            await this.driver.get("https://www.netflix.com/signup");
+            await this.driver.sleep(1000);
+          }
+          await this.driver.executeScript("document.title = document.title;");
+          console.log("💓 Session maintenue active");
+        }
+      } catch (e) {
+        console.error("⚠️ Erreur keep-alive:", e.message);
+      }
+    }, 300000);
+  }
+
+  /** Navigue vers une page spécifique de Netflix */
+  async navigateToPage(path = "/signup") {
+    try {
+      if (!this.driver) throw new Error("Session non initialisée");
+      const url = `https://www.netflix.com${path}`;
+      console.log(`🧭 Navigation vers: ${url}`);
+      await this.driver.get(url);
+      await this.driver.sleep(1000);
+      await this.updateCookies();
+      return { success: true, currentUrl: await this.driver.getCurrentUrl(), cookies: this.cookies };
+    } catch (error) {
+      console.error("❌ Erreur navigation:", error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /** Ferme la session et nettoie les ressources */
+  async closeSession() {
+    try {
+      console.log("🛑 Fermeture de la session Netflix...");
+      if (this.cookieUpdateInterval) clearInterval(this.cookieUpdateInterval);
+      if (this.sessionCheckInterval) clearInterval(this.sessionCheckInterval);
+      if (this.driver) await this.driver.quit();
+      this.isSessionActive = false;
+      this.cookies = {};
+      console.log("✅ Session fermée avec succès");
+      return { success: true, message: "Session fermée" };
+    } catch (error) {
+      console.error("❌ Erreur fermeture session:", error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /** Redémarre la session */
+  async restartSession() {
+    console.log("🔄 Redémarrage de la session...");
+    await this.closeSession();
+    await new Promise((r) => setTimeout(r, 2000));
+    return await this.initializeSession();
+  }
+
   /**
    * Récupère le HTML des formulaires de la page de paiement (/signup/creditoption)
    * Retourne les formulaires du document principal et ceux accessibles dans les iframes
@@ -1232,6 +1465,18 @@ class NetflixCookieService {
       lastCookieUpdate: this.cookies.lastUpdated,
       monitoringActive: !!this.cookieUpdateInterval,
       keepAliveActive: !!this.sessionCheckInterval,
+    };
+  }
+
+  /**
+   * Retourne les cookies actuels sous une forme consommable par l'API
+   */
+  getCurrentCookies() {
+    const hasCookieString = !!(this.cookies && this.cookies.cookieString);
+    return {
+      success: this.isSessionActive && hasCookieString,
+      active: this.isSessionActive,
+      cookies: this.cookies || { cookieString: "", individual: {}, raw: [] },
     };
   }
 }
