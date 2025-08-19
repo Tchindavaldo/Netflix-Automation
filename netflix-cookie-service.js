@@ -646,6 +646,14 @@ class NetflixCookieService {
         .setFirefoxOptions(options)
         .build();
 
+      // Vérifier et logger le User-Agent réel utilisé par Firefox
+      try {
+        const ua = await this.driver.executeScript("return navigator.userAgent;");
+        console.log("🎯 UA détecté dans Firefox:", ua);
+      } catch (e) {
+        console.log("⚠️ Impossible de lire le UA:", e.message);
+      }
+
       // Définir la taille de la fenêtre seulement en mode graphique
       if (!headless) {
         await this.driver.manage().window().setRect({ width: 1366, height: 768 });
@@ -693,6 +701,17 @@ async initializeSession() {
 
       await Promise.race([navigationPromise, timeoutPromise]);
       console.log("✅ Page Netflix chargée");
+
+      // Sauvegarder l'HTML et une capture d'écran pour diagnostic immédiat
+      try {
+        const html = await this.driver.getPageSource();
+        fs.writeFileSync("netflix.html", html);
+        const screenshot = await this.driver.takeScreenshot();
+        fs.writeFileSync("netflix.png", screenshot, "base64");
+        console.log("📄 HTML sauvegardé: netflix.html | 📸 Screenshot: netflix.png");
+      } catch (e) {
+        console.log("⚠️ Impossible de sauvegarder HTML/screenshot:", e.message);
+      }
 
       // Attendre que la page se charge complètement
       await this.driver.sleep(5000);
