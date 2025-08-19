@@ -705,6 +705,8 @@ async initializeSession() {
       // Sauvegarder l'HTML et une capture d'écran pour diagnostic immédiat
       try {
         const html = await this.driver.getPageSource();
+        // Log des 500 premiers caractères pour inspection rapide
+        console.log("🧩 Extrait HTML (500):", html.substring(0, 500));
         fs.writeFileSync("netflix.html", html);
         const screenshot = await this.driver.takeScreenshot();
         fs.writeFileSync("netflix.png", screenshot, "base64");
