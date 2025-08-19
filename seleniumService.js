@@ -19,7 +19,9 @@ class SeleniumService {
 
       // Contrôle via variable d'environnement: HEADLESS=false pour voir la fenêtre
       const headlessEnv = process.env.HEADLESS;
-      const headless = headlessEnv ? headlessEnv.toLowerCase() !== "false" : true;
+      const headless = headlessEnv
+        ? headlessEnv.toLowerCase() !== "false"
+        : true;
       if (headless) {
         options.headless();
       }
