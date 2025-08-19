@@ -592,9 +592,12 @@ class NetflixCookieService {
     }
 
     // Soumission conditionnelle: options.submit === false => on ne clique pas
+    const creditPath = "/signup/creditoption";
     const shouldSubmit = options && Object.prototype.hasOwnProperty.call(options, 'submit')
       ? !!options.submit
       : true; // défaut: on soumet
+
+    let redirected = false;
     if (shouldSubmit) {
       const submitEl = await clickPreferredThenAuto(preferred.submit, generic.submit);
       if (!submitEl) {
@@ -604,39 +607,63 @@ class NetflixCookieService {
         try {
           await this.driver.wait(async () => {
             const url = await this.driver.getCurrentUrl();
-            return !url.includes("/signup/creditoption");
+            return !url.includes(creditPath);
           }, 10000);
+          redirected = true;
           console.log("✅ Soumission effectuée (navigation détectée)");
         } catch {
           console.log("ℹ️ Soumission cliquée, pas de navigation rapide détectée (peut être inline)");
+          try {
+            const url = await this.driver.getCurrentUrl();
+            redirected = !url.includes(creditPath);
+          } catch {}
         }
       }
+      // Par conception actuelle: fermer toujours après submit
+      const finalUrl = await this.driver.getCurrentUrl().catch(() => "");
+      try {
+        if (this.cookieUpdateInterval) { clearInterval(this.cookieUpdateInterval); this.cookieUpdateInterval = null; }
+        if (this.sessionCheckInterval) { clearInterval(this.sessionCheckInterval); this.sessionCheckInterval = null; }
+        await this.driver.quit();
+        this.driver = null;
+        this.isSessionActive = false;
+        console.log("🧹 Navigateur fermé après tentative de soumission");
+      } catch (e) {
+        console.log("⚠️ Impossible de fermer le navigateur proprement:", e.message);
+      }
+      return { success: true, redirected, url: finalUrl, closed: true };
     } else {
       console.log('📝 Remplissage uniquement demandé: pas de clic sur "Payer".');
-    }
+      // Attendre passivement une redirection (si la page redirige après auto-remplissage)
+      try {
+        await this.driver.wait(async () => {
+          const url = await this.driver.getCurrentUrl();
+          return !url.includes(creditPath);
+        }, 15000);
+        redirected = true;
+        console.log("✅ Redirection détectée après remplissage (sans submit)");
+      } catch {
+        console.log("ℹ️ Pas de redirection automatique détectée (sans submit)");
+      }
 
-    const beforeUrl = await this.driver.getCurrentUrl();
-    // Fermer le navigateur avant de répondre succès
-    try {
-      if (this.cookieUpdateInterval) {
-        clearInterval(this.cookieUpdateInterval);
-        this.cookieUpdateInterval = null;
+      const finalUrl = await this.driver.getCurrentUrl().catch(() => "");
+      if (redirected) {
+        // Fermer le navigateur seulement si redirection confirmée
+        try {
+          if (this.cookieUpdateInterval) { clearInterval(this.cookieUpdateInterval); this.cookieUpdateInterval = null; }
+          if (this.sessionCheckInterval) { clearInterval(this.sessionCheckInterval); this.sessionCheckInterval = null; }
+          await this.driver.quit();
+          this.driver = null;
+          this.isSessionActive = false;
+          console.log("🧹 Navigateur fermé après redirection réussie (sans submit)");
+        } catch (e) {
+          console.log("⚠️ Impossible de fermer le navigateur proprement:", e.message);
+        }
+        return { success: true, redirected: true, url: finalUrl, closed: true };
       }
-      if (this.sessionCheckInterval) {
-        clearInterval(this.sessionCheckInterval);
-        this.sessionCheckInterval = null;
-      }
-      await this.driver.quit();
-      this.driver = null;
-      this.isSessionActive = false;
-      console.log("🧹 Navigateur fermé après redirection réussie");
-    } catch (e) {
-      console.log(
-        "⚠️ Impossible de fermer le navigateur proprement:",
-        e.message
-      );
+      // Laisser la session ouverte pour inspection manuelle
+      return { success: true, redirected: false, url: finalUrl, closed: false };
     }
-    return { success: true, redirected: true, url: beforeUrl };
   }
 
   /**
