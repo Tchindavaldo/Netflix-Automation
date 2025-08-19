@@ -632,6 +632,14 @@ class NetflixCookieService {
       options.addArguments("--disable-dev-shm-usage");
       options.addArguments("--disable-web-security");
 
+      // Définir un User-Agent spécifique (Netflix)
+      const NETFLIX_UA =
+        "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0";
+      // Argument CLI (peut ne pas être pris en compte selon les versions)
+      options.addArguments(`--user-agent=${NETFLIX_UA}`);
+      // Préférence Firefox pour garantir la prise en compte
+      options.setPreference("general.useragent.override", NETFLIX_UA);
+
       // Construire le driver Firefox
       this.driver = await new Builder()
         .forBrowser("firefox")

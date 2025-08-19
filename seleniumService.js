@@ -32,6 +32,14 @@ class SeleniumService {
       options.addArguments("--disable-dev-shm-usage");
       options.addArguments("--disable-web-security");
 
+      // Définir un User-Agent spécifique (Netflix)
+      // Remarque: Firefox ne supporte pas toujours --user-agent en ligne de commande,
+      // on applique aussi la préférence pour garantir la prise en compte.
+      const NETFLIX_UA =
+        "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0";
+      options.addArguments(`--user-agent=${NETFLIX_UA}`);
+      options.setPreference("general.useragent.override", NETFLIX_UA);
+
       // Construire le driver Firefox
       this.driver = await new Builder()
         .forBrowser("firefox")
