@@ -39,6 +39,52 @@ app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
+// Endpoint: Screenshot de la page actuelle
+app.get("/api/netflix/screenshot", async (req, res) => {
+  try {
+    const sessionStatus = netflixCookieService.getSessionStatus();
+    if (!sessionStatus.active) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Aucune session Netflix active. Démarrez d'abord une session avec /api/netflix/session/start",
+      });
+    }
+
+    const savePath = (req.query.path || "").toString().trim() || null;
+    const wantDownload = (req.query.download || "").toString() === "1";
+    const forceBase64 = (req.query.base64 || "").toString() === "1";
+
+    const result = await netflixCookieService.takeScreenshot(
+      savePath ? { savePath } : {}
+    );
+
+    if (!result.success) {
+      return res.status(500).json(result);
+    }
+
+    if (wantDownload && result.base64 && !forceBase64) {
+      const img = Buffer.from(result.base64, "base64");
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader(
+        "Content-Disposition",
+        `inline; filename="netflix_screenshot_${Date.now()}.png"`
+      );
+      return res.status(200).send(img);
+    }
+
+    return res.status(200).json({
+      success: true,
+      saved: !!result.path,
+      path: result.path || null,
+      base64: result.base64,
+    });
+  } catch (error) {
+    console.error("❌ Erreur /api/netflix/screenshot:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Endpoint: Récupérer uniquement le HTML du formulaire de paiement
 app.get("/api/netflix/payment/form-html", async (req, res) => {
   try {

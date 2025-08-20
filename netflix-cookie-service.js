@@ -1496,6 +1496,34 @@ class NetflixCookieService {
   }
 
   /**
+   * Capture un screenshot de la page actuelle.
+   * options: { savePath?: string }
+   * Retourne { success, base64, path }
+   */
+  async takeScreenshot(options = {}) {
+    try {
+      if (!this.driver) throw new Error("Session non initialisée");
+      const b64 = await this.driver.takeScreenshot();
+      let outPath = null;
+      const savePath = options && options.savePath ? String(options.savePath) : null;
+      if (savePath) {
+        try {
+          const dir = path.dirname(savePath);
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(savePath, b64, 'base64');
+          outPath = savePath;
+        } catch (e) {
+          console.log('⚠️ Impossible d\'écrire le screenshot:', e.message);
+        }
+      }
+      return { success: true, base64: b64, path: outPath };
+    } catch (error) {
+      console.error('❌ Erreur screenshot:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
    * Retourne les cookies actuels sous une forme consommable par l'API
    */
   getCurrentCookies() {
