@@ -1,57 +1,78 @@
-# Étape 1 : Choisir une image de base avec Node.js
+# Étape 1 : Image de base avec Node.js
 FROM node:18
 
-# Étape 2 : Mettre à jour et installer quelques dépendances de base (certaines seront complétées par "npx playwright install-deps")
+# Étape 2 : Installer Firefox et les dépendances pour Selenium
 RUN apt-get update && apt-get install -y \
-       wget \
-       libx11-dev \
-       libxkbfile-dev \
-       libsecret-1-dev \
-       libnss3-dev \
-       libgdk-pixbuf2.0-dev \
-       libdbus-1-dev \
-       libxtst6 \
-       libatk1.0-0 \
-       libatk-bridge2.0-0 \
-       libcups2 \
-       libdrm2 \
-       libxkbcommon0 \
-       libxcomposite1 \
-       libxdamage1 \
-       libxfixes3 \
-       libxrandr2 \
-       libgbm1 \
-       libasound2 \
-       libatspi2.0-0 \
-       libx11-xcb1 \
-       libxcursor1 \
-       libgtk-3-0 \
-       && rm -rf /var/lib/apt/lists/*
+    firefox-esr \
+    wget \
+    curl \
+    ca-certificates \
+    # Dépendances pour Firefox et Selenium
+    libgtk-3-0 \
+    libdbus-glib-1-2 \
+    libxt6 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxi6 \
+    libxtst6 \
+    libnss3 \
+    libcups2 \
+    libxss1 \
+    libxrandr2 \
+    libasound2 \
+    libpangocairo-1.0-0 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libgbm1 \
+    libdrm2 \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/*
 
-# Étape 3 : Définir le répertoire de travail dans le conteneur
+# Étape 3 : Définir le répertoire de travail
 WORKDIR /app
 
-# Étape 4 : Copier package.json et package-lock.json dans le conteneur
+# Étape 4 : Copier le GeckoDriver local et l'installer
+COPY geckodriver-v0.33.0-linux64.tar.gz /tmp/
+RUN tar -xzf /tmp/geckodriver-v0.33.0-linux64.tar.gz -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/geckodriver && \
+    rm /tmp/geckodriver-v0.33.0-linux64.tar.gz
+
+# Étape 5 : Vérifier les versions installées
+RUN firefox-esr --version && geckodriver --version
+
+# Étape 6 : Copier les fichiers de dépendances
 COPY package.json package-lock.json ./
 
-# Étape 5 : Installer les dépendances de l'application
-RUN npm install
+# Étape 7 : Installer les dépendances Node.js
+RUN npm ci --only=production
 
-# Étape 6 : Définir la variable d'environnement pour que Playwright installe les navigateurs dans node_modules
-ENV PLAYWRIGHT_BROWSERS_PATH=0
-
-# Étape 7 : Installer Playwright et télécharger les navigateurs
-RUN npm install playwright && npx playwright install
-
-# Étape 8 : Installer les dépendances système supplémentaires requises par les navigateurs via Playwright
-RUN npx playwright install-deps
-
-# Étape 9 : Copier le reste du code source dans le conteneur
+# Étape 8 : Copier le code source
 COPY . .
 
-# Exposer le port 8080
-EXPOSE 8080
+# Étape 9 : Créer les dossiers nécessaires
+RUN mkdir -p snapshots screenshots logs
 
+# Étape 10 : Variables d'environnement
+ENV NODE_ENV=production
+ENV HEADLESS=true
+ENV PORT=8080
+ENV DISPLAY=:99
 
-# Étape 11 : Démarrer l'application
-CMD ["npm", "start"]
+# Étape 11 : Exposer le port
+EXPOSE 5000
+
+# Étape 12 : Healthcheck pour vérifier que l'API répond
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" || exit 1
+
+# Étape 13 : Démarrer Xvfb en arrière-plan et lancer l'application en production
+CMD Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset & \
+    sleep 2 && \
+    echo "✅ Xvfb démarré" && \
+    echo "🚀 Démarrage de l'application en mode production..." && \
+    npm run start:prod

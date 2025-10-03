@@ -1,2 +1,83 @@
+# Dépendances
 node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Navigateurs locaux
 .local-browsers
+
+# Fichiers de développement
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+
+# Documentation
+*.md
+!README.md
+docs/
+CHANGELOG*.md
+REFACTORING*.md
+ENDPOINT*.md
+API_ROUTES.md
+FINAL_SUMMARY.md
+
+# Fichiers temporaires
+*.log
+*.tmp
+*.temp
+logs/
+tmp/
+
+# Snapshots et captures d'écran (générés à l'exécution)
+snapshots/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.html
+
+# Tests
+tests/
+tests-examples/
+test-*.js
+*.test.js
+*.spec.js
+playwright.config.ts
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Fichiers Python et autres langages
+*.py
+*.pyc
+__pycache__/
+
+# Autres services non utilisés
+puppeteerService.js
+playwrightService.js
+selenium-open-creditoption.js
+selenium-request-logger.js
+netflix-request-logger.js
+start-logger.js
+test-*.js
+fetch.js
+
+# Firebase
+firebase.json
+
+# Dockerfile
+Dockerfile
+.dockerignore
+
+# Données de sélecteurs
+selectors/
+
+# Fichiers de configuration locaux
+.prettierrc
+.eslintrc
