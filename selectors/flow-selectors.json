@@ -1,7 +1,7 @@
 {
   "signupNext": {
-    "selectorType": "css",
-    "selector": "button[data-uia=\"continue-button\"]",
-    "updatedAt": "2025-08-18T07:57:53.958Z"
+    "selectorType": "xpath",
+    "selector": "//button[normalize-space()='Next']",
+    "updatedAt": "2025-10-03T12:34:11.953Z"
   }
 }
