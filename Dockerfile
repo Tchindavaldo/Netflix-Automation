@@ -46,10 +46,10 @@ RUN tar -xzf /tmp/geckodriver-v0.33.0-linux64.tar.gz -C /usr/local/bin/ && \
 RUN firefox-esr --version && geckodriver --version
 
 # Étape 6 : Copier les fichiers de dépendances
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
 # Étape 7 : Installer les dépendances Node.js
-RUN npm ci --only=production
+RUN npm install --production
 
 # Étape 8 : Copier le code source
 COPY . .
