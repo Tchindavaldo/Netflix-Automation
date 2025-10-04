@@ -42,13 +42,13 @@ class BrowserService {
 
       // Timeouts
       await driver.manage().setTimeouts({
-        // implicit: 20000,
-        // pageLoad: 20000,
-        // script: 30000,
+        implicit: 20000,
+        pageLoad: 20000,
+        script: 30000,
 
-        implicit: 200000,
-        pageLoad: 200000,
-        script: 300000,
+        // implicit: 200000,
+        // pageLoad: 200000,
+        // script: 300000,
       });
 
       // Window size only if not headless
@@ -65,7 +65,7 @@ class BrowserService {
       } catch {}
 
       console.log(
-        `✅ Driver Selenium initialisé (${headless ? "headless" : "graphique"})`,
+        `✅ Driver Selenium initialisé (${headless ? "headless" : "graphique"})`
       );
       return driver;
     } catch (error) {

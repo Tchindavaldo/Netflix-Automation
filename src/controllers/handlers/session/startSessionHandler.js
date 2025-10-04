@@ -11,8 +11,8 @@ const startSessionHandler = async (req, res) => {
       success: false,
       message: "Délai d'attente dépassé lors du démarrage de la session",
     });
-    // }, 60000);
-  }, 60000000);
+  }, 60000);
+  // }, 60000000);
 
   try {
     console.log("Démarrage d'une nouvelle session Netflix...");
