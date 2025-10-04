@@ -42,9 +42,13 @@ class BrowserService {
 
       // Timeouts
       await driver.manage().setTimeouts({
-        implicit: 20000,
-        pageLoad: 20000,
-        script: 30000,
+        // implicit: 20000,
+        // pageLoad: 20000,
+        // script: 30000,
+
+        implicit: 200000,
+        pageLoad: 200000,
+        script: 300000,
       });
 
       // Window size only if not headless

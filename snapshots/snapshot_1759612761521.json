@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-10-04T21:19:21.670Z",
+  "sessionId": "sess_1759612603789_vy9dqlxzt",
+  "url": "https://www.netflix.com/signup/registration",
+  "title": "Netflix",
+  "readyState": "complete",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:117.0) Gecko/20100101 Firefox/117.0",
+  "htmlLength": 509774,
+  "files": {
+    "html": "snapshot_1759612761521.html",
+    "screenshot": "snapshot_1759612761521.png"
+  }
+}

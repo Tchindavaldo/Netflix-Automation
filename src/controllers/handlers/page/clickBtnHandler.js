@@ -1,15 +1,30 @@
-const { NetflixSessionManager } = require("../../../services/netflix/NetflixSessionManager");
+const {
+  NetflixSessionManager,
+} = require("../../../services/netflix/NetflixSessionManager");
 const { By, until } = require("selenium-webdriver");
 
 /**
- * Gestionnaire pour cliquer sur un bouton et naviguer vers la page de plan
+ * Gestionnaire pour cliquer sur un bouton
  * @param {Object} req - Requête HTTP
  * @param {Object} res - Réponse HTTP
  */
-const goToPlanHandler = async (req, res) => {
+const clickBtnHandler = async (req, res) => {
   try {
-    const sessionId = req.query.sessionId || req.headers["x-session-id"];
+    const sessionId =
+      req.body.sessionId || req.query.sessionId || req.headers["x-session-id"];
     const buttonSelector = req.body.buttonSelector || req.query.buttonSelector;
+
+    // Log pour déboguer
+    console.log("📥 Paramètres reçus:", {
+      sessionId,
+      buttonSelector,
+      body: req.body,
+      query: req.query,
+      headers: {
+        "x-session-id": req.headers["x-session-id"],
+        "content-type": req.headers["content-type"],
+      },
+    });
 
     // Validation du sessionId
     if (!sessionId) {
@@ -46,10 +61,13 @@ const goToPlanHandler = async (req, res) => {
     const urlBefore = await driver.getCurrentUrl();
 
     // Attendre que le bouton soit présent
-    const button = await driver.wait(
-      until.elementLocated(By.css(buttonSelector)),
-      10000
-    ).catch(async (error) => {
+    let button;
+    try {
+      button = await driver.wait(
+        until.elementLocated(By.css(buttonSelector)),
+        10000,
+      );
+    } catch (error) {
       console.error(`❌ Bouton non trouvé: ${buttonSelector}`);
 
       // Capturer l'état actuel pour debug
@@ -62,13 +80,9 @@ const goToPlanHandler = async (req, res) => {
         debug: {
           currentUrl,
           selector: buttonSelector,
-          pageSourceLength: pageSource.length
-        }
+          pageSourceLength: pageSource.length,
+        },
       });
-    });
-
-    if (!button) {
-      return; // La réponse a déjà été envoyée dans le catch
     }
 
     // Attendre que le bouton soit cliquable
@@ -103,7 +117,7 @@ const goToPlanHandler = async (req, res) => {
       message: "Clic effectué avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire goToPlan:", error);
+    console.error("Erreur dans le gestionnaire clickBtn:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors du clic sur le bouton",
@@ -112,4 +126,4 @@ const goToPlanHandler = async (req, res) => {
   }
 };
 
-module.exports = goToPlanHandler;
+module.exports = clickBtnHandler;

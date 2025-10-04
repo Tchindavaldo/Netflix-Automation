@@ -1,0 +1,12 @@
+{
+  "buttons": {
+    "goToPlan": [
+      "button[data-uia=\"cta-button\"]",
+      "button[type=\"button\"]",
+      "button.ea2wixt2"
+    ],
+    "goToEmail": ["button[data-uia=\"cta-plan-selection\"]", "button[data-uia=\"cta-continue-registration\"]","button.ea2wixt2"],
+    "goToPaymentPicker": ["button[data-uia=\"cta-registration\"]"],
+    "validatePayment": ["button[data-uia=\"action-submit-payment\"]"]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "creditCardForm": {
+    "cardNumber": "input[data-uia=\"field-creditCardNumber\"]",
+    "expirationDate": "input[data-uia=\"field-creditExpirationMonth\"]",
+    "securityCode": "input[data-uia=\"field-creditCardSecurityCode\"]",
+    "cardName": "input[data-uia=\"field-name\"]",
+    "acceptTerms": "input[data-uia=\"field-hasAcceptedTermsOfUse\"]"
+  }
+}

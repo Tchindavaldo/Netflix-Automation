@@ -1,5 +1,5 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
 const configureExpress = () => {
   const app = express();
@@ -13,8 +13,8 @@ const configureExpress = () => {
     cors({
       origin: "*",
       methods: ["GET", "POST"],
-      allowedHeaders: ["Content-Type"],
-    })
+      allowedHeaders: ["Content-Type", "x-session-id"],
+    }),
   );
 
   return app;

@@ -1,0 +1,7 @@
+{
+  "fields": {
+    "email": "input[data-uia=\"field-email\"]",
+    "password": "input[data-uia=\"field-password\"]",
+    "emailPreference": "input[data-uia=\"field-emailPreference\"]"
+  }
+}

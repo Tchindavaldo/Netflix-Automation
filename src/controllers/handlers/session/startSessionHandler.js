@@ -1,4 +1,4 @@
-const startSession = require('../../../services/netflix/session/startSession');
+const startSession = require("../../../services/netflix/session/startSession");
 
 /**
  * Gestionnaire pour démarrer une session Netflix
@@ -9,28 +9,29 @@ const startSessionHandler = async (req, res) => {
   const timeout = setTimeout(() => {
     res.status(408).json({
       success: false,
-      message: "Délai d'attente dépassé lors du démarrage de la session"
+      message: "Délai d'attente dépassé lors du démarrage de la session",
     });
-  }, 60000);
+    // }, 60000);
+  }, 60000000);
 
   try {
     console.log("Démarrage d'une nouvelle session Netflix...");
     const result = await startSession();
-    
+
     clearTimeout(timeout);
-    
+
     if (!result.success) {
       return res.status(500).json({
         success: false,
         message: result.message || "Échec du démarrage de la session",
-        error: result.error
+        error: result.error,
       });
     }
 
     res.status(200).json({
       success: true,
       message: result.message || "Session démarrée avec succès",
-      sessionId: result.sessionId
+      sessionId: result.sessionId,
     });
   } catch (error) {
     clearTimeout(timeout);
@@ -38,7 +39,7 @@ const startSessionHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors du démarrage de la session",
-      error: error.toString()
+      error: error.toString(),
     });
   }
 };
