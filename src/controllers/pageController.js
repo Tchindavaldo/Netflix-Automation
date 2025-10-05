@@ -1,4 +1,5 @@
 const saveSnapshotHandler = require("./handlers/page/saveSnapshotHandler");
+const downloadSnapshotHandler = require("./handlers/page/downloadSnapshotHandler");
 const clickBtnHandler = require("./handlers/page/clickBtnHandler");
 const selectPlanHandler = require("./handlers/page/selectPlanHandler");
 const fillFormHandler = require("./handlers/form/fillFormHandler");
@@ -15,6 +16,9 @@ const goBackHandler = require("./handlers/page/goBackHandler");
 const pageController = {
   // Sauvegarder un snapshot complet de la page
   saveSnapshot: saveSnapshotHandler,
+
+  // Télécharger les fichiers d'un sous-dossier de snapshots
+  downloadSnapshot: downloadSnapshotHandler,
 
   // Cliquer sur un bouton
   clickBtn: clickBtnHandler,

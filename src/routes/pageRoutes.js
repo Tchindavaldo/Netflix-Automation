@@ -5,6 +5,11 @@ const pageController = require("../controllers/pageController");
 // Sauvegarder un snapshot complet de la page (HTML + screenshot + métadonnées)
 router.post("/page/snapshot", pageController.saveSnapshot);
 
+// Télécharger les fichiers d'un sous-dossier de snapshots (ZIP)
+// Supporte deux formats: /download/nom_dossier OU /download?folderName=nom_dossier
+router.get("/page/snapshot/download/:folderName", pageController.downloadSnapshot);
+router.get("/page/snapshot/download", pageController.downloadSnapshot);
+
 // Cliquer sur un bouton
 router.post("/page/clickBtn", pageController.clickBtn);
 

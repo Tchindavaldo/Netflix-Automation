@@ -6,11 +6,21 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const app = require('./src/app');
-const PORT = process.env.PORT || 3000;
+const http = require('http');
+const socket = require('./socket');
+
+const HOST = '0.0.0.0';
+const PORT = process.env.PORT || 5000;
+
+// Création du serveur HTTP
+const server = http.createServer(app);
+
+// Configuration de Socket.io
+socket.init(server);
 
 // Démarrage du serveur
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`🚀 Serveur lancé sur http://localhost:${PORT}`);
   console.log(`Environnement: ${process.env.NODE_ENV || 'développement'}`);
   console.log(`Mode headless: ${process.env.HEADLESS === 'true' ? 'activé' : 'désactivé'}`);
 });
@@ -18,12 +28,10 @@ const server = app.listen(PORT, () => {
 // Gestion des erreurs non capturées
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // En production, vous pourriez vouloir redémarrer le processus ici
 });
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-  // En production, vous pourriez vouloir redémarrer le processus ici
   process.exit(1);
 });
 

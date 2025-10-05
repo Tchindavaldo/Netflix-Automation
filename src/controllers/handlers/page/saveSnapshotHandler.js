@@ -17,10 +17,14 @@ const saveSnapshotHandler = async (req, res) => {
       });
     }
 
+    // Récupérer le nom du sous-dossier depuis le body OU query
+    const folderName = req.body.folderName || req.body.folder_name || req.query.folderName || req.query.folder_name;
+
     // Options de sauvegarde depuis la requête
     const options = {
       prefix: req.body.prefix || req.query.prefix || "snapshot",
       directory: req.body.directory || req.query.directory || undefined,
+      folderName: folderName, // Ajout du nom du sous-dossier
     };
 
     const result = await pageSnapshotService.savePageSnapshot(sessionId, options);
@@ -32,6 +36,7 @@ const saveSnapshotHandler = async (req, res) => {
     res.status(200).json({
       success: true,
       sessionId,
+      folderName: result.folderName, // Retourner le nom du dossier utilisé
       files: result.files,
       metadata: result.metadata,
       message: "Snapshot sauvegardé avec succès",

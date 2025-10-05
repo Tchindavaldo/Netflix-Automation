@@ -6,13 +6,15 @@ const startSession = require("../../../services/netflix/session/startSession");
  * @param {Object} res - Réponse HTTP
  */
 const startSessionHandler = async (req, res) => {
+  // Timeout dynamique selon l'environnement (dev: 600s, prod: 60s)
+  const sessionTimeout = parseInt(process.env.SESSION_TIMEOUT || 60000);
+  
   const timeout = setTimeout(() => {
     res.status(408).json({
       success: false,
       message: "Délai d'attente dépassé lors du démarrage de la session",
     });
-  }, 60000);
-  // }, 60000000);
+  }, sessionTimeout);
 
   try {
     console.log("Démarrage d'une nouvelle session Netflix...");

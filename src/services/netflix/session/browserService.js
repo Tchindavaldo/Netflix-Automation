@@ -40,15 +40,15 @@ class BrowserService {
         .setFirefoxOptions(options)
         .build();
 
-      // Timeouts
-      await driver.manage().setTimeouts({
-        implicit: 20000,
-        pageLoad: 20000,
-        script: 30000,
+      // Timeouts dynamiques selon l'environnement
+      const implicitTimeout = parseInt(process.env.SELENIUM_IMPLICIT_TIMEOUT || 20000);
+      const pageLoadTimeout = parseInt(process.env.SELENIUM_PAGE_LOAD_TIMEOUT || 20000);
+      const scriptTimeout = parseInt(process.env.SELENIUM_SCRIPT_TIMEOUT || 30000);
 
-        // implicit: 200000,
-        // pageLoad: 200000,
-        // script: 300000,
+      await driver.manage().setTimeouts({
+        implicit: implicitTimeout,
+        pageLoad: pageLoadTimeout,
+        script: scriptTimeout,
       });
 
       // Window size only if not headless

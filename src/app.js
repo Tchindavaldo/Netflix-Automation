@@ -1,11 +1,25 @@
 const express = require("express");
-const configureExpress = require("./config/express");
+const cors = require("cors");
 const healthRouter = require("./routes/health");
 const sessionRouter = require("./routes/sessionRoutes");
 const cookieRouter = require("./routes/cookieRoutes");
 const pageRouter = require("./routes/pageRoutes");
 
-const app = configureExpress();
+// Configuration de l'application Express
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Configuration CORS
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "x-session-id"],
+  }),
+);
 
 // Routes
 app.use("/health", healthRouter);

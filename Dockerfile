@@ -64,7 +64,7 @@ ENV PORT=8080
 ENV DISPLAY=:99
 
 # Étape 11 : Exposer le port
-EXPOSE 5000
+EXPOSE 8080
 
 # Étape 12 : Healthcheck pour vérifier que l'API répond
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

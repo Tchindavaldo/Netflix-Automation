@@ -33,7 +33,15 @@ class PageSnapshotService {
 
       const timestamp = Date.now();
       const prefix = options.prefix || "snapshot";
-      const customDir = options.directory || this.snapshotsDir;
+      
+      // Gérer le sous-dossier si un folderName est fourni
+      let customDir = options.directory || this.snapshotsDir;
+      let folderName = null;
+      
+      if (options.folderName) {
+        folderName = options.folderName;
+        customDir = path.join(this.snapshotsDir, folderName);
+      }
 
       // Créer le dossier si nécessaire
       if (!fs.existsSync(customDir)) {
@@ -103,6 +111,7 @@ class PageSnapshotService {
 
       return {
         success: true,
+        folderName: folderName, // Retourner le nom du sous-dossier utilisé
         files: {
           html: htmlPath,
           screenshot: screenshotPath,
