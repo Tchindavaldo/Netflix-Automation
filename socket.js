@@ -1,4 +1,4 @@
-const notificationHandler = require('./services/notification/socket/notificationHandler');
+const notificationHandler = require('./src/services/notification/socket/notificationHandler');
 
 // src/socket.js
 let io;
