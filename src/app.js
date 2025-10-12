@@ -4,6 +4,10 @@ const healthRouter = require("./routes/health");
 const sessionRouter = require("./routes/sessionRoutes");
 const cookieRouter = require("./routes/cookieRoutes");
 const pageRouter = require("./routes/pageRoutes");
+const paymentRouter = require("./routes/paymentRoutes");
+const userRouter = require("./routes/userRoutes");
+const planActivationRouter = require("./routes/planActivationRoutes");
+const subscriptionRouter = require("./routes/subscriptionRoutes");
 
 // Configuration de l'application Express
 const app = express();
@@ -12,12 +16,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuration CORS
+// Configuration CORS - Accepte tout
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "x-session-id"],
+    origin: "*", // Accepte toutes les origines
+    methods: "*", // Accepte toutes les méthodes HTTP
+    allowedHeaders: "*", // Accepte tous les headers
+    exposedHeaders: "*", // Expose tous les headers
+    credentials: true, // Autorise les credentials
   }),
 );
 
@@ -26,6 +32,10 @@ app.use("/health", healthRouter);
 app.use("/api/netflix/session", sessionRouter);
 app.use("/api/netflix", cookieRouter);
 app.use("/api/netflix", pageRouter);
+app.use("/api/payment", paymentRouter);
+app.use("/api/users", userRouter);
+app.use("/api/plan-activation", planActivationRouter);
+app.use("/api/subscription", subscriptionRouter);
 
 // Gestion des erreurs 404
 app.use((req, res) => {
