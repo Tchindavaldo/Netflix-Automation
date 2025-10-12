@@ -7,9 +7,10 @@ const RetryHelper = require('../helpers/retryHelper');
  * @param {string} baseUrl - URL de base de l'API
  * @param {string} sessionId - ID de la session
  * @param {string} planActivationId - ID de l'activation du plan
+ * @param {string} userId - ID de l'utilisateur (pour traçabilité)
  * @returns {Promise<Object>} - Résultat du clic
  */
-async function clickToEmailPassword(baseUrl, sessionId, planActivationId) {
+async function clickToEmailPassword(baseUrl, sessionId, planActivationId, userId) {
   console.log('📍 Étape 5: Deuxième clic vers la page email/mot de passe...');
   
   const executeStep = async () => {
@@ -52,6 +53,7 @@ async function clickToEmailPassword(baseUrl, sessionId, planActivationId) {
   return await RetryHelper.executeWithRetry(executeStep, {
     stepName: 'clickToEmailPassword',
     errorContext: {
+      userId,
       sessionId,
       planActivationId,
       buttonSelector: selectors.navigation.nextToEmailPassword

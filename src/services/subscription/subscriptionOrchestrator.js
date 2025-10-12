@@ -24,6 +24,7 @@ class SubscriptionOrchestrator {
    * @param {string} subscriptionData.email - Email de l'utilisateur
    * @param {string} subscriptionData.motDePasse - Mot de passe de l'utilisateur
    * @param {string} subscriptionData.planActivationId - ID de l'activation du plan
+   * @param {string} subscriptionData.userId - ID de l'utilisateur (pour traçabilité)
    * @param {Object} subscriptionData.cardInfo - Informations de la carte
    * @param {string} subscriptionData.cardInfo.cardNumber - Numéro de carte
    * @param {string} subscriptionData.cardInfo.expirationDate - Date d'expiration (MM/YY)
@@ -37,6 +38,8 @@ class SubscriptionOrchestrator {
 
     try {
       console.log('\n🚀 Démarrage du processus d\'abonnement Netflix\n');
+      console.log(`👤 UserId: ${subscriptionData.userId}`);
+      console.log(`🏷️ PlanActivationId: ${subscriptionData.planActivationId}`);
       console.log(`📦 Plan sélectionné: ${subscriptionData.typeDePlan}`);
       console.log(`📧 Email: ${subscriptionData.email}\n`);
 
@@ -52,7 +55,12 @@ class SubscriptionOrchestrator {
       console.log('');
 
       // Étape 2: Naviguer vers la sélection du plan
-      const step2Result = await step2_navigateToPlanSelection(this.baseUrl, sessionId, subscriptionData.planActivationId);
+      const step2Result = await step2_navigateToPlanSelection(
+        this.baseUrl, 
+        sessionId, 
+        subscriptionData.planActivationId,
+        subscriptionData.userId
+      );
       processLog.push({ step: 2, name: 'navigateToPlanSelection', result: step2Result });
       
       if (!step2Result.success) {
@@ -70,7 +78,12 @@ class SubscriptionOrchestrator {
       console.log('');
 
       // Étape 4: Premier clic après sélection du plan
-      const step4Result = await step4_clickAfterPlanSelection(this.baseUrl, sessionId, subscriptionData.planActivationId);
+      const step4Result = await step4_clickAfterPlanSelection(
+        this.baseUrl, 
+        sessionId, 
+        subscriptionData.planActivationId,
+        subscriptionData.userId
+      );
       processLog.push({ step: 4, name: 'clickAfterPlanSelection', result: step4Result });
       
       if (!step4Result.success) {
@@ -79,7 +92,12 @@ class SubscriptionOrchestrator {
       console.log('');
 
       // Étape 5: Deuxième clic vers email/mot de passe
-      const step5Result = await step5_clickToEmailPassword(this.baseUrl, sessionId, subscriptionData.planActivationId);
+      const step5Result = await step5_clickToEmailPassword(
+        this.baseUrl, 
+        sessionId, 
+        subscriptionData.planActivationId,
+        subscriptionData.userId
+      );
       processLog.push({ step: 5, name: 'clickToEmailPassword', result: step5Result });
       
       if (!step5Result.success) {
@@ -102,7 +120,12 @@ class SubscriptionOrchestrator {
       console.log('');
 
       // Étape 7: Clic vers la sélection de méthode de paiement
-      const step7Result = await step7_clickToPaymentMethod(this.baseUrl, sessionId, subscriptionData.planActivationId);
+      const step7Result = await step7_clickToPaymentMethod(
+        this.baseUrl, 
+        sessionId, 
+        subscriptionData.planActivationId,
+        subscriptionData.userId
+      );
       processLog.push({ step: 7, name: 'clickToPaymentMethod', result: step7Result });
       
       if (!step7Result.success) {
@@ -111,7 +134,12 @@ class SubscriptionOrchestrator {
       console.log('');
 
       // Étape 8: Sélectionner la méthode de paiement
-      const step8Result = await step8_selectPaymentMethod(this.baseUrl, sessionId, subscriptionData.planActivationId);
+      const step8Result = await step8_selectPaymentMethod(
+        this.baseUrl, 
+        sessionId, 
+        subscriptionData.planActivationId,
+        subscriptionData.userId
+      );
       processLog.push({ step: 8, name: 'selectPaymentMethod', result: step8Result });
       
       if (!step8Result.success) {

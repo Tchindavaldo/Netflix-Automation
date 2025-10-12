@@ -7,9 +7,10 @@ const RetryHelper = require('../helpers/retryHelper');
  * @param {string} baseUrl - URL de base de l'API
  * @param {string} sessionId - ID de la session
  * @param {string} planActivationId - ID de l'activation du plan
+ * @param {string} userId - ID de l'utilisateur (pour traçabilité)
  * @returns {Promise<Object>} - Résultat du clic
  */
-async function clickToPaymentMethod(baseUrl, sessionId, planActivationId) {
+async function clickToPaymentMethod(baseUrl, sessionId, planActivationId, userId) {
   console.log('📍 Étape 7: Navigation vers la sélection de la méthode de paiement...');
   
   const executeStep = async () => {
@@ -52,6 +53,7 @@ async function clickToPaymentMethod(baseUrl, sessionId, planActivationId) {
   return await RetryHelper.executeWithRetry(executeStep, {
     stepName: 'clickToPaymentMethod',
     errorContext: {
+      userId,
       sessionId,
       planActivationId,
       buttonSelector: selectors.navigation.nextToPaymentMethod

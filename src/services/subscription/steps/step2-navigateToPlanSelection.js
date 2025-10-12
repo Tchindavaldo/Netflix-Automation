@@ -7,9 +7,10 @@ const RetryHelper = require('../helpers/retryHelper');
  * @param {string} baseUrl - URL de base de l'API
  * @param {string} sessionId - ID de la session
  * @param {string} planActivationId - ID de l'activation du plan
+ * @param {string} userId - ID de l'utilisateur (pour traçabilité)
  * @returns {Promise<Object>} - Résultat de la navigation
  */
-async function navigateToPlanSelection(baseUrl, sessionId, planActivationId) {
+async function navigateToPlanSelection(baseUrl, sessionId, planActivationId, userId) {
   console.log('📍 Étape 2: Navigation vers la sélection du plan...');
   
   const executeStep = async () => {
@@ -53,6 +54,7 @@ async function navigateToPlanSelection(baseUrl, sessionId, planActivationId) {
   return await RetryHelper.executeWithRetry(executeStep, {
     stepName: 'navigateToPlanSelection',
     errorContext: {
+      userId,
       sessionId,
       planActivationId,
       buttonSelector: selectors.navigation.goToPlanSelection
