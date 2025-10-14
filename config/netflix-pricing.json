@@ -1,0 +1,28 @@
+{
+  "pricing": {
+    "mobile": {
+      "amount": 3.99,
+      "currency": "USD",
+      "description": "Plan Mobile - 1 appareil, définition standard"
+    },
+    "basic": {
+      "amount": 9.99,
+      "currency": "USD",
+      "description": "Plan Basic - 1 appareil HD, téléchargements"
+    },
+    "standard": {
+      "amount": 13.99,
+      "currency": "USD",
+      "description": "Plan Standard - 2 appareils HD simultanés"
+    },
+    "premium": {
+      "amount": 17.99,
+      "currency": "USD",
+      "description": "Plan Premium - 4 appareils 4K simultanés"
+    }
+  },
+  "notes": {
+    "fr": "Modifiez les montants ici selon vos tarifs Netflix locaux",
+    "en": "Modify the amounts here according to your local Netflix pricing"
+  }
+}
