@@ -8,6 +8,7 @@ const paymentRouter = require("./routes/paymentRoutes");
 const userRouter = require("./routes/userRoutes");
 const planActivationRouter = require("./routes/planActivationRoutes");
 const subscriptionRouter = require("./routes/subscriptionRoutes");
+const driveRouter = require("./routes/driveRoutes");
 
 // Configuration de l'application Express
 const app = express();
@@ -36,6 +37,7 @@ app.use("/api/payment", paymentRouter);
 app.use("/api/users", userRouter);
 app.use("/api/plan-activation", planActivationRouter);
 app.use("/api/subscription", subscriptionRouter);
+app.use("/api/drive", driveRouter);
 
 // Gestion des erreurs 404
 app.use((req, res) => {

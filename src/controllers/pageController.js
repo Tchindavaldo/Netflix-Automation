@@ -1,5 +1,6 @@
 const saveSnapshotHandler = require("./handlers/page/saveSnapshotHandler");
 const downloadSnapshotHandler = require("./handlers/page/downloadSnapshotHandler");
+const deleteSnapshotHandler = require("./handlers/page/deleteSnapshotHandler");
 const clickBtnHandler = require("./handlers/page/clickBtnHandler");
 const selectPlanHandler = require("./handlers/page/selectPlanHandler");
 const fillFormHandler = require("./handlers/form/fillFormHandler");
@@ -19,6 +20,9 @@ const pageController = {
 
   // Télécharger les fichiers d'un sous-dossier de snapshots
   downloadSnapshot: downloadSnapshotHandler,
+
+  // Supprimer manuellement un dossier de snapshot local
+  deleteSnapshot: deleteSnapshotHandler,
 
   // Cliquer sur un bouton
   clickBtn: clickBtnHandler,

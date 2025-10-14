@@ -7,6 +7,8 @@ const step6_fillEmailPassword = require('./steps/step6-fillEmailPassword');
 const step7_clickToPaymentMethod = require('./steps/step7-clickToPaymentMethod');
 const step8_selectPaymentMethod = require('./steps/step8-selectPaymentMethod');
 const step9_fillPaymentForm = require('./steps/step9-fillPaymentForm');
+const step10_submitPayment = require('./steps/step10-submitPayment');
+const axios = require('axios');
 
 /**
  * Orchestrateur principal du processus d'abonnement Netflix
@@ -54,22 +56,70 @@ class SubscriptionOrchestrator {
       sessionId = step1Result.sessionId;
       console.log('');
 
-      // Étape 2: Naviguer vers la sélection du plan
-      const step2Result = await step2_navigateToPlanSelection(
+      // Étape 2: Naviguer vers la sélection du plan (avec retry de session si échec)
+      let step2Result = await step2_navigateToPlanSelection(
         this.baseUrl, 
         sessionId, 
         subscriptionData.planActivationId,
-        subscriptionData.userId
+        subscriptionData.userId,
+        subscriptionData  // Passer tout le contexte pour les erreurs
       );
-      processLog.push({ step: 2, name: 'navigateToPlanSelection', result: step2Result });
+      processLog.push({ step: 2, name: 'navigateToPlanSelection', result: step2Result, attempt: 1 });
       
+      // Si l'étape 2 échoue, on tente un retry complet de session
       if (!step2Result.success) {
-        throw new Error(`Échec étape 2: ${step2Result.error}`);
+        console.log('\n🔄 Étape 2 échouée - Tentative de retry avec nouvelle session...');
+        
+        // Fermer la session actuelle
+        console.log('🔒 Fermeture de la session actuelle...');
+        try {
+          await this.closeSession(sessionId);
+        } catch (closeError) {
+          console.error(`⚠️ Erreur fermeture session: ${closeError.message}`);
+        }
+        
+        // Relancer une nouvelle session (Retry Étape 1)
+        console.log('🆕 Redémarrage d\'une nouvelle session...');
+        const step1RetryResult = await step1_startSession(this.baseUrl);
+        processLog.push({ step: 1, name: 'startSession (retry)', result: step1RetryResult, attempt: 2 });
+        
+        if (!step1RetryResult.success) {
+          throw new Error(`Échec redémarrage session: ${step1RetryResult.error}`);
+        }
+        
+        sessionId = step1RetryResult.sessionId;
+        console.log(`✅ Nouvelle session créée: ${sessionId}\n`);
+        
+        // Retenter l'étape 2 avec la nouvelle session
+        console.log('🔄 Nouvelle tentative de l\'étape 2...');
+        step2Result = await step2_navigateToPlanSelection(
+          this.baseUrl, 
+          sessionId, 
+          subscriptionData.planActivationId,
+          subscriptionData.userId,
+          subscriptionData
+        );
+        processLog.push({ step: 2, name: 'navigateToPlanSelection (retry)', result: step2Result, attempt: 2 });
+        
+        // Si ça échoue encore après le retry de session, on lance l'erreur
+        if (!step2Result.success) {
+          console.log('❌ Étape 2 échouée même après retry de session');
+          throw new Error(`Échec étape 2 (après retry session): ${step2Result.error}`);
+        }
+        
+        console.log('✅ Étape 2 réussie après retry de session!\n');
       }
       console.log('');
 
       // Étape 3: Sélectionner le plan
-      const step3Result = await step3_selectPlan(this.baseUrl, sessionId, subscriptionData.typeDePlan);
+      const step3Result = await step3_selectPlan(
+        this.baseUrl, 
+        sessionId, 
+        subscriptionData.typeDePlan,
+        subscriptionData.planActivationId,
+        subscriptionData.userId,
+        subscriptionData  // Passer tout le contexte pour les erreurs
+      );
       processLog.push({ step: 3, name: 'selectPlan', result: step3Result });
       
       if (!step3Result.success) {
@@ -82,7 +132,8 @@ class SubscriptionOrchestrator {
         this.baseUrl, 
         sessionId, 
         subscriptionData.planActivationId,
-        subscriptionData.userId
+        subscriptionData.userId,
+        subscriptionData  // Passer tout le contexte pour les erreurs
       );
       processLog.push({ step: 4, name: 'clickAfterPlanSelection', result: step4Result });
       
@@ -96,7 +147,8 @@ class SubscriptionOrchestrator {
         this.baseUrl, 
         sessionId, 
         subscriptionData.planActivationId,
-        subscriptionData.userId
+        subscriptionData.userId,
+        subscriptionData  // Passer tout le contexte pour les erreurs
       );
       processLog.push({ step: 5, name: 'clickToEmailPassword', result: step5Result });
       
@@ -124,7 +176,8 @@ class SubscriptionOrchestrator {
         this.baseUrl, 
         sessionId, 
         subscriptionData.planActivationId,
-        subscriptionData.userId
+        subscriptionData.userId,
+        subscriptionData  // Passer tout le contexte pour les erreurs
       );
       processLog.push({ step: 7, name: 'clickToPaymentMethod', result: step7Result });
       
@@ -138,7 +191,8 @@ class SubscriptionOrchestrator {
         this.baseUrl, 
         sessionId, 
         subscriptionData.planActivationId,
-        subscriptionData.userId
+        subscriptionData.userId,
+        subscriptionData  // Passer tout le contexte pour les erreurs
       );
       processLog.push({ step: 8, name: 'selectPaymentMethod', result: step8Result });
       
@@ -156,18 +210,47 @@ class SubscriptionOrchestrator {
       }
       console.log('');
 
+      // Étape 10: Clic final sur le bouton de paiement
+      const step10Result = await step10_submitPayment(
+        this.baseUrl, 
+        sessionId, 
+        subscriptionData.planActivationId,
+        subscriptionData.userId,
+        subscriptionData  // Passer tout le contexte pour les erreurs
+      );
+      processLog.push({ step: 10, name: 'submitPayment', result: step10Result });
+      
+      if (!step10Result.success) {
+        throw new Error(`Échec étape 10: ${step10Result.error}`);
+      }
+      console.log('');
+
       console.log('🎉 Processus d\'abonnement terminé avec succès!\n');
+      
+      // Fermer la session après succès
+      console.log('🔒 Fermeture de la session après succès...');
+      await this.closeSession(sessionId);
 
       return {
         success: true,
         message: 'Processus d\'abonnement Netflix terminé avec succès',
         sessionId,
         processLog,
-        completedSteps: 9
+        completedSteps: 10
       };
 
     } catch (error) {
       console.error(`\n💥 Erreur dans le processus d'abonnement: ${error.message}\n`);
+      
+      // Fermer la session après erreur
+      if (sessionId) {
+        console.log('🔒 Fermeture de la session après erreur...');
+        try {
+          await this.closeSession(sessionId);
+        } catch (closeError) {
+          console.error(`⚠️ Erreur lors de la fermeture de session: ${closeError.message}`);
+        }
+      }
       
       return {
         success: false,
@@ -177,6 +260,27 @@ class SubscriptionOrchestrator {
         completedSteps: processLog.length,
         failedAt: processLog.length > 0 ? processLog[processLog.length - 1].name : 'initialization'
       };
+    }
+  }
+
+  /**
+   * Fermer une session Netflix
+   * @param {string} sessionId - ID de la session à fermer
+   * @returns {Promise<void>}
+   */
+  async closeSession(sessionId) {
+    try {
+      const response = await axios.post(`${this.baseUrl}/api/netflix/session/close`, {
+        sessionId
+      });
+      
+      if (response.data.success) {
+        console.log(`✅ Session ${sessionId} fermée avec succès`);
+      } else {
+        console.log(`⚠️ Échec fermeture session: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error(`❌ Erreur fermeture session: ${error.message}`);
     }
   }
 

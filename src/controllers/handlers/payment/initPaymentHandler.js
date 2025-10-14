@@ -1,6 +1,7 @@
 const socketModule = require('../../../../socket');
 const planActivationService = require('../../../services/planActivationService');
 const axios = require('axios');
+const netflixPricing = require('../../../../config/netflix-pricing.json');
 
 /**
  * Gestionnaire pour initialiser un paiement Orange Money
@@ -9,10 +10,26 @@ const axios = require('axios');
  */
 const initPaymentHandler = async (req, res) => {
   try {
-    const { userId, numeroOM, email, motDePasse, typeDePlan, amount } = req.body;
+    const { userId, numeroOM, email, motDePasse, typeDePlan } = req.body;
+
+    // Déterminer le montant : utiliser celui fourni OU celui du pricing config
+    let amount = req.body.amount;
+    if (!amount) {
+      // Récupérer le montant depuis la config selon le type de plan
+      const planPricing = netflixPricing.pricing[typeDePlan.toLowerCase()];
+      if (planPricing) {
+        amount = planPricing.amount;
+        console.log(`💰 Montant automatique selon le plan ${typeDePlan}: ${amount} ${planPricing.currency}`);
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: `Type de plan inconnu: ${typeDePlan}. Plans disponibles: ${Object.keys(netflixPricing.pricing).join(', ')}`
+        });
+      }
+    }
 
     // Validation des paramètres avec détection précise des manquants
-    const requiredParams = ['userId', 'numeroOM', 'email', 'motDePasse', 'typeDePlan', 'amount'];
+    const requiredParams = ['userId', 'numeroOM', 'email', 'motDePasse', 'typeDePlan'];
     const missingParams = [];
     
     requiredParams.forEach(param => {

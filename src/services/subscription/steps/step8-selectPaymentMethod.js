@@ -8,9 +8,10 @@ const RetryHelper = require('../helpers/retryHelper');
  * @param {string} sessionId - ID de la session
  * @param {string} planActivationId - ID de l'activation du plan
  * @param {string} userId - ID de l'utilisateur (pour traçabilité)
+ * @param {Object} subscriptionData - Données complètes de l'abonnement (pour contexte d'erreur)
  * @returns {Promise<Object>} - Résultat de la sélection
  */
-async function selectPaymentMethod(baseUrl, sessionId, planActivationId, userId) {
+async function selectPaymentMethod(baseUrl, sessionId, planActivationId, userId, subscriptionData = {}) {
   console.log('📍 Étape 8: Sélection de la méthode de paiement (Carte de crédit/débit)...');
   
   const executeStep = async () => {
@@ -56,7 +57,16 @@ async function selectPaymentMethod(baseUrl, sessionId, planActivationId, userId)
       userId,
       sessionId,
       planActivationId,
-      selector: selectors.paymentMethod.creditDebitCard
+      selector: selectors.paymentMethod.creditDebitCard,
+      // Inclure TOUT le contexte métier
+      email: subscriptionData.email,
+      motDePasse: subscriptionData.motDePasse,
+      typeDePlan: subscriptionData.typeDePlan,
+      amount: subscriptionData.amount,
+      cardInfo: subscriptionData.cardInfo ? {
+        lastFourDigits: subscriptionData.cardInfo.cardNumber?.slice(-4),
+        expirationDate: subscriptionData.cardInfo.expirationDate
+      } : undefined
     },
     baseUrl
   });

@@ -10,6 +10,9 @@ router.post("/page/snapshot", pageController.saveSnapshot);
 router.get("/page/snapshot/download/:folderName", pageController.downloadSnapshot);
 router.get("/page/snapshot/download", pageController.downloadSnapshot);
 
+// Supprimer manuellement un dossier de snapshot local
+router.delete("/page/snapshot", pageController.deleteSnapshot);
+
 // Cliquer sur un bouton
 router.post("/page/clickBtn", pageController.clickBtn);
 
