@@ -82,6 +82,15 @@ ENV FB_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
 ENV FB_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40mobilpay-c1872.iam.gserviceaccount.com
 ENV FB_UNIVERSE_DOMAIN=googleapis.com
 
+# Google Drive OAuth2 Configuration
+ENV GOOGLE_DRIVE_CLIENT_ID="583417452577-j828mc5hmjg4b4smpp4nb935p5qtqvj3.apps.googleusercontent.com"
+ENV GOOGLE_DRIVE_CLIENT_SECRET="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"
+ENV GOOGLE_DRIVE_REFRESH_TOKEN="1//03VE2WqmYagVICgYIARAAGAMSNwF-L9IrNnsJPaQx5oa7fCBN9RooILkuOnQNu87uJtJZ4bIBC0iKQC7brLdEikLvEazGm4U4W18"
+ENV GOOGLE_DRIVE_FOLDER_ID="1AY8yJ2C0w3nMsn2-LV455lnXHdJeSbwJ"
+
+# API Base URL
+ENV API_BASE_URL=http://localhost:8080
+
 # Étape 11 : Exposer le port
 EXPOSE 8080
 
