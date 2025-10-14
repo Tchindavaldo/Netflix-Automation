@@ -74,9 +74,6 @@ firebase.json
 Dockerfile
 .dockerignore
 
-# Données de sélecteurs
-selectors/
-
 # Fichiers de configuration locaux
 .prettierrc
 .eslintrc
