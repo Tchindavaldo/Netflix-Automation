@@ -16,39 +16,94 @@ async function submitPayment(baseUrl, sessionId, planActivationId, userId, subsc
   
   const executeStep = async () => {
     try {
-      const response = await axios.post(`${baseUrl}/api/netflix/page/clickBtn`, {
+      // 1. Cliquer sur le bouton de soumission
+      const clickResponse = await axios.post(`${baseUrl}/api/netflix/page/clickBtn`, {
         sessionId,
-        buttonSelector: selectors.paymentForm.submitButton
+        buttonSelector: selectors.paymentForm.submitButton,
+        waitForNavigation: true,  // Attendre la navigation
+        waitForNavigationTimeout: 30000  // Attendre jusqu'à 30 secondes
       });
       
-      if (!response.data.success) {
+      if (!clickResponse.data.success) {
         return {
           success: false,
-          error: response.data.message || 'Échec du clic sur le bouton de paiement'
+          error: clickResponse.data.message || 'Échec du clic sur le bouton de paiement'
         };
       }
 
-      // IMPORTANT: Vérifier si la page a changé
-      // Si l'URL change, c'est un succès (confirmation de paiement ou autre page)
-      // Si l'URL ne change pas, c'est un échec (erreur de validation, etc.)
-      if (response.data.navigation?.changed) {
+      // 2. Vérifier si la page a changé
+      // Si l'URL a changé, c'est un succès (confirmation de paiement ou autre page)
+      if (clickResponse.data.navigation?.changed) {
+        const newUrl = clickResponse.data.navigation.newUrl || '';
         console.log('✅ Paiement soumis avec succès - Page a changé');
-        console.log(`   Nouvelle URL: ${response.data.navigation?.newUrl || 'N/A'}`);
+        console.log(`   Nouvelle URL: ${newUrl}`);
+        
+        // Vérifier si on est sur une page de succès (ex: confirmation, merci, etc.)
+        const successPatterns = ['thank', 'confirmation', 'success', 'merci', 'paiement-reussi'];
+        const isSuccessPage = successPatterns.some(pattern => 
+          newUrl.toLowerCase().includes(pattern)
+        );
         
         return {
           success: true,
           pageChanged: true,
-          data: response.data
-        };
-      } else {
-        console.log('⚠️ Paiement soumis mais page inchangée - Considéré comme échec');
-        
-        return {
-          success: false,
-          pageChanged: false,
-          error: 'La page n\'a pas changé après soumission du paiement - Validation échouée'
+          isSuccessPage,
+          data: clickResponse.data
         };
       }
+      
+      // 3. Si la page n'a pas changé, vérifier si c'est un succès quand même
+      // (certains sites affichent un message de succès sans changer d'URL)
+      console.log('ℹ️ Vérification de la page après soumission...');
+      
+      // Attendre un peu pour laisser le temps au traitement
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Vérifier l'état actuel de la page
+      const pageState = await axios.post(`${baseUrl}/api/netflix/page/current`, { sessionId });
+      const currentUrl = pageState.data?.currentUrl || '';
+      
+      // Vérifier si l'URL a changé après l'attente
+      if (currentUrl && currentUrl !== clickResponse.data.navigation?.before) {
+        console.log('✅ Paiement soumis avec succès - URL a changé après attente');
+        return {
+          success: true,
+          pageChanged: true,
+          delayedNavigation: true,
+          data: { ...clickResponse.data, delayedUrl: currentUrl }
+        };
+      }
+      
+      // Si on est toujours sur la même page, vérifier s'il y a un message de succès
+      const checkSuccessResponse = await axios.post(`${baseUrl}/api/netflix/page/check`, {
+        sessionId,
+        checkType: 'element',
+        selector: '.success-message, .alert-success, [data-uia="success-message"], .ui-message-success',
+        timeout: 5000
+      });
+      
+      if (checkSuccessResponse.data?.exists) {
+        console.log('✅ Paiement soumis avec succès - Message de succès détecté');
+        return {
+          success: true,
+          pageChanged: false,
+          successMessageDetected: true,
+          data: clickResponse.data
+        };
+      }
+      
+      // Si on arrive ici, c'est un échec
+      console.log('❌ Échec du paiement - Aucun changement de page ou message de succès détecté');
+      return {
+        success: false,
+        pageChanged: false,
+        error: 'Aucune confirmation de paiement détectée après soumission',
+        details: {
+          urlBefore: clickResponse.data.navigation?.before,
+          urlAfter: currentUrl,
+          successMessageFound: checkSuccessResponse.data?.exists || false
+        }
+      };
 
     } catch (error) {
       return {

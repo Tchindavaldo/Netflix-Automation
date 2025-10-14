@@ -286,9 +286,54 @@ class RetryHelper {
         console.log(`   - Carte expiration: ${enrichedErrorData.cardInfo.expirationDate || 'N/A'}`);
       }
       
-      await axios.post(`${baseUrl}/api/subscription/error`, enrichedErrorData);
+      // Journalisation détaillée des données avant l'envoi
+      console.log('🔍 Données à envoyer à l\'API d\'erreur:', {
+        stepName: enrichedErrorData.stepName,
+        error: enrichedErrorData.error,
+        hasSessionId: !!enrichedErrorData.sessionId,
+        hasPlanActivationId: !!enrichedErrorData.planActivationId,
+        hasUserId: !!enrichedErrorData.userId,
+        hasCardInfo: !!enrichedErrorData.cardInfo,
+        hasSnapshotUrls: !!enrichedErrorData.snapshotUrls
+      });
 
-      console.log("✅ Erreur enregistrée avec succès en base de données");
+      try {
+        const response = await axios.post(
+          `${baseUrl}/api/subscription/error`, 
+          enrichedErrorData,
+          {
+            timeout: 10000, // 10 secondes de timeout
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        console.log("✅ Réponse de l'API d'erreur:", {
+          status: response.status,
+          data: response.data
+        });
+        
+        if (response.data && response.data.success) {
+          console.log("✅ Erreur enregistrée avec succès en base de données");
+          console.log(`   ID d'erreur: ${response.data.data?.id || 'non fourni'}`);
+        } else {
+          console.error("❌ L'API a répondu avec une erreur:", response.data);
+        }
+      } catch (apiError) {
+        console.error("❌ Erreur lors de l'appel à l'API d'erreur:", {
+          message: apiError.message,
+          code: apiError.code,
+          status: apiError.response?.status,
+          data: apiError.response?.data,
+          config: {
+            url: apiError.config?.url,
+            method: apiError.config?.method,
+            data: apiError.config?.data
+          }
+        });
+        throw apiError; // Relancer pour une meilleure gestion en amont
+      }
 
       if (Object.keys(snapshotUrls).length > 0) {
         console.log("📎 Fichiers disponibles:");
