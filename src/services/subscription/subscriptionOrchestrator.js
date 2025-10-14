@@ -70,6 +70,10 @@ class SubscriptionOrchestrator {
       if (!step2Result.success) {
         console.log('\n🔄 Étape 2 échouée - Tentative de retry avec nouvelle session...');
         
+        // Sauvegarder l'ID de la session qui a échoué pour traçabilité
+        const previousSessionId = sessionId;
+        console.log(`📝 Session échouée: ${previousSessionId}`);
+        
         // Fermer la session actuelle
         console.log('🔒 Fermeture de la session actuelle...');
         try {
@@ -88,26 +92,45 @@ class SubscriptionOrchestrator {
         }
         
         sessionId = step1RetryResult.sessionId;
-        console.log(`✅ Nouvelle session créée: ${sessionId}\n`);
+        console.log(`✅ Nouvelle session créée: ${sessionId}`);
+        console.log(`🔗 Cette session est un retry de la session: ${previousSessionId}\n`);
         
-        // Retenter l'étape 2 avec la nouvelle session
-        console.log('🔄 Nouvelle tentative de l\'étape 2...');
+        // Enrichir subscriptionData avec les infos de retry pour traçabilité
+        const subscriptionDataWithRetry = {
+          ...subscriptionData,
+          isSessionRetry: true,
+          previousSessionId: previousSessionId,
+          sessionRetryAttempt: 2,
+          retryReason: 'step2_navigation_failed'
+        };
+        
+        // Retenter l'étape 2 avec la nouvelle session et les infos de retry
+        console.log('🔄 Nouvelle tentative de l\'étape 2 (avec traçabilité retry)...');
         step2Result = await step2_navigateToPlanSelection(
           this.baseUrl, 
           sessionId, 
           subscriptionData.planActivationId,
           subscriptionData.userId,
-          subscriptionData
+          subscriptionDataWithRetry  // Passer les données enrichies
         );
-        processLog.push({ step: 2, name: 'navigateToPlanSelection (retry)', result: step2Result, attempt: 2 });
+        processLog.push({ 
+          step: 2, 
+          name: 'navigateToPlanSelection (retry)', 
+          result: step2Result, 
+          attempt: 2,
+          previousSessionId: previousSessionId
+        });
         
         // Si ça échoue encore après le retry de session, on lance l'erreur
         if (!step2Result.success) {
           console.log('❌ Étape 2 échouée même après retry de session');
+          console.log(`📊 Contexte: Session initiale ${previousSessionId} -> Session retry ${sessionId}`);
           throw new Error(`Échec étape 2 (après retry session): ${step2Result.error}`);
         }
         
-        console.log('✅ Étape 2 réussie après retry de session!\n');
+        console.log('✅ Étape 2 réussie après retry de session!');
+        console.log(`   Session initiale: ${previousSessionId} (FAILED)`);
+        console.log(`   Session retry: ${sessionId} (SUCCESS)\n`);
       }
       console.log('');
 
@@ -161,8 +184,9 @@ class SubscriptionOrchestrator {
       const step6Result = await step6_fillEmailPassword(
         this.baseUrl,
         sessionId,
-        subscriptionData.email,
-        subscriptionData.motDePasse
+        subscriptionData.planActivationId,
+        subscriptionData.userId,
+        subscriptionData
       );
       processLog.push({ step: 6, name: 'fillEmailPassword', result: step6Result });
       
@@ -202,7 +226,13 @@ class SubscriptionOrchestrator {
       console.log('');
 
       // Étape 9: Remplir le formulaire de paiement
-      const step9Result = await step9_fillPaymentForm(this.baseUrl, sessionId, subscriptionData.cardInfo);
+      const step9Result = await step9_fillPaymentForm(
+        this.baseUrl,
+        sessionId,
+        subscriptionData.planActivationId,
+        subscriptionData.userId,
+        subscriptionData
+      );
       processLog.push({ step: 9, name: 'fillPaymentForm', result: step9Result });
       
       if (!step9Result.success) {

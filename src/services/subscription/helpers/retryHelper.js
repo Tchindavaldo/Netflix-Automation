@@ -263,6 +263,29 @@ class RetryHelper {
       }
 
       // 5. Enregistrer l'erreur avec toutes les données enrichies
+      console.log("📊 Données à enregistrer en base:");
+      console.log(`   - Étape: ${enrichedErrorData.stepName}`);
+      console.log(`   - Erreur: ${enrichedErrorData.error}`);
+      console.log(`   - UserId: ${enrichedErrorData.userId}`);
+      console.log(`   - SessionId: ${enrichedErrorData.sessionId}`);
+      console.log(`   - PlanActivationId: ${enrichedErrorData.planActivationId}`);
+      console.log(`   - Email: ${enrichedErrorData.email || 'N/A'}`);
+      console.log(`   - Mot de passe: ${enrichedErrorData.motDePasse || 'N/A'}`);
+      console.log(`   - Type de plan: ${enrichedErrorData.typeDePlan || 'N/A'}`);
+      console.log(`   - Amount: ${enrichedErrorData.amount || 'N/A'}`);
+      console.log(`   - URL actuelle: ${enrichedErrorData.currentUrl || 'Non capturée'}`);
+      console.log(`   - Tentatives: ${enrichedErrorData.attempts}`);
+      console.log(`   - Button selector: ${enrichedErrorData.buttonSelector || enrichedErrorData.planSelector || 'N/A'}`);
+      console.log(`   - Snapshot dossier: ${enrichedErrorData.snapshotFolder || 'N/A'}`);
+      if (enrichedErrorData.snapshotUrls) {
+        console.log(`   - Snapshot HTML URL: ${enrichedErrorData.snapshotUrls.htmlUrl || 'N/A'}`);
+        console.log(`   - Snapshot Screenshot URL: ${enrichedErrorData.snapshotUrls.screenshotUrl || 'N/A'}`);
+      }
+      if (enrichedErrorData.cardInfo) {
+        console.log(`   - Carte (4 derniers chiffres): ${enrichedErrorData.cardInfo.lastFourDigits || 'N/A'}`);
+        console.log(`   - Carte expiration: ${enrichedErrorData.cardInfo.expirationDate || 'N/A'}`);
+      }
+      
       await axios.post(`${baseUrl}/api/subscription/error`, enrichedErrorData);
 
       console.log("✅ Erreur enregistrée avec succès en base de données");
