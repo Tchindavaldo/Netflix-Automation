@@ -30,15 +30,15 @@ async function submitPayment(
       const initialUrl = currentState.data?.currentUrl || "";
 
       // 2. Cliquer sur le bouton de soumission
-      const clickResponse = await axios.post(
-        `${baseUrl}/api/netflix/page/clickBtn`,
-        {
-          sessionId,
-          buttonSelector: selectors.paymentForm.submitButton,
-          waitForNavigation: true,
-          waitForNavigationTimeout: 15000,
-        }
-      );
+      console.log('👆 Clic sur le bouton de paiement...');
+      const clickResponse = await axios.post(`${baseUrl}/api/netflix/page/clickBtn`, {
+        sessionId,
+        buttonSelector: selectors.paymentForm.submitButton,
+        waitForNavigation: true,
+        waitForNavigationTimeout: 60000
+      });
+      
+      console.log(`🔍 Réponse du clic: success=${clickResponse.data.success}, navigation.changed=${clickResponse.data.navigation?.changed}`);
 
       if (!clickResponse.data.success) {
         return {
@@ -71,19 +71,19 @@ async function submitPayment(
         };
       }
 
-      // 3. Si la page n'a pas changé, vérifier si c'est un succès quand même
-      // (certains sites affichent un message de succès sans changer d'URL)
-      console.log("ℹ️ Vérification de la page après soumission...");
-
-      // Attendre un peu pour laisser le temps au traitement
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      // 3. Si la page n'a pas changé, attendre plus longtemps avant de déclarer un échec
+      // Les paiements peuvent prendre du temps à être traités
+      console.log('ℹ️ Aucun changement détecté immédiatement - Attente supplémentaire...');
+      
+      // Attendre 15 secondes pour laisser le temps au traitement du paiement
+      console.log('⏳ Attente de 15 secondes avant nouvelle vérification...');
+      await new Promise(resolve => setTimeout(resolve, 15000));
 
       // Vérifier l'état actuel de la page
-      const pageState = await axios.post(
-        `${baseUrl}/api/netflix/page/current`,
-        { sessionId }
-      );
-      const currentUrl = pageState.data?.currentUrl || "";
+      console.log('🔍 Vérification de l\'URL actuelle...');
+      const pageState = await axios.post(`${baseUrl}/api/netflix/page/current`, { sessionId });
+      const currentUrl = pageState.data?.currentUrl || '';
+      console.log(`📍 URL actuelle: ${currentUrl}`);
 
       // Vérifier si l'URL a changé après l'attente
       const previousUrl = clickResponse.data.navigation?.before || "";
