@@ -13,6 +13,24 @@ module.exports = {
         allowedHeaders: ['*'],
         credentials: true,
       },
+      // Configuration optimisée pour Cloud Run
+      pingTimeout: 120000,        // 2 minutes (au lieu de 5s par défaut)
+      pingInterval: 25000,        // Ping toutes les 25s (garder la connexion active)
+      upgradeTimeout: 30000,      // 30s pour l'upgrade vers WebSocket
+      maxHttpBufferSize: 1e8,     // 100MB pour les gros messages
+      transports: ['websocket', 'polling'], // Essayer WebSocket en priorité
+      allowEIO3: true,            // Compatibilité avec anciens clients
+      
+      // Reconnexion automatique
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity,
+      
+      // Logging pour debug
+      ...(process.env.NODE_ENV !== 'production' && {
+        connectTimeout: 45000,
+      })
     });
 
     io.on('connection', socket => {
