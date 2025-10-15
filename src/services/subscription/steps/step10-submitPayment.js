@@ -27,7 +27,7 @@ async function submitPayment(
         `${baseUrl}/api/netflix/page/current`,
         { sessionId }
       );
-      const initialUrl = currentState.data?.currentUrl || "";
+      const initialUrl = currentState.data?.url || "";
 
       // 2. Cliquer sur le bouton de soumission
       console.log('👆 Clic sur le bouton de paiement...');
@@ -82,7 +82,7 @@ async function submitPayment(
       // Vérifier l'état actuel de la page
       console.log('🔍 Vérification de l\'URL actuelle...');
       const pageState = await axios.post(`${baseUrl}/api/netflix/page/current`, { sessionId });
-      const currentUrl = pageState.data?.currentUrl || '';
+      const currentUrl = pageState.data?.url || '';
       console.log(`📍 URL actuelle: ${currentUrl}`);
 
       // Vérifier si l'URL a changé après l'attente
