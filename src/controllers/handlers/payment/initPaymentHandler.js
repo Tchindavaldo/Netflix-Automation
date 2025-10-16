@@ -64,6 +64,7 @@ const initPaymentHandler = async (req, res) => {
       numeroOM,
       email,
       motDePasse,  // 🔐 Ajout du mot de passe
+      isPaiementCardActive: true,  // 💳 Carte de paiement active par défaut
       typePaiement: 'orange_money',
       dureeActivation: 29,
       dateCreation: new Date().toISOString(),
