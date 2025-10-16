@@ -63,6 +63,7 @@ const initPaymentHandler = async (req, res) => {
       reqteStatusSuccess: 'pending', // String: 'pending' au départ
       numeroOM,
       email,
+      motDePasse,  // 🔐 Ajout du mot de passe
       typePaiement: 'orange_money',
       dureeActivation: 29,
       dateCreation: new Date().toISOString(),
