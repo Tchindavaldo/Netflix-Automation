@@ -55,7 +55,6 @@ async function authorize() {
     
     // Sauvegarder les tokens
     await fs.writeFile(TOKEN_PATH, JSON.stringify(tokens, null, 2));
-    
     console.log('✅ Token sauvegardé dans:', TOKEN_PATH);
     console.log('\n📋 Tokens reçus:');
     console.log('   - Access Token: ✅');

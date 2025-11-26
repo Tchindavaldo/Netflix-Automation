@@ -18,7 +18,7 @@ async function navigateToPlanSelection(
   userId,
   subscriptionData = {}
 ) {
-  console.log("📍 Étape 2: Navigation vers la sélection du plan...");
+  // console.log("📍 Étape 2: Navigation vers la sélection du plan...");
 
   const executeStep = async () => {
     try {
@@ -33,9 +33,9 @@ async function navigateToPlanSelection(
 
         // Vérifier si l'URL contient déjà PLAN_SELECTION_CONTEXT
         if (currentUrl.includes("PLAN_SELECTION_CONTEXT")) {
-          console.log(
-            "✅ Déjà sur la page de sélection du plan, pas besoin de cliquer"
-          );
+          // console.log(
+          //   "✅ Déjà sur la page de sélection du plan, pas besoin de cliquer"
+          // );
           return {
             success: true,
             data: {
@@ -67,9 +67,9 @@ async function navigateToPlanSelection(
         // Vérifier si on est maintenant sur la bonne page même si l'URL n'a pas changé
         const afterUrl = response.data.navigation?.after || "";
         if (afterUrl.includes("PLAN_SELECTION_CONTEXT")) {
-          console.log(
-            "✅ Navigation réussie vers la sélection du plan (URL contenait déjà PLAN_SELECTION_CONTEXT)"
-          );
+          // console.log(
+          //   "✅ Navigation réussie vers la sélection du plan (URL contenait déjà PLAN_SELECTION_CONTEXT)"
+          // );
           return {
             success: true,
             data: response.data,
@@ -82,7 +82,7 @@ async function navigateToPlanSelection(
         };
       }
 
-      console.log("✅ Navigation réussie vers la sélection du plan");
+      // console.log("✅ Navigation réussie vers la sélection du plan");
 
       return {
         success: true,

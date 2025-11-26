@@ -13,9 +13,9 @@ const goBackHandler = async (req, res) => {
       req.body.sessionId || req.query.sessionId || req.headers["x-session-id"];
 
     // Log pour déboguer
-    console.log("📥 Paramètres reçus:", {
-      sessionId,
-    });
+    // console.log("📥 Paramètres reçus:", {
+    //   sessionId,
+    // });
 
     // Validation du sessionId
     if (!sessionId) {
@@ -38,11 +38,11 @@ const goBackHandler = async (req, res) => {
 
     const driver = session.driver;
 
-    console.log("🔙 Retour en arrière dans l'historique...");
+    // console.log("🔙 Retour en arrière dans l'historique...");
 
     // URL avant de revenir en arrière
     const urlBefore = await driver.getCurrentUrl();
-    console.log(`📍 URL actuelle: ${urlBefore}`);
+    // console.log(`📍 URL actuelle: ${urlBefore}`);
 
     // Revenir en arrière
     await driver.navigate().back();
@@ -54,7 +54,7 @@ const goBackHandler = async (req, res) => {
     const urlAfter = await driver.getCurrentUrl();
     const title = await driver.getTitle();
 
-    console.log(`✅ Retour en arrière effectué: ${urlBefore} → ${urlAfter}`);
+    // console.log(`✅ Retour en arrière effectué: ${urlBefore} → ${urlAfter}`);
 
     res.status(200).json({
       success: true,

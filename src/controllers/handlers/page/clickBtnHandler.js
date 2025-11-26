@@ -15,16 +15,16 @@ const clickBtnHandler = async (req, res) => {
     const buttonSelector = req.body.buttonSelector || req.query.buttonSelector;
 
     // Log pour déboguer
-    console.log("📥 Paramètres reçus:", {
-      sessionId,
-      buttonSelector,
-      body: req.body,
-      query: req.query,
-      headers: {
-        "x-session-id": req.headers["x-session-id"],
-        "content-type": req.headers["content-type"],
-      },
-    });
+    // console.log("📥 Paramètres reçus:", {
+    //   sessionId,
+    //   buttonSelector,
+    //   body: req.body,
+    //   query: req.query,
+    //   headers: {
+    //     "x-session-id": req.headers["x-session-id"],
+    //     "content-type": req.headers["content-type"],
+    //   },
+    // });
 
     // Validation du sessionId
     if (!sessionId) {
@@ -55,7 +55,7 @@ const clickBtnHandler = async (req, res) => {
 
     const driver = session.driver;
 
-    console.log(`🔍 Recherche du bouton avec le sélecteur: ${buttonSelector}`);
+    // console.log(`🔍 Recherche du bouton avec le sélecteur: ${buttonSelector}`);
 
     // URL actuelle avant le clic
     const urlBefore = await driver.getCurrentUrl();
@@ -90,7 +90,7 @@ const clickBtnHandler = async (req, res) => {
       console.warn("⚠️ Le bouton n'est pas devenu cliquable dans le délai");
     });
 
-    console.log(`🎯 Clic sur le bouton...`);
+    // console.log(`🎯 Clic sur le bouton...`);
 
     // Cliquer sur le bouton
     await button.click();
@@ -102,7 +102,7 @@ const clickBtnHandler = async (req, res) => {
     const urlAfter = await driver.getCurrentUrl();
     const title = await driver.getTitle();
 
-    console.log(`✅ Clic effectué - Navigation: ${urlBefore} → ${urlAfter}`);
+    // console.log(`✅ Clic effectué - Navigation: ${urlBefore} → ${urlAfter}`);
 
     res.status(200).json({
       success: true,

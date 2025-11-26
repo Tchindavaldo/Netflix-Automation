@@ -26,7 +26,7 @@ class GoogleDriveUploadService {
     // ID du dossier partagé 'netflix-api-automation-error'
     this.rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1AY8yJ2C0w3nMsn2-LV455lnXHdJeSbwJ';
     
-    console.log('✅ Google Drive OAuth2 initialisé');
+    // console.log('✅ Google Drive OAuth2 initialisé');
   }
 
   /**
@@ -35,7 +35,7 @@ class GoogleDriveUploadService {
    */
   async getRootFolder() {
     // Utiliser directement l'ID du dossier partagé
-    console.log(`✅ Utilisation du dossier partagé: ${this.rootFolderId}`);
+    // console.log(`✅ Utilisation du dossier partagé: ${this.rootFolderId}`);
     return this.rootFolderId;
   }
 
@@ -49,7 +49,7 @@ class GoogleDriveUploadService {
     try {
       const folderName = `userId_${userId}`;
       
-      console.log(`🔍 Recherche du dossier utilisateur: ${folderName}...`);
+      // console.log(`🔍 Recherche du dossier utilisateur: ${folderName}...`);
       
       // Chercher si le dossier existe déjà
       const response = await this.drive.files.list({
@@ -58,14 +58,14 @@ class GoogleDriveUploadService {
         spaces: 'drive',
       });
 
-      console.log(`📊 Résultats de recherche: ${response.data.files.length} dossier(s) trouvé(s)`);
+      // console.log(`📊 Résultats de recherche: ${response.data.files.length} dossier(s) trouvé(s)`);
 
       if (response.data.files.length > 0) {
-        console.log(`✅ Dossier utilisateur existant: userId_${userId}`);
+        // console.log(`✅ Dossier utilisateur existant: userId_${userId}`);
         return response.data.files[0].id;
       }
 
-      console.log(`📝 Création du dossier utilisateur: ${folderName}...`);
+      // console.log(`📝 Création du dossier utilisateur: ${folderName}...`);
       
       // Créer le dossier utilisateur
       const folderMetadata = {
@@ -79,7 +79,7 @@ class GoogleDriveUploadService {
         fields: 'id',
       });
 
-      console.log(`✅ Dossier utilisateur créé: userId_${userId}`);
+      // console.log(`✅ Dossier utilisateur créé: userId_${userId}`);
       return folder.data.id;
     } catch (error) {
       console.error('❌ Erreur lors de la création du dossier utilisateur:', error.message);
@@ -108,7 +108,7 @@ class GoogleDriveUploadService {
       });
 
       if (response.data.files.length > 0) {
-        console.log(`✅ Dossier date existant: ${folderName}`);
+        // console.log(`✅ Dossier date existant: ${folderName}`);
         return response.data.files[0].id;
       }
 
@@ -124,7 +124,7 @@ class GoogleDriveUploadService {
         fields: 'id',
       });
 
-      console.log(`✅ Dossier date créé: ${folderName}`);
+      // console.log(`✅ Dossier date créé: ${folderName}`);
       return folder.data.id;
     } catch (error) {
       console.error('Erreur lors de la création du dossier date:', error.message);
@@ -150,7 +150,7 @@ class GoogleDriveUploadService {
       });
 
       if (response.data.files.length > 0) {
-        console.log(`✅ Dossier planActivation existant: planActivationId_${planActivationId}`);
+        // console.log(`✅ Dossier planActivation existant: planActivationId_${planActivationId}`);
         return response.data.files[0].id;
       }
 
@@ -166,7 +166,7 @@ class GoogleDriveUploadService {
         fields: 'id',
       });
 
-      console.log(`✅ Dossier planActivation créé: planActivationId_${planActivationId}`);
+      // console.log(`✅ Dossier planActivation créé: planActivationId_${planActivationId}`);
       return folder.data.id;
     } catch (error) {
       console.error('Erreur lors de la création du dossier planActivation:', error.message);
@@ -215,7 +215,7 @@ class GoogleDriveUploadService {
         },
       });
 
-      console.log(`✅ Fichier uploadé: ${fileName}`);
+      // console.log(`✅ Fichier uploadé: ${fileName}`);
 
       return {
         id: file.data.id,
@@ -240,9 +240,9 @@ class GoogleDriveUploadService {
    */
   async uploadSnapshot(snapshotData, userId, planActivationId) {
     try {
-      console.log('📁 Préparation de l\'upload vers Google Drive...');
-      console.log(`   userId: ${userId}`);
-      console.log(`   planActivationId: ${planActivationId}`);
+      // console.log('📁 Préparation de l\'upload vers Google Drive...');
+      // console.log(`   userId: ${userId}`);
+      // console.log(`   planActivationId: ${planActivationId}`);
 
       // 1. Créer/récupérer le dossier racine
       const rootFolderId = await this.getRootFolder();
@@ -295,8 +295,8 @@ class GoogleDriveUploadService {
         uploadResults.metadataDownloadUrl = metadataFile.webContentLink;
       }
 
-      console.log(`✅ Tous les fichiers uploadés vers Google Drive`);
-      console.log(`   Structure: netflix-api-automation-error/userId_${userId}/date_${dateString}/planActivationId_${planActivationId}/`);
+      // console.log(`✅ Tous les fichiers uploadés vers Google Drive`);
+      // console.log(`   Structure: netflix-api-automation-error/userId_${userId}/date_${dateString}/planActivationId_${planActivationId}/`);
 
       return {
         success: true,
@@ -321,7 +321,7 @@ class GoogleDriveUploadService {
   async deleteLocalFile(filePath) {
     try {
       await fs.unlink(filePath);
-      console.log(`🗑️ Fichier local supprimé: ${path.basename(filePath)}`);
+      // console.log(`🗑️ Fichier local supprimé: ${path.basename(filePath)}`);
       return true;
     } catch (error) {
       console.error(`❌ Erreur lors de la suppression de ${filePath}:`, error.message);

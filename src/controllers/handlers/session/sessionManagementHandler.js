@@ -7,7 +7,7 @@ const { NetflixSessionManager } = require('../../../services/netflix/NetflixSess
  */
 const getAllActiveSessions = async (req, res) => {
   try {
-    console.log('📋 Récupération de toutes les sessions actives...');
+    // console.log('📋 Récupération de toutes les sessions actives...');
 
     const activeSessions = NetflixSessionManager.getAllActiveSessions();
     
@@ -19,7 +19,7 @@ const getAllActiveSessions = async (req, res) => {
       isActive: sessionData.isActive
     }));
 
-    console.log(`✅ ${sessionsList.length} session(s) active(s) trouvée(s)`);
+    // console.log(`✅ ${sessionsList.length} session(s) active(s) trouvée(s)`);
 
     return res.status(200).json({
       success: true,
@@ -44,7 +44,7 @@ const getAllActiveSessions = async (req, res) => {
  */
 const closeAllSessions = async (req, res) => {
   try {
-    console.log('🔒 Fermeture de toutes les sessions actives...');
+    // console.log('🔒 Fermeture de toutes les sessions actives...');
 
     const activeSessions = NetflixSessionManager.getAllActiveSessions();
     const sessionIds = Array.from(activeSessions.keys());
@@ -57,7 +57,7 @@ const closeAllSessions = async (req, res) => {
       });
     }
 
-    console.log(`📊 ${sessionIds.length} session(s) à fermer...`);
+    // console.log(`📊 ${sessionIds.length} session(s) à fermer...`);
 
     let closedCount = 0;
     let failedCount = 0;
@@ -72,7 +72,7 @@ const closeAllSessions = async (req, res) => {
           status: 'closed',
           success: true
         });
-        console.log(`✅ Session ${sessionId} fermée`);
+        // console.log(`✅ Session ${sessionId} fermée`);
       } catch (error) {
         failedCount++;
         results.push({
@@ -85,7 +85,7 @@ const closeAllSessions = async (req, res) => {
       }
     }
 
-    console.log(`✅ Fermeture terminée: ${closedCount} succès, ${failedCount} échecs`);
+    // console.log(`✅ Fermeture terminée: ${closedCount} succès, ${failedCount} échecs`);
 
     return res.status(200).json({
       success: true,

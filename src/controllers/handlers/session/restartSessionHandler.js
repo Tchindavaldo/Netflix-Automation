@@ -16,7 +16,7 @@ const restartSessionHandler = async (req, res) => {
       });
     }
 
-    console.log(`Redémarrage de la session Netflix (ID: ${sessionId})...`);
+    // console.log(`Redémarrage de la session Netflix (ID: ${sessionId})...`);
     const result = await restartSession(sessionId);
     
     if (!result.success) {

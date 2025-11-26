@@ -16,10 +16,10 @@ const fillPaymentFormHandler = async (req, res) => {
     const fields = req.body.fields; // Array d'objets { selector, value }
 
     // Log pour déboguer
-    console.log("📥 Paramètres reçus:", {
-      sessionId,
-      fieldsCount: fields ? fields.length : 0,
-    });
+    // console.log("📥 Paramètres reçus:", {
+    //   sessionId,
+    //   fieldsCount: fields ? fields.length : 0,
+    // });
 
     // Validation du sessionId
     if (!sessionId) {
@@ -97,20 +97,20 @@ const fillPaymentFormHandler = async (req, res) => {
     let successCount = 0;
     let errorCount = 0;
 
-    console.log(`📝 Début du remplissage de ${fields.length} champ(s)...`);
+    // console.log(`📝 Début du remplissage de ${fields.length} champ(s)...`);
 
     // URL actuelle
     const currentUrl = await driver.getCurrentUrl();
-    console.log(`📍 URL actuelle: ${currentUrl}`);
+    // console.log(`📍 URL actuelle: ${currentUrl}`);
 
     // Parcourir tous les champs
     for (let i = 0; i < fields.length; i++) {
       const field = fields[i];
 
       try {
-        console.log(
-          `\n🔍 [${i + 1}/${fields.length}] Recherche du champ: ${field.selector}`,
-        );
+        // console.log(
+        //   `\n🔍 [${i + 1}/${fields.length}] Recherche du champ: ${field.selector}`,
+        // );
 
         // Attendre que l'élément soit présent
         const element = await driver.wait(
@@ -118,13 +118,13 @@ const fillPaymentFormHandler = async (req, res) => {
           10000,
         );
 
-        console.log(`✓ Élément trouvé: ${field.selector}`);
+        // console.log(`✓ Élément trouvé: ${field.selector}`);
 
         // Attendre que l'élément soit visible et interactable
         await driver.wait(until.elementIsVisible(element), 5000);
         await driver.wait(until.elementIsEnabled(element), 5000);
 
-        console.log(`✓ Élément prêt pour interaction`);
+        // console.log(`✓ Élément prêt pour interaction`);
 
         // Détecter le type automatiquement
         const tagName = await element.getTagName();
@@ -140,7 +140,7 @@ const fillPaymentFormHandler = async (req, res) => {
           fieldType = "input";
         }
 
-        console.log(`ℹ️ Type détecté: ${fieldType}`);
+        // console.log(`ℹ️ Type détecté: ${fieldType}`);
 
         // Action selon le type
         if (fieldType === "checkbox" || fieldType === "radio") {
@@ -154,23 +154,23 @@ const fillPaymentFormHandler = async (req, res) => {
 
           if (isSelected !== shouldBeSelected) {
             await element.click();
-            console.log(
-              `✓ Checkbox/Radio ${shouldBeSelected ? "coché" : "décoché"}`,
-            );
+            // console.log(
+            //   `✓ Checkbox/Radio ${shouldBeSelected ? "coché" : "décoché"}`,
+            // );
           } else {
-            console.log(
-              `ℹ️ Checkbox/Radio déjà dans l'état souhaité: ${shouldBeSelected}`,
-            );
+            // console.log(
+            //   `ℹ️ Checkbox/Radio déjà dans l'état souhaité: ${shouldBeSelected}`,
+            // );
           }
         } else {
           // Pour les inputs texte, email, password, tel, etc.
           // Effacer le contenu existant
           await element.clear();
-          console.log(`✓ Contenu effacé`);
+          // console.log(`✓ Contenu effacé`);
 
           // Entrer la nouvelle valeur
           await element.sendKeys(String(field.value));
-          console.log(`✓ Valeur entrée: ${field.value}`);
+          // console.log(`✓ Valeur entrée: ${field.value}`);
 
           // Vérifier que la valeur a bien été entrée
           const enteredValue = await element.getAttribute("value");
@@ -190,7 +190,7 @@ const fillPaymentFormHandler = async (req, res) => {
           message: "Champ rempli avec succès",
         });
 
-        console.log(`✅ [${i + 1}/${fields.length}] Champ rempli avec succès`);
+        // console.log(`✅ [${i + 1}/${fields.length}] Champ rempli avec succès`);
 
         // Petite pause entre chaque champ
         await driver.sleep(300);
@@ -211,9 +211,9 @@ const fillPaymentFormHandler = async (req, res) => {
       }
     }
 
-    console.log(
-      `\n📊 Résumé du remplissage: ${successCount} réussi(s), ${errorCount} échec(s)`,
-    );
+    // console.log(
+    //   `\n📊 Résumé du remplissage: ${successCount} réussi(s), ${errorCount} échec(s)`,
+    // );
 
     // Attendre un peu pour que les changements soient bien pris en compte
     await driver.sleep(500);
@@ -221,7 +221,7 @@ const fillPaymentFormHandler = async (req, res) => {
     const finalUrl = await driver.getCurrentUrl();
     const title = await driver.getTitle();
 
-    console.log(`📍 URL finale: ${finalUrl}`);
+    // console.log(`📍 URL finale: ${finalUrl}`);
 
     // Déterminer le statut de la réponse
     const statusCode =

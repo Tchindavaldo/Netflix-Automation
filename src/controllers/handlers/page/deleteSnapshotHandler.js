@@ -10,8 +10,8 @@ const deleteSnapshotHandler = async (req, res) => {
   try {
     const { folderName } = req.body;
 
-    console.log('🗑️ Demande de suppression du dossier de snapshot...');
-    console.log(`   Dossier: ${folderName}`);
+    // console.log('🗑️ Demande de suppression du dossier de snapshot...');
+    // console.log(`   Dossier: ${folderName}`);
 
     // Validation du paramètre
     if (!folderName) {
@@ -47,7 +47,7 @@ const deleteSnapshotHandler = async (req, res) => {
     // Supprimer le dossier et son contenu
     await fs.rm(folderPath, { recursive: true, force: true });
 
-    console.log(`✅ Dossier supprimé: ${folderName}`);
+    // console.log(`✅ Dossier supprimé: ${folderName}`);
 
     return res.status(200).json({
       success: true,

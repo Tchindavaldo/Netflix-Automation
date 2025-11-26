@@ -39,7 +39,7 @@ class FileUploadService {
       // Récupérer l'URL publique
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
       
-      console.log(`✅ Fichier uploadé: ${fileName}`);
+      // console.log(`✅ Fichier uploadé: ${fileName}`);
       
       return publicUrl;
 
@@ -96,7 +96,7 @@ class FileUploadService {
         });
       }
 
-      console.log(`✅ Tous les fichiers du snapshot uploadés pour ${userId}`);
+      // console.log(`✅ Tous les fichiers du snapshot uploadés pour ${userId}`);
       
       return {
         success: true,
@@ -121,7 +121,7 @@ class FileUploadService {
   static async deleteLocalFile(filePath) {
     try {
       await fs.unlink(filePath);
-      console.log(`🗑️ Fichier local supprimé: ${path.basename(filePath)}`);
+      // console.log(`🗑️ Fichier local supprimé: ${path.basename(filePath)}`);
       return true;
     } catch (error) {
       console.error(`❌ Erreur lors de la suppression de ${filePath}:`, error.message);

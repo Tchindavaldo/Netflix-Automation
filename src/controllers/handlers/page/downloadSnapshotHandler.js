@@ -50,8 +50,8 @@ const downloadSnapshotHandler = async (req, res) => {
       });
     }
 
-    console.log(`📦 Préparation du téléchargement du dossier: ${folderName}`);
-    console.log(`📁 Fichiers trouvés: ${files.length}`);
+    // console.log(`📦 Préparation du téléchargement du dossier: ${folderName}`);
+    // console.log(`📁 Fichiers trouvés: ${files.length}`);
 
     // Configurer les headers pour le téléchargement
     res.setHeader("Content-Type", "application/zip");
@@ -85,14 +85,14 @@ const downloadSnapshotHandler = async (req, res) => {
 
       if (fileStats.isFile()) {
         archive.file(filePath, { name: file });
-        console.log(`  ✅ Ajouté: ${file}`);
+        // console.log(`  ✅ Ajouté: ${file}`);
       }
     });
 
     // Finaliser l'archive
     await archive.finalize();
 
-    console.log(`✅ Téléchargement du dossier '${folderName}' terminé`);
+    // console.log(`✅ Téléchargement du dossier '${folderName}' terminé`);
   } catch (error) {
     console.error("❌ Erreur dans le gestionnaire downloadSnapshot:", error);
     

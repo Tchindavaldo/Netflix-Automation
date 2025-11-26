@@ -12,7 +12,7 @@ const RetryHelper = require('../helpers/retryHelper');
  * @returns {Promise<Object>} - Résultat du remplissage
  */
 async function fillEmailPassword(baseUrl, sessionId, planActivationId, userId, subscriptionData = {}) {
-  console.log('📍 Étape 6: Remplissage email et mot de passe...');
+  // console.log('📍 Étape 6: Remplissage email et mot de passe...');
 
   const executeStep = async () => {
     try {
@@ -39,7 +39,7 @@ async function fillEmailPassword(baseUrl, sessionId, planActivationId, userId, s
         };
       }
 
-      console.log('✅ Email et mot de passe remplis avec succès');
+      // console.log('✅ Email et mot de passe remplis avec succès');
       
       return {
         success: true,

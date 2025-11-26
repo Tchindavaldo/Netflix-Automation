@@ -18,7 +18,7 @@ const planActivationService = {
         ...createdDoc.data()
       };
 
-      console.log(`✅ Activation créée avec l'ID: ${docRef.id}`);
+      // console.log(`✅ Activation créée avec l'ID: ${docRef.id}`);
       return result;
 
     } catch (error) {
@@ -114,7 +114,7 @@ const planActivationService = {
         ...updatedDoc.data()
       };
 
-      console.log(`✅ Activation ${activationId} mise à jour`);
+      // console.log(`✅ Activation ${activationId} mise à jour`);
       return result;
 
     } catch (error) {
@@ -139,7 +139,7 @@ const planActivationService = {
       // Supprimer le document
       await docRef.delete();
 
-      console.log(`✅ Activation ${activationId} supprimée`);
+      // console.log(`✅ Activation ${activationId} supprimée`);
       return true;
 
     } catch (error) {

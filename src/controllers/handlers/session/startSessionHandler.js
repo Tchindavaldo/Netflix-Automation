@@ -17,7 +17,7 @@ const startSessionHandler = async (req, res) => {
   }, sessionTimeout);
 
   try {
-    console.log("Démarrage d'une nouvelle session Netflix...");
+    // console.log("Démarrage d'une nouvelle session Netflix...");
     const result = await startSession();
 
     clearTimeout(timeout);

@@ -50,7 +50,7 @@ const subscriptionController = {
         });
       }
 
-      console.log(`🎯 Initialisation du processus d'abonnement pour ${email} (userId: ${userId})...`);
+      // console.log(`🎯 Initialisation du processus d'abonnement pour ${email} (userId: ${userId})...`);
 
       // Créer l'orchestrateur et exécuter le processus
       const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;

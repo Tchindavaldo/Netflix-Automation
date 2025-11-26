@@ -16,7 +16,7 @@ const stopSessionHandler = async (req, res) => {
       });
     }
 
-    console.log(`Arrêt de la session Netflix (ID: ${sessionId})...`);
+    // console.log(`Arrêt de la session Netflix (ID: ${sessionId})...`);
     const result = await stopSession(sessionId);
     
     if (!result.success) {

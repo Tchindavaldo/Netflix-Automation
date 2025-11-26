@@ -11,15 +11,15 @@ const subscriptionErrorService = {
    */
   logError: async (errorData) => {
     try {
-      console.log('🔍 Données reçues dans subscriptionErrorService.logError:', {
-        hasStepName: !!errorData.stepName,
-        hasError: !!errorData.error,
-        hasUserId: !!errorData.userId,
-        hasPlanActivationId: !!errorData.planActivationId,
-        hasErrorContext: !!errorData.errorContext,
-        hasCardInfo: !!errorData.cardInfo,
-        hasSnapshotUrls: !!errorData.snapshotUrls
-      });
+      // console.log('🔍 Données reçues dans subscriptionErrorService.logError:', {
+      //   hasStepName: !!errorData.stepName,
+      //   hasError: !!errorData.error,
+      //   hasUserId: !!errorData.userId,
+      //   hasPlanActivationId: !!errorData.planActivationId,
+      //   hasErrorContext: !!errorData.errorContext,
+      //   hasCardInfo: !!errorData.cardInfo,
+      //   hasSnapshotUrls: !!errorData.snapshotUrls
+      // });
 
       // Extraire les données importantes du contexte d'erreur
       const { 
@@ -86,17 +86,17 @@ const subscriptionErrorService = {
         }))
       };
 
-      console.log('📝 Enregistrement de l\'erreur avec les données:', {
-        stepName: errorRecord.stepName,
-        error: errorRecord.error,
-        hasCardInfo: !!errorRecord.cardInfo,
-        hasSnapshotUrls: !!errorRecord.snapshotUrls,
-        rawDataKeys: Object.keys(errorRecord.rawErrorData || {})
-      });
+      // console.log('📝 Enregistrement de l\'erreur avec les données:', {
+      //   stepName: errorRecord.stepName,
+      //   error: errorRecord.error,
+      //   hasCardInfo: !!errorRecord.cardInfo,
+      //   hasSnapshotUrls: !!errorRecord.snapshotUrls,
+      //   rawDataKeys: Object.keys(errorRecord.rawErrorData || {})
+      // });
 
       const docRef = await db.collection('subscription_errors').add(errorRecord);
       
-      console.log(`✅ Enregistrement Firestore réussi avec l'ID: ${docRef.id}`);
+      // console.log(`✅ Enregistrement Firestore réussi avec l'ID: ${docRef.id}`);
       
       // Vérifier que le document a bien été créé
       const createdDoc = await docRef.get();
@@ -109,7 +109,7 @@ const subscriptionErrorService = {
         ...createdDoc.data()
       };
 
-      console.log(`✅ Erreur d'abonnement enregistrée avec succès. ID: ${docRef.id}`);
+      // console.log(`✅ Erreur d'abonnement enregistrée avec succès. ID: ${docRef.id}`);
       return result;
 
     } catch (error) {

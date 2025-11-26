@@ -18,7 +18,7 @@ async function clickAfterPlanSelection(
   userId,
   subscriptionData = {}
 ) {
-  console.log("📍 Étape 4: Premier clic après la sélection du plan...");
+  // console.log("📍 Étape 4: Premier clic après la sélection du plan...");
 
   const executeStep = async () => {
     try {
@@ -45,7 +45,7 @@ async function clickAfterPlanSelection(
         };
       }
 
-      console.log("✅ Navigation réussie après sélection du plan");
+      // console.log("✅ Navigation réussie après sélection du plan");
 
       return {
         success: true,

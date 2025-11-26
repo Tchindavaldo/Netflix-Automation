@@ -22,19 +22,19 @@ const subscriptionErrorController = {
       const errorData = req.body;
       
       // Journalisation détaillée des données reçues
-      console.log('📥 Données d\'erreur reçues:', {
-        headers: req.headers,
-        body: {
-          stepName: errorData.stepName,
-          error: errorData.error ? (errorData.error.message || errorData.error) : 'Aucune erreur fournie',
-          userId: errorData.userId || 'Non fourni',
-          planActivationId: errorData.planActivationId || 'Non fourni',
-          hasCardInfo: !!errorData.cardInfo,
-          hasSnapshotUrls: !!errorData.snapshotUrls,
-          hasErrorContext: !!errorData.errorContext,
-          receivedAt: new Date().toISOString()
-        }
-      });
+      // console.log('📥 Données d\'erreur reçues:', {
+      //   headers: req.headers,
+      //   body: {
+      //     stepName: errorData.stepName,
+      //     error: errorData.error ? (errorData.error.message || errorData.error) : 'Aucune erreur fournie',
+      //     userId: errorData.userId || 'Non fourni',
+      //     planActivationId: errorData.planActivationId || 'Non fourni',
+      //     hasCardInfo: !!errorData.cardInfo,
+      //     hasSnapshotUrls: !!errorData.snapshotUrls,
+      //     hasErrorContext: !!errorData.errorContext,
+      //     receivedAt: new Date().toISOString()
+      //   }
+      // });
 
       // Valider les données requises
       const missingFields = [];
@@ -56,14 +56,14 @@ const subscriptionErrorController = {
         }
         
         // Journaliser le résultat réussi
-        console.log('✅ Erreur enregistrée avec succès:', {
-          errorId: result.id,
-          stepName: result.stepName,
-          timestamp: result.timestamp,
-          hasCardInfo: !!result.cardInfo,
-          hasSnapshotUrls: !!result.snapshotUrls,
-          firestoreId: result.id
-        });
+        // console.log('✅ Erreur enregistrée avec succès:', {
+        //   errorId: result.id,
+        //   stepName: result.stepName,
+        //   timestamp: result.timestamp,
+        //   hasCardInfo: !!result.cardInfo,
+        //   hasSnapshotUrls: !!result.snapshotUrls,
+        //   firestoreId: result.id
+        // });
 
         return res.status(201).json({
           success: true,

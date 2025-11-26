@@ -12,7 +12,7 @@ const RetryHelper = require('../helpers/retryHelper');
  * @returns {Promise<Object>} - Résultat du remplissage
  */
 async function fillPaymentForm(baseUrl, sessionId, planActivationId, userId, subscriptionData = {}) {
-  console.log('📍 Étape 9: Remplissage du formulaire de paiement...');
+  // console.log('📍 Étape 9: Remplissage du formulaire de paiement...');
 
   const executeStep = async () => {
     try {
@@ -58,7 +58,7 @@ async function fillPaymentForm(baseUrl, sessionId, planActivationId, userId, sub
         };
       }
 
-      console.log('✅ Formulaire de paiement rempli avec succès');
+      // console.log('✅ Formulaire de paiement rempli avec succès');
       
       return {
         success: true,

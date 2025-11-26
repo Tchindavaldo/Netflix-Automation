@@ -18,7 +18,7 @@ async function submitPayment(
   userId,
   subscriptionData = {}
 ) {
-  console.log("📍 Étape 10: Clic final sur le bouton de paiement...");
+  // console.log("📍 Étape 10: Clic final sur le bouton de paiement...");
 
   const executeStep = async () => {
     try {
@@ -30,7 +30,7 @@ async function submitPayment(
       const initialUrl = currentState.data?.url || "";
 
       // 2. Cliquer sur le bouton de soumission
-      console.log('👆 Clic sur le bouton de paiement...');
+      // console.log('👆 Clic sur le bouton de paiement...');
       const clickResponse = await axios.post(`${baseUrl}/api/netflix/page/clickBtn`, {
         sessionId,
         buttonSelector: selectors.paymentForm.submitButton,
@@ -38,7 +38,7 @@ async function submitPayment(
         waitForNavigationTimeout: 60000
       });
       
-      console.log(`🔍 Réponse du clic: success=${clickResponse.data.success}, navigation.changed=${clickResponse.data.navigation?.changed}`);
+      // console.log(`🔍 Réponse du clic: success=${clickResponse.data.success}, navigation.changed=${clickResponse.data.navigation?.changed}`);
 
       if (!clickResponse.data.success) {
         return {
@@ -55,9 +55,9 @@ async function submitPayment(
         const newUrl = clickResponse.data.navigation.newUrl || "";
         const previousUrl = clickResponse.data.navigation.before || initialUrl;
 
-        console.log("✅ Paiement soumis avec succès - Page a changé");
-        console.log(`   Ancienne URL: ${previousUrl}`);
-        console.log(`   Nouvelle URL: ${newUrl}`);
+        // console.log("✅ Paiement soumis avec succès - Page a changé");
+        // console.log(`   Ancienne URL: ${previousUrl}`);
+        // console.log(`   Nouvelle URL: ${newUrl}`);
 
         // On considère que tout changement de page est un succès
         return {
@@ -73,26 +73,26 @@ async function submitPayment(
 
       // 3. Si la page n'a pas changé, attendre plus longtemps avant de déclarer un échec
       // Les paiements peuvent prendre du temps à être traités
-      console.log('ℹ️ Aucun changement détecté immédiatement - Attente supplémentaire...');
+      // console.log('ℹ️ Aucun changement détecté immédiatement - Attente supplémentaire...');
       
       // Attendre 15 secondes pour laisser le temps au traitement du paiement
-      console.log('⏳ Attente de 15 secondes avant nouvelle vérification...');
+      // console.log('⏳ Attente de 15 secondes avant nouvelle vérification...');
       await new Promise(resolve => setTimeout(resolve, 15000));
 
       // Vérifier l'état actuel de la page
-      console.log('🔍 Vérification de l\'URL actuelle...');
+      // console.log('🔍 Vérification de l\'URL actuelle...');
       const pageState = await axios.post(`${baseUrl}/api/netflix/page/current`, { sessionId });
       const currentUrl = pageState.data?.url || '';
-      console.log(`📍 URL actuelle: ${currentUrl}`);
+      // console.log(`📍 URL actuelle: ${currentUrl}`);
 
       // Vérifier si l'URL a changé après l'attente
       const previousUrl = clickResponse.data.navigation?.before || "";
       if (currentUrl && currentUrl !== previousUrl) {
-        console.log(
-          "✅ Paiement soumis avec succès - URL a changé après attente"
-        );
-        console.log(`   Ancienne URL: ${previousUrl}`);
-        console.log(`   Nouvelle URL: ${currentUrl}`);
+        // console.log(
+        //   "✅ Paiement soumis avec succès - URL a changé après attente"
+        // );
+        // console.log(`   Ancienne URL: ${previousUrl}`);
+        // console.log(`   Nouvelle URL: ${currentUrl}`);
 
         return {
           success: true,
@@ -107,9 +107,9 @@ async function submitPayment(
       }
 
       // Si on arrive ici, c'est un échec
-      console.log(
-        "❌ Échec du paiement - Aucun changement de page ou message de succès détecté"
-      );
+      // console.log(
+      //   "❌ Échec du paiement - Aucun changement de page ou message de succès détecté"
+      // );
       return {
         success: false,
         pageChanged: false,

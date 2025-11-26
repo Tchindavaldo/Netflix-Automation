@@ -28,9 +28,9 @@ class RetryHelper {
 
     // Vérifier que userId est présent dans le contexte
     if (!errorContext.userId && !errorContext.planActivationId) {
-      console.warn(
-        "⚠️ userId ou planActivationId manquant dans errorContext pour le retry"
-      );
+      // console.warn(
+      //   "⚠️ userId ou planActivationId manquant dans errorContext pour le retry"
+      // );
     }
 
     let lastError = null;
@@ -41,9 +41,9 @@ class RetryHelper {
         attempt++;
 
         if (attempt > 1) {
-          console.log(
-            `🔄 Tentative ${attempt}/${maxRetries + 1} pour ${stepName}...`
-          );
+          // console.log(
+          //   `🔄 Tentative ${attempt}/${maxRetries + 1} pour ${stepName}...`
+          // );
         }
 
         const result = await fn();
@@ -51,7 +51,7 @@ class RetryHelper {
         // Si la fonction réussit, retourner le résultat
         if (result.success) {
           if (attempt > 1) {
-            console.log(`✅ ${stepName} réussi à la tentative ${attempt}`);
+            // console.log(`✅ ${stepName} réussi à la tentative ${attempt}`);
           }
           return result;
         }
@@ -61,9 +61,9 @@ class RetryHelper {
 
         // Si ce n'est pas le dernier essai, attendre et réessayer
         if (attempt <= maxRetries) {
-          console.log(
-            `⏳ Échec de ${stepName}, attente de ${retryDelay / 1000}s avant nouvelle tentative...`
-          );
+          // console.log(
+          //   `⏳ Échec de ${stepName}, attente de ${retryDelay / 1000}s avant nouvelle tentative...`
+          // );
           await this.sleep(retryDelay);
         }
       } catch (error) {
@@ -71,9 +71,9 @@ class RetryHelper {
 
         // Si ce n'est pas le dernier essai, attendre et réessayer
         if (attempt <= maxRetries) {
-          console.log(
-            `⏳ Erreur lors de ${stepName}, attente de ${retryDelay / 1000}s avant nouvelle tentative...`
-          );
+          // console.log(
+          //   `⏳ Erreur lors de ${stepName}, attente de ${retryDelay / 1000}s avant nouvelle tentative...`
+          // );
           await this.sleep(retryDelay);
         }
       }
@@ -137,10 +137,10 @@ class RetryHelper {
    */
   static async captureSnapshot(baseUrl, sessionId, planActivationId = null) {
     try {
-      console.log(`📸 Appel endpoint snapshot: ${baseUrl}/api/netflix/page/snapshot?sessionId=${sessionId}`);
-      console.log(`   SessionId: ${sessionId}`);
+      // console.log(`📸 Appel endpoint snapshot: ${baseUrl}/api/netflix/page/snapshot?sessionId=${sessionId}`);
+      // console.log(`   SessionId: ${sessionId}`);
       if (planActivationId) {
-        console.log(`   PlanActivationId (dossier): ${planActivationId}`);
+        // console.log(`   PlanActivationId (dossier): ${planActivationId}`);
       }
       
       // Préparer le body avec le folderName si planActivationId est fourni
@@ -156,9 +156,9 @@ class RetryHelper {
       );
 
       if (response.data?.success && response.data?.files) {
-        console.log("✅ Snapshot capturé avec succès");
+        // console.log("✅ Snapshot capturé avec succès");
         if (response.data.folderName) {
-          console.log(`   Dossier: ${response.data.folderName}`);
+          // console.log(`   Dossier: ${response.data.folderName}`);
         }
         // La réponse retourne files.html, files.screenshot, files.metadata
         return {
@@ -184,7 +184,7 @@ class RetryHelper {
    */
   static async logErrorToDatabase(baseUrl, errorData) {
     try {
-      console.log("📝 Préparation de l'enregistrement de l'erreur...");
+      // console.log("📝 Préparation de l'enregistrement de l'erreur...");
 
       const enrichedErrorData = {
         ...errorData,
@@ -199,7 +199,7 @@ class RetryHelper {
         );
         if (currentUrl) {
           enrichedErrorData.currentUrl = currentUrl;
-          console.log(`📍 URL capturée: ${currentUrl}`);
+          // console.log(`📍 URL capturée: ${currentUrl}`);
         }
       }
 
@@ -212,10 +212,10 @@ class RetryHelper {
           errorData.planActivationId // Passer le planActivationId pour nommer le dossier
         );
 
-        if (snapshotData) {
-          // 3. Uploader vers Google Drive via l'endpoint API dédié
-          console.log('☁️ Upload des fichiers vers Google Drive via API endpoint...');
-          console.log(`   Dossier local: ${snapshotData.folderName || 'snapshots'}`);
+          if (snapshotData) {
+            // 3. Uploader vers Google Drive via l'endpoint API dédié
+            // console.log('☁️ Upload des fichiers vers Google Drive via API endpoint...');
+            // console.log(`   Dossier local: ${snapshotData.folderName || 'snapshots'}`);
           
           try {
             const uploadResponse = await axios.post(`${baseUrl}/api/drive/upload-snapshot`, {
@@ -232,17 +232,17 @@ class RetryHelper {
               enrichedErrorData.snapshotFolder = uploadResult.folderName;
               enrichedErrorData.snapshotFolderPath = uploadResult.folderPath;
               
-              console.log('✅ Fichiers uploadés vers Google Drive');
-              console.log(`   - Dossier: ${uploadResult.folderPath}`);
+              // console.log('✅ Fichiers uploadés vers Google Drive');
+              // console.log(`   - Dossier: ${uploadResult.folderPath}`);
               
               // Supprimer automatiquement le dossier local après upload réussi
               if (snapshotData.folderName) {
                 try {
-                  console.log(`🗑️ Suppression automatique du dossier local: ${snapshotData.folderName}`);
+                  // console.log(`🗑️ Suppression automatique du dossier local: ${snapshotData.folderName}`);
                   await axios.delete(`${baseUrl}/api/netflix/page/snapshot`, {
                     data: { folderName: snapshotData.folderName }
                   });
-                  console.log('✅ Dossier local supprimé avec succès');
+                  // console.log('✅ Dossier local supprimé avec succès');
                 } catch (deleteError) {
                   console.error(`⚠️ Échec de la suppression automatique du dossier local:`, deleteError.message);
                   // Ne pas bloquer le processus si la suppression échoue
@@ -263,39 +263,39 @@ class RetryHelper {
       }
 
       // 5. Enregistrer l'erreur avec toutes les données enrichies
-      console.log("📊 Données à enregistrer en base:");
-      console.log(`   - Étape: ${enrichedErrorData.stepName}`);
-      console.log(`   - Erreur: ${enrichedErrorData.error}`);
-      console.log(`   - UserId: ${enrichedErrorData.userId}`);
-      console.log(`   - SessionId: ${enrichedErrorData.sessionId}`);
-      console.log(`   - PlanActivationId: ${enrichedErrorData.planActivationId}`);
-      console.log(`   - Email: ${enrichedErrorData.email || 'N/A'}`);
-      console.log(`   - Mot de passe: ${enrichedErrorData.motDePasse || 'N/A'}`);
-      console.log(`   - Type de plan: ${enrichedErrorData.typeDePlan || 'N/A'}`);
-      console.log(`   - Amount: ${enrichedErrorData.amount || 'N/A'}`);
-      console.log(`   - URL actuelle: ${enrichedErrorData.currentUrl || 'Non capturée'}`);
-      console.log(`   - Tentatives: ${enrichedErrorData.attempts}`);
-      console.log(`   - Button selector: ${enrichedErrorData.buttonSelector || enrichedErrorData.planSelector || 'N/A'}`);
-      console.log(`   - Snapshot dossier: ${enrichedErrorData.snapshotFolder || 'N/A'}`);
+      // console.log("📊 Données à enregistrer en base:");
+      // console.log(`   - Étape: ${enrichedErrorData.stepName}`);
+      // console.log(`   - Erreur: ${enrichedErrorData.error}`);
+      // console.log(`   - UserId: ${enrichedErrorData.userId}`);
+      // console.log(`   - SessionId: ${enrichedErrorData.sessionId}`);
+      // console.log(`   - PlanActivationId: ${enrichedErrorData.planActivationId}`);
+      // console.log(`   - Email: ${enrichedErrorData.email || 'N/A'}`);
+      // console.log(`   - Mot de passe: ${enrichedErrorData.motDePasse || 'N/A'}`);
+      // console.log(`   - Type de plan: ${enrichedErrorData.typeDePlan || 'N/A'}`);
+      // console.log(`   - Amount: ${enrichedErrorData.amount || 'N/A'}`);
+      // console.log(`   - URL actuelle: ${enrichedErrorData.currentUrl || 'Non capturée'}`);
+      // console.log(`   - Tentatives: ${enrichedErrorData.attempts}`);
+      // console.log(`   - Button selector: ${enrichedErrorData.buttonSelector || enrichedErrorData.planSelector || 'N/A'}`);
+      // console.log(`   - Snapshot dossier: ${enrichedErrorData.snapshotFolder || 'N/A'}`);
       if (enrichedErrorData.snapshotUrls) {
-        console.log(`   - Snapshot HTML URL: ${enrichedErrorData.snapshotUrls.htmlUrl || 'N/A'}`);
-        console.log(`   - Snapshot Screenshot URL: ${enrichedErrorData.snapshotUrls.screenshotUrl || 'N/A'}`);
+        // console.log(`   - Snapshot HTML URL: ${enrichedErrorData.snapshotUrls.htmlUrl || 'N/A'}`);
+        // console.log(`   - Snapshot Screenshot URL: ${enrichedErrorData.snapshotUrls.screenshotUrl || 'N/A'}`);
       }
       if (enrichedErrorData.cardInfo) {
-        console.log(`   - Carte (4 derniers chiffres): ${enrichedErrorData.cardInfo.lastFourDigits || 'N/A'}`);
-        console.log(`   - Carte expiration: ${enrichedErrorData.cardInfo.expirationDate || 'N/A'}`);
+        // console.log(`   - Carte (4 derniers chiffres): ${enrichedErrorData.cardInfo.lastFourDigits || 'N/A'}`);
+        // console.log(`   - Carte expiration: ${enrichedErrorData.cardInfo.expirationDate || 'N/A'}`);
       }
       
       // Journalisation détaillée des données avant l'envoi
-      console.log('🔍 Données à envoyer à l\'API d\'erreur:', {
-        stepName: enrichedErrorData.stepName,
-        error: enrichedErrorData.error,
-        hasSessionId: !!enrichedErrorData.sessionId,
-        hasPlanActivationId: !!enrichedErrorData.planActivationId,
-        hasUserId: !!enrichedErrorData.userId,
-        hasCardInfo: !!enrichedErrorData.cardInfo,
-        hasSnapshotUrls: !!enrichedErrorData.snapshotUrls
-      });
+      // console.log('🔍 Données à envoyer à l\'API d\'erreur:', {
+      //   stepName: enrichedErrorData.stepName,
+      //   error: enrichedErrorData.error,
+      //   hasSessionId: !!enrichedErrorData.sessionId,
+      //   hasPlanActivationId: !!enrichedErrorData.planActivationId,
+      //   hasUserId: !!enrichedErrorData.userId,
+      //   hasCardInfo: !!enrichedErrorData.cardInfo,
+      //   hasSnapshotUrls: !!enrichedErrorData.snapshotUrls
+      // });
 
       try {
         const response = await axios.post(
@@ -309,14 +309,14 @@ class RetryHelper {
           }
         );
         
-        console.log("✅ Réponse de l'API d'erreur:", {
-          status: response.status,
-          data: response.data
-        });
+        // console.log("✅ Réponse de l'API d'erreur:", {
+        //   status: response.status,
+        //   data: response.data
+        // });
         
         if (response.data && response.data.success) {
-          console.log("✅ Erreur enregistrée avec succès en base de données");
-          console.log(`   ID d'erreur: ${response.data.data?.id || 'non fourni'}`);
+          // console.log("✅ Erreur enregistrée avec succès en base de données");
+          // console.log(`   ID d'erreur: ${response.data.data?.id || 'non fourni'}`);
         } else {
           console.error("❌ L'API a répondu avec une erreur:", response.data);
         }
@@ -335,15 +335,15 @@ class RetryHelper {
         throw apiError; // Relancer pour une meilleure gestion en amont
       }
 
-      if (Object.keys(snapshotUrls).length > 0) {
-        console.log("📎 Fichiers disponibles:");
-        if (snapshotUrls.htmlUrl)
-          console.log(`   - HTML: ${snapshotUrls.htmlUrl}`);
-        if (snapshotUrls.screenshotUrl)
-          console.log(`   - Screenshot: ${snapshotUrls.screenshotUrl}`);
-        if (snapshotUrls.metadataUrl)
-          console.log(`   - Metadata: ${snapshotUrls.metadataUrl}`);
-      }
+      // if (Object.keys(snapshotUrls).length > 0) {
+      //   // console.log("📎 Fichiers disponibles:");
+      //   if (snapshotUrls.htmlUrl)
+      //     // console.log(`   - HTML: ${snapshotUrls.htmlUrl}`);
+      //   if (snapshotUrls.screenshotUrl)
+      //     // console.log(`   - Screenshot: ${snapshotUrls.screenshotUrl}`);
+      //   if (snapshotUrls.metadataUrl)
+      //     // console.log(`   - Metadata: ${snapshotUrls.metadataUrl}`);
+      // }
     } catch (error) {
       console.error(
         "❌ Impossible d'enregistrer l'erreur en base:",

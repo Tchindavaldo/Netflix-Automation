@@ -26,7 +26,7 @@ const stopSession = async (sessionId) => {
       };
     }
 
-    console.log("🛑 Fermeture de la session Netflix...");
+    // console.log("🛑 Fermeture de la session Netflix...");
 
     // Arrêter le monitoring (cookies + keep-alive)
     monitoringService.stopMonitoring(sessionId);
@@ -39,7 +39,7 @@ const stopSession = async (sessionId) => {
     // Supprimer la session du gestionnaire
     await sessionManager.closeSession(sessionId);
 
-    console.log("✅ Session fermée avec succès");
+    // console.log("✅ Session fermée avec succès");
 
     return {
       success: true,

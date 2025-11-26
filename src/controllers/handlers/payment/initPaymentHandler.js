@@ -19,7 +19,7 @@ const initPaymentHandler = async (req, res) => {
       const planPricing = netflixPricing.pricing[typeDePlan.toLowerCase()];
       if (planPricing) {
         amount = planPricing.amount;
-        console.log(`💰 Montant automatique selon le plan ${typeDePlan}: ${amount} ${planPricing.currency}`);
+        // console.log(`💰 Montant automatique selon le plan ${typeDePlan}: ${amount} ${planPricing.currency}`);
       } else {
         return res.status(400).json({
           success: false,
@@ -47,13 +47,13 @@ const initPaymentHandler = async (req, res) => {
       });
     }
 
-    console.log(`🔵 Initialisation du paiement Orange Money pour ${email} (userId: ${userId})...`);
-    console.log(`📱 Numéro OM: ${numeroOM}`);
-    console.log(`📦 Type de plan: ${typeDePlan}`);
-    console.log(`💵 Montant: ${amount}`);
+    // console.log(`🔵 Initialisation du paiement Orange Money pour ${email} (userId: ${userId})...`);
+    // console.log(`📱 Numéro OM: ${numeroOM}`);
+    // console.log(`📦 Type de plan: ${typeDePlan}`);
+    // console.log(`💵 Montant: ${amount}`);
 
     // ÉTAPE 1: Créer le planActivation avec reqteStatusSuccess='pending'
-    console.log(`📝 Étape 1: Création du planActivation...`);
+    // console.log(`📝 Étape 1: Création du planActivation...`);
     
     const activationData = {
       userId,
@@ -74,7 +74,7 @@ const initPaymentHandler = async (req, res) => {
     const newActivation = await planActivationService.createActivation(activationData);
     const planActivationId = newActivation.id;
     
-    console.log(`✅ PlanActivation créé avec l'ID: ${planActivationId}`);
+    // console.log(`✅ PlanActivation créé avec l'ID: ${planActivationId}`);
     
     // Émettre l'événement Socket.IO pour la création
     try {
@@ -85,7 +85,7 @@ const initPaymentHandler = async (req, res) => {
         data: newActivation,
         timestamp: new Date().toISOString(),
       });
-      console.log(`🔔 Socket.IO: Activation créée envoyée à ${userId}`);
+      // console.log(`🔔 Socket.IO: Activation créée envoyée à ${userId}`);
     } catch (socketError) {
       console.error('❌ Erreur lors de l\'\u00e9mission Socket.IO:', socketError);
     }
@@ -106,7 +106,7 @@ const initPaymentHandler = async (req, res) => {
       },
     });
 
-    console.log(`✅ Paiement initié pour ${email} (userId: ${userId})`);
+    // console.log(`✅ Paiement initié pour ${email} (userId: ${userId})`);
 
     // ÉTAPE 2: Simuler validation du paiement puis appeler init_subscription_process
     setTimeout(async () => {
@@ -127,10 +127,10 @@ const initPaymentHandler = async (req, res) => {
           },
         });
 
-        console.log(`🔔 Socket.IO: Paiement validé envoyé à ${userId}`);
+        // console.log(`🔔 Socket.IO: Paiement validé envoyé à ${userId}`);
 
         // ÉTAPE 3: Appeler l'orchestrateur d'abonnement Netflix
-        console.log(`🎬 Étape 2: Appel de l'orchestrateur d'abonnement Netflix...`);
+        // console.log(`🎬 Étape 2: Appel de l'orchestrateur d'abonnement Netflix...`);
         
         const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
         
@@ -145,7 +145,7 @@ const initPaymentHandler = async (req, res) => {
 
           // ÉTAPE 4: Si succès, mettre à jour le planActivation
           if (subscriptionResponse.data.success) {
-            console.log(`✅ Processus d'abonnement réussi pour ${email} (userId: ${userId})`);
+            // console.log(`✅ Processus d'abonnement réussi pour ${email} (userId: ${userId})`);
             
             // Mettre reqteStatusSuccess='success' et statut='activated'
             await planActivationService.updateActivation(planActivationId, {
@@ -159,7 +159,7 @@ const initPaymentHandler = async (req, res) => {
               { statut: 'activated' }
             );
             
-            console.log(`✅ PlanActivation mis à jour: reqteStatusSuccess='success', statut='activated'`);
+            // console.log(`✅ PlanActivation mis à jour: reqteStatusSuccess='success', statut='activated'`);
             
             // Notifier le succès
             io.to(userId).emit('subscription_success', {
@@ -182,7 +182,7 @@ const initPaymentHandler = async (req, res) => {
               dateModification: new Date().toISOString()
             });
             
-            console.log(`⚠️ PlanActivation mis à jour: reqteStatusSuccess='failed', statut reste 'pending'`);
+            // console.log(`⚠️ PlanActivation mis à jour: reqteStatusSuccess='failed', statut reste 'pending'`);
             
             // Notifier l'échec
             io.to(userId).emit('subscription_error', {
@@ -206,7 +206,7 @@ const initPaymentHandler = async (req, res) => {
             dateModification: new Date().toISOString()
           });
           
-          console.log(`⚠️ PlanActivation mis à jour: reqteStatusSuccess='failed' après erreur`);
+          // console.log(`⚠️ PlanActivation mis à jour: reqteStatusSuccess='failed' après erreur`);
           
           // Notifier l'erreur
           io.to(userId).emit('subscription_error', {

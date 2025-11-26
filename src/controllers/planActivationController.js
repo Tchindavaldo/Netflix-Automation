@@ -87,7 +87,7 @@ const planActivationController = {
           timestamp: new Date().toISOString(),
         });
 
-        console.log(`🔔 Socket.IO: Activation créée envoyée à ${userId}`);
+        // console.log(`🔔 Socket.IO: Activation créée envoyée à ${userId}`);
       } catch (socketError) {
         console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
       }
@@ -231,7 +231,7 @@ const planActivationController = {
           timestamp: new Date().toISOString(),
         });
 
-        console.log(`🔔 Socket.IO: Mise à jour d'activation envoyée à ${result.userId}`);
+        // console.log(`🔔 Socket.IO: Mise à jour d'activation envoyée à ${result.userId}`);
       } catch (socketError) {
         console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
       }
@@ -384,7 +384,7 @@ const planActivationController = {
         updateData.dateDebut = now.toISOString();
         updateData.dateExpiration = dateExpiration.toISOString();
         
-        console.log(`📅 Dates définies: Début = ${updateData.dateDebut}, Expiration = ${updateData.dateExpiration}`);
+        // console.log(`📅 Dates définies: Début = ${updateData.dateDebut}, Expiration = ${updateData.dateExpiration}`);
       }
 
       // Mettre à jour l'activation
@@ -409,7 +409,7 @@ const planActivationController = {
           timestamp: new Date().toISOString(),
         });
 
-        console.log(`🔔 Socket.IO: Changement de statut envoyé à ${currentActivation.userId}`);
+        // console.log(`🔔 Socket.IO: Changement de statut envoyé à ${currentActivation.userId}`);
       } catch (socketError) {
         console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
       }

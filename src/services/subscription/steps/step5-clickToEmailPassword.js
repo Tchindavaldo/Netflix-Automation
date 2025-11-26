@@ -18,7 +18,7 @@ async function clickToEmailPassword(
   userId,
   subscriptionData = {}
 ) {
-  console.log("📍 Étape 5: Deuxième clic vers la page email/mot de passe...");
+  // console.log("📍 Étape 5: Deuxième clic vers la page email/mot de passe...");
 
   const executeStep = async () => {
     try {
@@ -45,7 +45,7 @@ async function clickToEmailPassword(
         };
       }
 
-      console.log("✅ Navigation réussie vers la page email/mot de passe");
+      // console.log("✅ Navigation réussie vers la page email/mot de passe");
 
       return {
         success: true,

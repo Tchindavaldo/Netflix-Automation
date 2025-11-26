@@ -20,9 +20,9 @@ socket.init(server);
 
 // Démarrage du serveur
 server.listen(PORT, HOST, () => {
-  console.log(`🚀 Serveur lancé sur http://localhost:${PORT}`);
-  console.log(`Environnement: ${process.env.NODE_ENV || 'développement'}`);
-  console.log(`Mode headless: ${process.env.HEADLESS === 'true' ? 'activé' : 'désactivé'}`);
+  // console.log(`🚀 Serveur lancé sur http://localhost:${PORT}`);
+  // console.log(`Environnement: ${process.env.NODE_ENV || 'développement'}`);
+  // console.log(`Mode headless: ${process.env.HEADLESS === 'true' ? 'activé' : 'désactivé'}`);
 });
 
 // Gestion des erreurs non capturées
@@ -37,9 +37,9 @@ process.on('uncaughtException', (error) => {
 
 // Gestion de l'arrêt propre du serveur
 process.on('SIGTERM', () => {
-  console.log('SIGTERM reçu. Arrêt du serveur...');
+  // console.log('SIGTERM reçu. Arrêt du serveur...');
   server.close(() => {
-    console.log('Serveur arrêté');
+    // console.log('Serveur arrêté');
   });
 });
 

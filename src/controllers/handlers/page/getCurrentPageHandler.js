@@ -14,9 +14,9 @@ const getCurrentPageHandler = async (req, res) => {
       req.body.sessionId || req.query.sessionId || req.headers["x-session-id"];
 
     // Log pour déboguer
-    console.log("📥 Paramètres reçus:", {
-      sessionId,
-    });
+    // console.log("📥 Paramètres reçus:", {
+    //   sessionId,
+    // });
 
     // Validation du sessionId
     if (!sessionId) {
@@ -39,13 +39,13 @@ const getCurrentPageHandler = async (req, res) => {
 
     const driver = session.driver;
 
-    console.log("🔍 Récupération de l'URL actuelle...");
+    // console.log("🔍 Récupération de l'URL actuelle...");
 
     // Obtenir uniquement l'URL actuelle
     const currentUrl = await driver.getCurrentUrl();
-    console.log(`📍 URL: ${currentUrl}`);
+    // console.log(`📍 URL: ${currentUrl}`);
 
-    console.log("✅ URL récupérée avec succès");
+    // console.log("✅ URL récupérée avec succès");
 
     res.status(200).json({
       success: true,

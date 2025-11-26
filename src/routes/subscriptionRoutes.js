@@ -4,16 +4,115 @@ const subscriptionController = require('../controllers/subscriptionController');
 const subscriptionErrorController = require('../controllers/subscriptionErrorController');
 
 /**
- * Routes pour la gestion du processus d'abonnement Netflix
+ * @swagger
+ * /init:
+ *   post:
+ *     summary: Initialiser le processus d'abonnement Netflix
+ *     tags:
+ *       - Subscription
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - typeDePlan
+ *               - email
+ *               - motDePasse
+ *               - planActivationId
+ *               - userId
+ *             properties:
+ *               typeDePlan:
+ *                 type: string
+ *                 enum: [mobile, basic, standard, premium]
+ *                 description: Type de plan Netflix
+ *               email:
+ *                 type: string
+ *                 description: Email de l'utilisateur
+ *               motDePasse:
+ *                 type: string
+ *                 description: Mot de passe Netflix
+ *               planActivationId:
+ *                 type: string
+ *                 description: ID de l'activation du plan
+ *               userId:
+ *                 type: string
+ *                 description: ID de l'utilisateur
+ *     responses:
+ *       200:
+ *         description: Processus d'abonnement initialisé
+ *       400:
+ *         description: Paramètres manquants ou invalides
  */
-
-// POST /api/subscription/init - Initialiser le processus complet d'abonnement Netflix
 router.post('/init', subscriptionController.initSubscriptionProcess);
 
-// POST /api/subscription/error - Enregistrer une erreur d'abonnement
+/**
+ * @swagger
+ * /error:
+ *   post:
+ *     summary: Enregistrer une erreur d'abonnement
+ *     tags:
+ *       - Subscription
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - stepName
+ *               - error
+ *               - userId
+ *               - planActivationId
+ *             properties:
+ *               stepName:
+ *                 type: string
+ *                 description: Nom de l'étape où l'erreur s'est produite
+ *               error:
+ *                 type: string
+ *                 description: Message d'erreur
+ *               userId:
+ *                 type: string
+ *                 description: ID de l'utilisateur
+ *               planActivationId:
+ *                 type: string
+ *                 description: ID de l'activation du plan
+ *               cardInfo:
+ *                 type: object
+ *                 description: Informations de carte (optionnel)
+ *               snapshotUrls:
+ *                 type: array
+ *                 description: URLs des snapshots (optionnel)
+ *               errorContext:
+ *                 type: object
+ *                 description: Contexte d'erreur additionnel (optionnel)
+ *     responses:
+ *       201:
+ *         description: Erreur enregistrée
+ *       400:
+ *         description: Données manquantes
+ */
 router.post('/error', subscriptionErrorController.logError);
 
-// GET /api/subscription/error/:planActivationId - Récupérer les erreurs par planActivationId
+/**
+ * @swagger
+ * /error/{planActivationId}:
+ *   get:
+ *     summary: Récupérer les erreurs par planActivationId
+ *     tags:
+ *       - Subscription
+ *     parameters:
+ *       - in: path
+ *         name: planActivationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de l'activation du plan
+ *     responses:
+ *       200:
+ *         description: Erreurs trouvées
+ */
 router.get('/error/:planActivationId', subscriptionErrorController.getErrorsByActivationId);
 
 module.exports = router;

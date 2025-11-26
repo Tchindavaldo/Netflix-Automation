@@ -18,9 +18,9 @@ async function clickToPaymentMethod(
   userId,
   subscriptionData = {}
 ) {
-  console.log(
-    "📍 Étape 7: Navigation vers la sélection de la méthode de paiement..."
-  );
+  // console.log(
+  //   "📍 Étape 7: Navigation vers la sélection de la méthode de paiement..."
+  // );
 
   const executeStep = async () => {
     try {
@@ -47,9 +47,9 @@ async function clickToPaymentMethod(
         };
       }
 
-      console.log(
-        "✅ Navigation réussie vers la sélection de la méthode de paiement"
-      );
+      // console.log(
+      //   "✅ Navigation réussie vers la sélection de la méthode de paiement"
+      // );
 
       return {
         success: true,

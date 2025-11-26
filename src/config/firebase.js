@@ -21,7 +21,7 @@ try {
     storageBucket: `${process.env.FB_PROJECT_ID}.appspot.com`,
     universeDomain: process.env.FB_UNIVERSE_DOMAIN,
   });
-  console.log('Firebase Admin SDK initialisé avec succès');
+  // console.log('Firebase Admin SDK initialisé avec succès');
 } catch (error) {
   console.error("Erreur lors de l'initialisation de Firebase:", error);
   throw error;

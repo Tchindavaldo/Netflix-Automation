@@ -56,10 +56,6 @@ class CookieService {
         lastUpdated: new Date().toISOString(),
       };
 
-      console.log(
-        `🍪 Cookies mis à jour: ${Object.keys(importantCookies).length} cookies Netflix trouvés`,
-      );
-
       return {
         success: true,
         cookies: session.cookies,
@@ -125,7 +121,7 @@ class CookieService {
         lastUpdated: new Date().toISOString(),
       };
 
-      console.log("🗑️ Cookies supprimés avec succès");
+      // console.log("🗑️ Cookies supprimés avec succès");
 
       return {
         success: true,

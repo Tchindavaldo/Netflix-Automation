@@ -16,12 +16,12 @@ const selectPaymentMethodHandler = async (req, res) => {
     const selector = req.body.selector || req.query.selector;
 
     // Log pour déboguer
-    console.log("📥 Paramètres reçus:", {
-      sessionId,
-      selector,
-      body: req.body,
-      query: req.query,
-    });
+    // console.log("📥 Paramètres reçus:", {
+    //   sessionId,
+    //   selector,
+    //   body: req.body,
+    //   query: req.query,
+    // });
 
     // Validation du sessionId
     if (!sessionId) {
@@ -66,26 +66,26 @@ const selectPaymentMethodHandler = async (req, res) => {
 
     const driver = session.driver;
 
-    console.log(`💳 Recherche du bouton de paiement avec: ${selector}`);
+    // console.log(`💳 Recherche du bouton de paiement avec: ${selector}`);
 
     // URL actuelle avant le clic
     const urlBefore = await driver.getCurrentUrl();
-    console.log(`📍 URL actuelle: ${urlBefore}`);
+    // console.log(`📍 URL actuelle: ${urlBefore}`);
 
     let button;
     try {
-      console.log(`🔍 Recherche de l'élément...`);
+      // console.log(`🔍 Recherche de l'élément...`);
 
       // Attendre que l'élément soit présent
       button = await driver.wait(until.elementLocated(By.css(selector)), 10000);
 
-      console.log(`✅ Élément trouvé`);
+      // console.log(`✅ Élément trouvé`);
 
       // Attendre que le bouton soit visible et cliquable
       await driver.wait(until.elementIsVisible(button), 5000);
       await driver.wait(until.elementIsEnabled(button), 5000);
 
-      console.log(`✅ Bouton prêt pour le clic`);
+      // console.log(`✅ Bouton prêt pour le clic`);
     } catch (error) {
       console.error(`❌ Bouton non trouvé avec le sélecteur: ${selector}`);
 
@@ -105,12 +105,12 @@ const selectPaymentMethodHandler = async (req, res) => {
       });
     }
 
-    console.log(`🎯 Clic sur le bouton de paiement...`);
+    // console.log(`🎯 Clic sur le bouton de paiement...`);
 
     // Cliquer sur le bouton
     await button.click();
 
-    console.log(`✅ Clic effectué avec succès`);
+    // console.log(`✅ Clic effectué avec succès`);
 
     // Attendre que la navigation se produise
     await driver.sleep(2000);
@@ -119,7 +119,7 @@ const selectPaymentMethodHandler = async (req, res) => {
     const urlAfter = await driver.getCurrentUrl();
     const title = await driver.getTitle();
 
-    console.log(`📍 Navigation: ${urlBefore} → ${urlAfter}`);
+    // console.log(`📍 Navigation: ${urlBefore} → ${urlAfter}`);
 
     res.status(200).json({
       success: true,

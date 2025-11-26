@@ -105,9 +105,9 @@ class PageSnapshotService {
       );
       fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
 
-      console.log(
-        `📸 Snapshot sauvegardé: ${metadata.files.html}, ${metadata.files.screenshot}`,
-      );
+      // console.log(
+      //   `📸 Snapshot sauvegardé: ${metadata.files.html}, ${metadata.files.screenshot}`,
+      // );
 
       return {
         success: true,
@@ -158,7 +158,7 @@ class PageSnapshotService {
         currentUrl = await session.driver.getCurrentUrl();
       } catch (e) {}
 
-      console.log(`📄 HTML sauvegardé: ${path.basename(htmlPath)}`);
+      // console.log(`📄 HTML sauvegardé: ${path.basename(htmlPath)}`);
 
       return {
         success: true,
@@ -202,7 +202,7 @@ class PageSnapshotService {
 
         filePath = path.join(customDir, `${prefix}_${timestamp}.png`);
         fs.writeFileSync(filePath, screenshot, "base64");
-        console.log(`📸 Screenshot sauvegardé: ${path.basename(filePath)}`);
+        // console.log(`📸 Screenshot sauvegardé: ${path.basename(filePath)}`);
       }
 
       return {

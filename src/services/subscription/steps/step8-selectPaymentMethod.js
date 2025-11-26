@@ -12,7 +12,7 @@ const RetryHelper = require('../helpers/retryHelper');
  * @returns {Promise<Object>} - Résultat de la sélection
  */
 async function selectPaymentMethod(baseUrl, sessionId, planActivationId, userId, subscriptionData = {}) {
-  console.log('📍 Étape 8: Sélection de la méthode de paiement (Carte de crédit/débit)...');
+  // console.log('📍 Étape 8: Sélection de la méthode de paiement (Carte de crédit/débit)...');
   
   const executeStep = async () => {
     try {
@@ -36,7 +36,7 @@ async function selectPaymentMethod(baseUrl, sessionId, planActivationId, userId,
         };
       }
 
-      console.log('✅ Méthode de paiement sélectionnée avec succès');
+      // console.log('✅ Méthode de paiement sélectionnée avec succès');
       
       return {
         success: true,

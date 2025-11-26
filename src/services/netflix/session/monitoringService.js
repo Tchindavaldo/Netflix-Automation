@@ -24,20 +24,8 @@ class MonitoringService {
    * @param {string} sessionId - ID de la session
    */
   startCookieMonitoring(sessionId) {
-    console.log("👀 Démarrage surveillance cookies (toutes les 30s)...");
-
-    const cookieInterval = setInterval(async () => {
-      try {
-        await cookieService.updateCookies(sessionId);
-      } catch (e) {
-        console.error("⚠️ Erreur surveillance cookies:", e.message);
-      }
-    }, 30000);
-
-    if (!this.intervals.has(sessionId)) {
-      this.intervals.set(sessionId, {});
-    }
-    this.intervals.get(sessionId).cookieInterval = cookieInterval;
+    // Surveillance désactivée à la demande de l'utilisateur
+    // console.log("👀 Démarrage surveillance cookies (toutes les 30s)...");
   }
 
   /**
@@ -46,29 +34,29 @@ class MonitoringService {
    * @param {Object} driver - Driver Selenium
    */
   startKeepAlive(sessionId, driver) {
-    console.log("💓 Démarrage keep-alive session (toutes les 5 minutes)...");
+    // console.log("💓 Démarrage keep-alive session (toutes les 5 minutes)...");
 
-    const keepAliveInterval = setInterval(async () => {
-      try {
-        if (driver) {
-          const currentUrl = await driver.getCurrentUrl();
-          if (!currentUrl.includes("netflix.com")) {
-            console.log("🔄 Retour vers Netflix...");
-            await driver.get("https://www.netflix.com/signup");
-            await driver.sleep(1000);
-          }
-          await driver.executeScript("document.title = document.title;");
-          console.log("💓 Session maintenue active");
-        }
-      } catch (e) {
-        console.error("⚠️ Erreur keep-alive:", e.message);
-      }
-    }, 300000);
+    // const keepAliveInterval = setInterval(async () => {
+    //   try {
+    //     if (driver) {
+    //       const currentUrl = await driver.getCurrentUrl();
+    //       if (!currentUrl.includes("netflix.com")) {
+    //         // console.log("🔄 Retour vers Netflix...");
+    //         await driver.get("https://www.netflix.com/signup");
+    //         await driver.sleep(1000);
+    //       }
+    //       await driver.executeScript("document.title = document.title;");
+    //       // console.log("💓 Session maintenue active");
+    //     }
+    //   } catch (e) {
+    //     console.error("⚠️ Erreur keep-alive:", e.message);
+    //   }
+    // }, 300000);
 
-    if (!this.intervals.has(sessionId)) {
-      this.intervals.set(sessionId, {});
-    }
-    this.intervals.get(sessionId).keepAliveInterval = keepAliveInterval;
+    // if (!this.intervals.has(sessionId)) {
+    //   this.intervals.set(sessionId, {});
+    // }
+    // this.intervals.get(sessionId).keepAliveInterval = keepAliveInterval;
   }
 
   /**
@@ -80,11 +68,11 @@ class MonitoringService {
     if (intervals) {
       if (intervals.cookieInterval) {
         clearInterval(intervals.cookieInterval);
-        console.log("🛑 Surveillance cookies arrêtée");
+        // console.log("🛑 Surveillance cookies arrêtée");
       }
       if (intervals.keepAliveInterval) {
         clearInterval(intervals.keepAliveInterval);
-        console.log("🛑 Keep-alive arrêté");
+        // console.log("🛑 Keep-alive arrêté");
       }
       this.intervals.delete(sessionId);
     }

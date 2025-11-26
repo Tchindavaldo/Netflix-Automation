@@ -40,7 +40,7 @@ const selectPlanHandler = async (req, res) => {
 
     const driver = session.driver;
 
-    console.log(`🔍 Recherche du plan avec le sélecteur: ${planSelector}`);
+    // console.log(`🔍 Recherche du plan avec le sélecteur: ${planSelector}`);
 
     // URL actuelle avant le clic
     const urlBefore = await driver.getCurrentUrl();
@@ -76,7 +76,7 @@ const selectPlanHandler = async (req, res) => {
       console.warn("⚠️ L'élément du plan n'est pas devenu cliquable dans le délai");
     });
 
-    console.log(`🎯 Clic sur le plan...`);
+    // console.log(`🎯 Clic sur le plan...`);
 
     // Cliquer sur le plan
     await planElement.click();
@@ -88,7 +88,7 @@ const selectPlanHandler = async (req, res) => {
     const urlAfter = await driver.getCurrentUrl();
     const title = await driver.getTitle();
 
-    console.log(`✅ Plan sélectionné - Navigation: ${urlBefore} → ${urlAfter}`);
+    // console.log(`✅ Plan sélectionné - Navigation: ${urlBefore} → ${urlAfter}`);
 
     res.status(200).json({
       success: true,

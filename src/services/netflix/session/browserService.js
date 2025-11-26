@@ -12,7 +12,7 @@ class BrowserService {
    */
   static async initializeDriver() {
     try {
-      console.log("🔧 Initialisation du driver Selenium...");
+      // console.log("🔧 Initialisation du driver Selenium...");
       const options = new firefox.Options();
       const headless =
         String(process.env.HEADLESS || "true").toLowerCase() !== "false";
@@ -28,6 +28,10 @@ class BrowserService {
       options.addArguments("--no-sandbox");
       options.addArguments("--disable-dev-shm-usage");
       options.addArguments("--disable-web-security");
+      options.addArguments("--disable-gpu");
+      options.addArguments("--disable-extensions");
+      options.addArguments("--disable-infobars");
+      options.addArguments("--disable-notifications");
 
       const NETFLIX_UA =
         process.env.NETFLIX_UA ||
@@ -61,12 +65,12 @@ class BrowserService {
 
       try {
         const ua = await driver.executeScript("return navigator.userAgent;");
-        console.log("🎯 UA détecté dans Firefox:", ua);
+        // console.log("🎯 UA détecté dans Firefox:", ua);
       } catch {}
 
-      console.log(
-        `✅ Driver Selenium initialisé (${headless ? "headless" : "graphique"})`
-      );
+      // console.log(
+      //   `✅ Driver Selenium initialisé (${headless ? "headless" : "graphique"})`
+      // );
       return driver;
     } catch (error) {
       console.error("❌ Erreur initialisation driver:", error);
@@ -82,9 +86,9 @@ class BrowserService {
    */
   static async startNetflixBrowser(sessionId, driver) {
     try {
-      console.log("🚀 Démarrage du navigateur Netflix...");
+      // console.log("🚀 Démarrage du navigateur Netflix...");
 
-      console.log("📱 Navigation vers Netflix signup...");
+      // console.log("📱 Navigation vers Netflix signup...");
       await driver.get("https://www.netflix.com/signup");
       await driver.sleep(2000);
 
@@ -93,10 +97,10 @@ class BrowserService {
         throw new Error(`URL inattendue: ${currentUrl}`);
       }
 
-      console.log("🍪 Récupération des cookies initiaux...");
+      // console.log("🍪 Récupération des cookies initiaux...");
       await cookieService.updateCookies(sessionId);
 
-      console.log("✅ Navigateur Netflix démarré avec succès!");
+      // console.log("✅ Navigateur Netflix démarré avec succès!");
 
       return {
         success: true,
@@ -121,7 +125,7 @@ class BrowserService {
     try {
       if (driver) {
         await driver.quit();
-        console.log("🛑 Driver fermé avec succès");
+        // console.log("🛑 Driver fermé avec succès");
       }
     } catch (error) {
       console.error("❌ Erreur lors de la fermeture du driver:", error);

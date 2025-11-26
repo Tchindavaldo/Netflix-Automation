@@ -12,9 +12,9 @@ const uploadSnapshotHandler = async (req, res) => {
   try {
     const { userId, planActivationId, snapshotFiles } = req.body;
 
-    console.log('📤 Upload manuel vers Google Drive...');
-    console.log(`   userId: ${userId}`);
-    console.log(`   planActivationId: ${planActivationId}`);
+    // console.log('📤 Upload manuel vers Google Drive...');
+    // console.log(`   userId: ${userId}`);
+    // console.log(`   planActivationId: ${planActivationId}`);
 
     // Validation des paramètres
     if (!userId) {
@@ -57,7 +57,7 @@ const uploadSnapshotHandler = async (req, res) => {
       }
     }
 
-    console.log('✅ Tous les fichiers existent localement');
+    // console.log('✅ Tous les fichiers existent localement');
 
     // Uploader vers Google Drive
     const uploadResult = await GoogleDriveUploadService.uploadSnapshot(
@@ -67,7 +67,7 @@ const uploadSnapshotHandler = async (req, res) => {
     );
 
     if (uploadResult.success) {
-      console.log('✅ Upload vers Google Drive réussi');
+      // console.log('✅ Upload vers Google Drive réussi');
       
       // Optionnel : Supprimer les fichiers locaux après upload réussi
       if (req.body.deleteAfterUpload) {
@@ -78,7 +78,7 @@ const uploadSnapshotHandler = async (req, res) => {
         ].filter(Boolean);
 
         await GoogleDriveUploadService.deleteLocalFiles(localFiles);
-        console.log('🗑️ Fichiers locaux supprimés après upload');
+        // console.log('🗑️ Fichiers locaux supprimés après upload');
       }
 
       return res.status(200).json({

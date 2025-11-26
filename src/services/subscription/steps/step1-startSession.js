@@ -7,7 +7,7 @@ const axios = require('axios');
  */
 async function startSession(baseUrl) {
   try {
-    console.log('📍 Étape 1: Démarrage de la session Netflix...');
+    // console.log('📍 Étape 1: Démarrage de la session Netflix...');
     
     const response = await axios.post(`${baseUrl}/api/netflix/session/start`);
     
@@ -15,7 +15,7 @@ async function startSession(baseUrl) {
       throw new Error(response.data.message || 'Échec du démarrage de la session');
     }
 
-    console.log(`✅ Session démarrée avec succès: ${response.data.sessionId}`);
+    // console.log(`✅ Session démarrée avec succès: ${response.data.sessionId}`);
     
     return {
       success: true,

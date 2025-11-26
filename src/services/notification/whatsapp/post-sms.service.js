@@ -11,14 +11,14 @@ exports.postSmsWhatsapp = async () => {
     //   to: 'whatsapp:+237698087460',
 
     // });
-    // console.log('Message SID:', message.sid);
+    // // console.log('Message SID:', message.sid);
 
     const message = await client.messages.create({
       body: 'Hello, ceci est un SMS envoyé via Twilio !', // Contenu du message
       from: '+15677495753', // Ton numéro Twilio (ex: +14155552671)
       to: '+237698087460', // Le numéro du destinataire (en format international)
     });
-    // console.log('Message SID:', message.sid); // Affiche le SID du message
+    // // console.log('Message SID:', message.sid); // Affiche le SID du message
     return message;
   } catch (error) {
     console.error('Erreur d’envoi WhatsApp :', error);

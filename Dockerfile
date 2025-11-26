@@ -1,13 +1,13 @@
-# Étape 1 : Image de base avec Node.js
-FROM node:18
+# Étape 1 : Image de base avec Node.js (version slim pour réduire la taille)
+FROM node:18-slim
 
 # Étape 2 : Installer Firefox et les dépendances pour Selenium
-RUN apt-get update && apt-get install -y \
+# Suppression de xvfb et nettoyage des caches
+RUN apt-get update && apt-get install -y --no-install-recommends \
     firefox-esr \
     wget \
     curl \
     ca-certificates \
-    # Dépendances pour Firefox et Selenium
     libgtk-3-0 \
     libdbus-glib-1-2 \
     libxt6 \
@@ -30,7 +30,6 @@ RUN apt-get update && apt-get install -y \
     libxkbcommon0 \
     libgbm1 \
     libdrm2 \
-    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # Étape 3 : Définir le répertoire de travail
@@ -61,7 +60,7 @@ RUN mkdir -p snapshots screenshots logs
 ENV NODE_ENV=production
 ENV HEADLESS=true
 ENV PORT=8080
-ENV DISPLAY=:99
+# ENV DISPLAY=:99 # Pas nécessaire en mode headless pur
 
 # Timeouts Selenium
 ENV SESSION_TIMEOUT=60000
@@ -94,13 +93,10 @@ ENV API_BASE_URL=http://localhost:8080
 # Étape 11 : Exposer le port
 EXPOSE 8080
 
-# Étape 12 : Healthcheck pour vérifier que l'API répond
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" || exit 1
+# Étape 12 : Healthcheck désactivé
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+#     CMD node -e "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})" || exit 1
 
-# Étape 13 : Démarrer Xvfb en arrière-plan et lancer l'application en production
-CMD Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset & \
-    sleep 2 && \
-    echo "✅ Xvfb démarré" && \
-    echo "🚀 Démarrage de l'application en mode production..." && \
-    npm run start:prod
+# Étape 13 : Lancer l'application en mode production avec limite de RAM
+CMD echo "🚀 Démarrage de l'application en mode production optimisé..." && \
+    node --max-old-space-size=695 server.js

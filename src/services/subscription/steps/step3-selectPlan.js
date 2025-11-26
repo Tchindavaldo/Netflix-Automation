@@ -13,7 +13,7 @@ const RetryHelper = require('../helpers/retryHelper');
  * @returns {Promise<Object>} - Résultat de la sélection
  */
 async function selectPlan(baseUrl, sessionId, planType, planActivationId, userId, subscriptionData = {}) {
-  console.log(`📍 Étape 3: Sélection du plan ${planType}...`);
+  // console.log(`📍 Étape 3: Sélection du plan ${planType}...`);
   
   const executeStep = async () => {
     try {
@@ -45,7 +45,7 @@ async function selectPlan(baseUrl, sessionId, planType, planActivationId, userId
 
       // NOTE: Netflix ne change pas toujours l'URL après la sélection du plan
       // On ne vérifie donc PAS navigation.changed ici, juste le success
-      console.log(`✅ Plan ${planType} sélectionné avec succès`);
+      // console.log(`✅ Plan ${planType} sélectionné avec succès`);
       
       return {
         success: true,
