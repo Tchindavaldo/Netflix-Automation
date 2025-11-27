@@ -13,7 +13,7 @@ const fillPaymentFormHandler = async (req, res) => {
   try {
     const sessionId =
       req.body.sessionId || req.query.sessionId || req.headers["x-session-id"];
-    const fields = req.body.fields; // Array d'objets { selector, value }
+    const fields = req.body.fields; // Array d'objets { selector, value, optional }
 
     // Log pour déboguer
     // console.log("📥 Paramètres reçus:", {
@@ -55,8 +55,14 @@ const fillPaymentFormHandler = async (req, res) => {
               value: "John Doe",
             },
             {
+              selector: 'input[data-uia="field-zipcode"]',
+              value: "90099",
+              optional: true,
+            },
+            {
               selector: 'input[data-uia="field-hasAcceptedTermsOfUse"]',
               value: true,
+              optional: false,
             },
           ],
         },
@@ -106,6 +112,20 @@ const fillPaymentFormHandler = async (req, res) => {
     // Parcourir tous les champs
     for (let i = 0; i < fields.length; i++) {
       const field = fields[i];
+      const isOptional = field.optional === true; // Par défaut false
+
+      // Si le champ est marqué comme optionnel, on le saute directement sans le chercher
+      if (isOptional) {
+        results.push({
+          index: i,
+          selector: field.selector,
+          success: true,
+          skipped: true,
+          message: "Champ ignoré car marqué comme optionnel",
+        });
+        successCount++;
+        continue;
+      }
 
       try {
         // console.log(
@@ -244,10 +264,10 @@ const fillPaymentFormHandler = async (req, res) => {
       },
       message:
         errorCount === 0
-          ? "Tous les champs ont été remplis avec succès"
+          ? "Tous les champs ont été traités avec succès"
           : errorCount === fields.length
             ? "Aucun champ n'a pu être rempli"
-            : `${successCount} champ(s) rempli(s), ${errorCount} échec(s)`,
+            : `${successCount} champ(s) traité(s), ${errorCount} échec(s)`,
     });
   } catch (error) {
     console.error("Erreur dans le gestionnaire fillPaymentForm:", error);

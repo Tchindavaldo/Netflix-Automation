@@ -24,6 +24,7 @@
     "expirationMonth": "input[data-uia=\"field-expirationMonth\"]",
     "securityCode": "input[data-uia=\"field-securityCode\"]",
     "cardholderName": "input[data-uia=\"field-name\"]",
+    "postalCode": "input[data-uia=\"field-postalCode\"]",
     "legalCheckbox": "input[data-uia=\"legal-checkbox\"]",
     "submitButton": "button[data-uia=\"action-submit-payment\"]"
   }
