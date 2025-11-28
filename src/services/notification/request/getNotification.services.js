@@ -13,7 +13,7 @@ exports.getNotificationService = async (userId, fastFoodId) => {
     allNotif = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return { success: true, data: allNotif, message: 'notifications récupérées avec succès' };
   } catch (error) {
-    console.error('Erreur dans getNotification services:', error);
+    // console.error('Erreur dans getNotification services:', error);
     return { success: false, message: error.message };
   }
 };

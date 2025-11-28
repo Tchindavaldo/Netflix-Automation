@@ -86,7 +86,7 @@ class SubscriptionOrchestrator {
         try {
           await this.closeSession(sessionId);
         } catch (closeError) {
-          console.error(`⚠️ Erreur fermeture session: ${closeError.message}`);
+          // console.error(`⚠️ Erreur fermeture session: ${closeError.message}`);
         }
 
         // Relancer une nouvelle session (Retry Étape 1)
@@ -319,9 +319,9 @@ class SubscriptionOrchestrator {
         completedSteps: 10,
       };
     } catch (error) {
-      console.error(
-        `\n💥 Erreur dans le processus d'abonnement: ${error.message}\n`
-      );
+      // console.error(
+      //   `\n💥 Erreur dans le processus d'abonnement: ${error.message}\n`
+      // );
 
       // Fermer la session après erreur
       if (sessionId) {
@@ -329,9 +329,9 @@ class SubscriptionOrchestrator {
         try {
           await this.closeSession(sessionId);
         } catch (closeError) {
-          console.error(
-            `⚠️ Erreur lors de la fermeture de session: ${closeError.message}`
-          );
+          // console.error(
+          //   `⚠️ Erreur lors de la fermeture de session: ${closeError.message}`
+          // );
         }
       }
 
@@ -369,7 +369,7 @@ class SubscriptionOrchestrator {
         // console.log(`⚠️ Échec fermeture session: ${response.data.message}`);
       }
     } catch (error) {
-      console.error(`❌ Erreur fermeture session: ${error.message}`);
+      // console.error(`❌ Erreur fermeture session: ${error.message}`);
     }
   }
 

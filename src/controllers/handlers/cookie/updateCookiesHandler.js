@@ -31,7 +31,7 @@ const updateCookiesHandler = async (req, res) => {
       message: "Cookies mis à jour avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire updateCookies:", error);
+    // console.error("Erreur dans le gestionnaire updateCookies:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors de la mise à jour des cookies",

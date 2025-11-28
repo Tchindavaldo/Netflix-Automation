@@ -89,7 +89,7 @@ const planActivationController = {
 
         // console.log(`🔔 Socket.IO: Activation créée envoyée à ${userId}`);
       } catch (socketError) {
-        console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
+        // console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
       }
 
       res.status(201).json({
@@ -99,7 +99,7 @@ const planActivationController = {
       });
 
     } catch (error) {
-      console.error('Erreur lors de la création de l\'activation:', error);
+      // console.error('Erreur lors de la création de l\'activation:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de la création de l\'activation'
@@ -138,7 +138,7 @@ const planActivationController = {
       });
 
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'activation:', error);
+      // console.error('Erreur lors de la récupération de l\'activation:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de la récupération de l\'activation'
@@ -179,7 +179,7 @@ const planActivationController = {
       });
 
     } catch (error) {
-      console.error('Erreur lors de la récupération des activations utilisateur:', error);
+      // console.error('Erreur lors de la récupération des activations utilisateur:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de la récupération des activations'
@@ -233,7 +233,7 @@ const planActivationController = {
 
         // console.log(`🔔 Socket.IO: Mise à jour d'activation envoyée à ${result.userId}`);
       } catch (socketError) {
-        console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
+        // console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
       }
 
       res.status(200).json({
@@ -243,7 +243,7 @@ const planActivationController = {
       });
 
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de l\'activation:', error);
+      // console.error('Erreur lors de la mise à jour de l\'activation:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de la mise à jour de l\'activation'
@@ -282,7 +282,7 @@ const planActivationController = {
       });
 
     } catch (error) {
-      console.error('Erreur lors de la suppression de l\'activation:', error);
+      // console.error('Erreur lors de la suppression de l\'activation:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de la suppression de l\'activation'
@@ -319,7 +319,7 @@ const planActivationController = {
       });
 
     } catch (error) {
-      console.error('Erreur lors de la récupération de toutes les activations:', error);
+      // console.error('Erreur lors de la récupération de toutes les activations:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de la récupération des activations'
@@ -411,7 +411,7 @@ const planActivationController = {
 
         // console.log(`🔔 Socket.IO: Changement de statut envoyé à ${currentActivation.userId}`);
       } catch (socketError) {
-        console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
+        // console.error('❌ Erreur lors de l\'émission Socket.IO:', socketError);
       }
 
       res.status(200).json({
@@ -423,7 +423,7 @@ const planActivationController = {
       });
 
     } catch (error) {
-      console.error('Erreur lors du changement de statut:', error);
+      // console.error('Erreur lors du changement de statut:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors du changement de statut'

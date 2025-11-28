@@ -46,7 +46,7 @@ const stopSession = async (sessionId) => {
       message: "Session arrêtée avec succès",
     };
   } catch (error) {
-    console.error("Erreur dans le service stopSession:", error);
+    // console.error("Erreur dans le service stopSession:", error);
     return {
       success: false,
       message: error.message || "Erreur lors de l'arrêt de la session",

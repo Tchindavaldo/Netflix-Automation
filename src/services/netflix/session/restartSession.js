@@ -56,7 +56,7 @@ const restartSession = async (sessionId) => {
       message: "Session redémarrée avec succès",
     };
   } catch (error) {
-    console.error("Erreur dans le service restartSession:", error);
+    // console.error("Erreur dans le service restartSession:", error);
     return {
       success: false,
       message: error.message || "Erreur lors du redémarrage de la session",

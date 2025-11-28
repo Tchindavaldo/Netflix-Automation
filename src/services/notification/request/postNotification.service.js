@@ -48,7 +48,7 @@ exports.postNotificationService = async dataGet => {
       return { success: true, data: { ...notifDoc, allNotif: updatedAllNotifArray }, message: 'Notification ajoutée avec succès' };
     }
   } catch (error) {
-    console.error('Erreur dans postNotificationService:', error);
+    // console.error('Erreur dans postNotificationService:', error);
     return { success: false, message: error.message };
   }
 };

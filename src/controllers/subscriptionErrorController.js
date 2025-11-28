@@ -11,7 +11,7 @@ const subscriptionErrorController = {
     try {
       // Vérifier que des données ont bien été reçues
       if (!req.body || Object.keys(req.body).length === 0) {
-        console.error('❌ Aucune donnée reçue dans la requête');
+        // console.error('❌ Aucune donnée reçue dans la requête');
         return res.status(400).json({
           success: false,
           message: 'Aucune donnée reçue dans la requête',
@@ -44,7 +44,7 @@ const subscriptionErrorController = {
       if (!errorData.planActivationId) missingFields.push('planActivationId');
 
       if (missingFields.length > 0) {
-        console.warn('⚠️ Données d\'erreur incomplètes. Champs manquants:', missingFields);
+        // console.warn('⚠️ Données d\'erreur incomplètes. Champs manquants:', missingFields);
         // On continue quand même le traitement, mais avec des valeurs par défaut
       }
 
@@ -78,16 +78,16 @@ const subscriptionErrorController = {
           }
         });
       } catch (serviceError) {
-        console.error('❌ Erreur lors de l\'appel au service d\'erreur:', {
-          message: serviceError.message,
-          stack: serviceError.stack,
-          errorData: {
-            stepName: errorData.stepName,
-            error: errorData.error?.message || errorData.error,
-            hasCardInfo: !!errorData.cardInfo,
-            hasSnapshotUrls: !!errorData.snapshotUrls
-          }
-        });
+        // console.error('❌ Erreur lors de l\'appel au service d\'erreur:', {
+        //   message: serviceError.message,
+        //   stack: serviceError.stack,
+        //   errorData: {
+        //     stepName: errorData.stepName,
+        //     error: errorData.error?.message || errorData.error,
+        //     hasCardInfo: !!errorData.cardInfo,
+        //     hasSnapshotUrls: !!errorData.snapshotUrls
+        //   }
+        // });
         
         // Essayer d'enregistrer l'échec dans un autre endroit
         try {
@@ -98,14 +98,14 @@ const subscriptionErrorController = {
             timestamp: new Date().toISOString()
           });
         } catch (logError) {
-          console.error('❌ Impossible d\'enregistrer l\'échec de log:', logError);
+          // console.error('❌ Impossible d\'enregistrer l\'échec de log:', logError);
         }
         
         throw serviceError; // Relancer pour le catch principal
       }
 
     } catch (error) {
-      console.error('❌ Erreur lors de l\'enregistrement de l\'erreur:', error);
+      // console.error('❌ Erreur lors de l\'enregistrement de l\'erreur:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de l\'enregistrement de l\'erreur'
@@ -137,7 +137,7 @@ const subscriptionErrorController = {
       });
 
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des erreurs:', error);
+      // console.error('❌ Erreur lors de la récupération des erreurs:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors de la récupération des erreurs'

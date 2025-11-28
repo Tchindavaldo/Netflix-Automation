@@ -35,7 +35,7 @@ const restartSessionHandler = async (req, res) => {
       newSessionId: result.sessionId
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire restartSession:", error);
+    // console.error("Erreur dans le gestionnaire restartSession:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors du redémarrage de la session",

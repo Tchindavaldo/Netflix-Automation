@@ -14,10 +14,10 @@ class NetflixSessionManager {
     // this.cleanupInterval = setInterval(
     //   () => {
     //     this.cleanupInactiveSessions().catch((error) => {
-    //       console.error(
-    //         "Erreur lors du nettoyage des sessions inactives:",
-    //         error,
-    //       );
+    //       // console.error(
+    //       //   "Erreur lors du nettoyage des sessions inactives:",
+    //       //   error,
+    //       // );
     //     });
     //   },
     //   5 * 60 * 1000,
@@ -64,7 +64,7 @@ class NetflixSessionManager {
       // console.log(`✅ Session créée avec succès (ID: ${sessionId})`);
       return sessionId;
     } catch (error) {
-      console.error("❌ Échec de la création de la session:", error);
+      // console.error("❌ Échec de la création de la session:", error);
       throw new Error(
         `Impossible de créer une nouvelle session: ${error.message}`,
       );
@@ -127,15 +127,15 @@ class NetflixSessionManager {
    */
   async closeSession(sessionId, { force = false } = {}) {
     if (!sessionId || typeof sessionId !== "string") {
-      console.error("❌ Impossible de fermer la session: ID invalide");
+      // console.error("❌ Impossible de fermer la session: ID invalide");
       return false;
     }
 
     const session = this.sessions.get(sessionId);
     if (!session) {
-      console.warn(
-        `⚠️ Tentative de fermeture d'une session inexistante: ${sessionId}`,
-      );
+      // console.warn(
+      //   `⚠️ Tentative de fermeture d'une session inexistante: ${sessionId}`,
+      // );
       return false;
     }
 
@@ -159,9 +159,9 @@ class NetflixSessionManager {
       const errorMsg = `Erreur lors du nettoyage de la session ${sessionId}: ${error.message}`;
 
       if (force) {
-        console.warn(`⚠️ ${errorMsg} (fermeture forcée)`);
+        // console.warn(`⚠️ ${errorMsg} (fermeture forcée)`);
       } else {
-        console.error(`❌ ${errorMsg}`);
+        // console.error(`❌ ${errorMsg}`);
         return false;
       }
     } finally {
@@ -220,17 +220,17 @@ class NetflixSessionManager {
               stats.closed++;
             } else {
               stats.errors++;
-              console.error(
-                `❌ Échec de la fermeture de la session ${result.value.sessionId}:`,
-                result.value.error?.message || "Inconnu",
-              );
+              // console.error(
+              //   `❌ Échec de la fermeture de la session ${result.value.sessionId}:`,
+              //   result.value.error?.message || "Inconnu",
+              // );
             }
           } else {
             stats.errors++;
-            console.error(
-              `❌ Erreur lors du nettoyage d'une session:`,
-              result.reason,
-            );
+            // console.error(
+            //   `❌ Erreur lors du nettoyage d'une session:`,
+            //   result.reason,
+            // );
           }
         }
 
@@ -247,10 +247,10 @@ class NetflixSessionManager {
 
       return stats;
     } catch (error) {
-      console.error(
-        "❌ Erreur critique lors du nettoyage des sessions inactives:",
-        error,
-      );
+      // console.error(
+      //   "❌ Erreur critique lors du nettoyage des sessions inactives:",
+      //   error,
+      // );
       throw error;
     }
   }
@@ -294,9 +294,9 @@ class NetflixSessionManager {
         );
 
         if (errors.length > 0) {
-          console.warn(
-            `⚠️ ${errors.length} erreur(s) lors de la fermeture des sessions`,
-          );
+          // console.warn(
+          //   `⚠️ ${errors.length} erreur(s) lors de la fermeture des sessions`,
+          // );
           if (!force) {
             throw new Error(
               `Impossible de fermer toutes les sessions (${errors.length} erreur(s))`,
@@ -316,10 +316,10 @@ class NetflixSessionManager {
     } catch (error) {
       const errorMsg = `Erreur lors de l'arrêt du gestionnaire de sessions: ${error.message}`;
       if (force) {
-        console.warn(`⚠️ ${errorMsg} (arrêt forcé)`);
+        // console.warn(`⚠️ ${errorMsg} (arrêt forcé)`);
         return true;
       } else {
-        console.error(`❌ ${errorMsg}`);
+        // console.error(`❌ ${errorMsg}`);
         return false;
       }
     }

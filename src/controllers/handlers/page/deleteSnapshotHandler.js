@@ -57,7 +57,7 @@ const deleteSnapshotHandler = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Erreur lors de la suppression du dossier:', error);
+    // console.error('❌ Erreur lors de la suppression du dossier:', error);
     return res.status(500).json({
       success: false,
       message: error.message || 'Erreur lors de la suppression du dossier de snapshot',

@@ -87,7 +87,7 @@ const selectPaymentMethodHandler = async (req, res) => {
 
       // console.log(`✅ Bouton prêt pour le clic`);
     } catch (error) {
-      console.error(`❌ Bouton non trouvé avec le sélecteur: ${selector}`);
+      // console.error(`❌ Bouton non trouvé avec le sélecteur: ${selector}`);
 
       // Capturer l'état actuel pour debug
       const currentUrl = await driver.getCurrentUrl();
@@ -137,7 +137,7 @@ const selectPaymentMethodHandler = async (req, res) => {
       message: "Méthode de paiement sélectionnée avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire selectPaymentMethod:", error);
+    // console.error("Erreur dans le gestionnaire selectPaymentMethod:", error);
     res.status(500).json({
       success: false,
       message:

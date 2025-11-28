@@ -42,7 +42,7 @@ const saveSnapshotHandler = async (req, res) => {
       message: "Snapshot sauvegardé avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire saveSnapshot:", error);
+    // console.error("Erreur dans le gestionnaire saveSnapshot:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors de la sauvegarde du snapshot",

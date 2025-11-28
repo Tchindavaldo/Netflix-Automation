@@ -120,7 +120,7 @@ class PageSnapshotService {
         metadata,
       };
     } catch (error) {
-      console.error("❌ Erreur lors de la sauvegarde du snapshot:", error);
+      // console.error("❌ Erreur lors de la sauvegarde du snapshot:", error);
       return {
         success: false,
         message: error.message,
@@ -167,7 +167,7 @@ class PageSnapshotService {
         size: html.length,
       };
     } catch (error) {
-      console.error("❌ Erreur lors de la sauvegarde du HTML:", error);
+      // console.error("❌ Erreur lors de la sauvegarde du HTML:", error);
       return {
         success: false,
         message: error.message,
@@ -211,7 +211,7 @@ class PageSnapshotService {
         path: filePath,
       };
     } catch (error) {
-      console.error("❌ Erreur lors du screenshot:", error);
+      // console.error("❌ Erreur lors du screenshot:", error);
       return {
         success: false,
         message: error.message,
@@ -255,7 +255,7 @@ class PageSnapshotService {
         snapshots,
       };
     } catch (error) {
-      console.error("❌ Erreur lors de la liste des snapshots:", error);
+      // console.error("❌ Erreur lors de la liste des snapshots:", error);
       return {
         success: false,
         message: error.message,

@@ -17,7 +17,7 @@ exports.getNotificationsService = async (userId, fastFoodId) => {
 
     return { success: true, data: finalData, message: 'notifications récupérées avec succès' };
   } catch (error) {
-    console.error('Erreur dans getNotifications services:', error);
+    // console.error('Erreur dans getNotifications services:', error);
     return { success: false, message: error.message };
   }
 };

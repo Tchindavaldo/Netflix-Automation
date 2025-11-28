@@ -71,7 +71,7 @@ const goBackHandler = async (req, res) => {
       message: "Retour en arrière effectué avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire goBack:", error);
+    // console.error("Erreur dans le gestionnaire goBack:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors du retour en arrière",

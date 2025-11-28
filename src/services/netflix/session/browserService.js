@@ -73,7 +73,7 @@ class BrowserService {
       // );
       return driver;
     } catch (error) {
-      console.error("❌ Erreur initialisation driver:", error);
+      // console.error("❌ Erreur initialisation driver:", error);
       throw error;
     }
   }
@@ -108,7 +108,7 @@ class BrowserService {
         url: currentUrl,
       };
     } catch (error) {
-      console.error("❌ Erreur lors du démarrage du navigateur:", error);
+      // console.error("❌ Erreur lors du démarrage du navigateur:", error);
       return {
         success: false,
         message: error.message,
@@ -128,7 +128,7 @@ class BrowserService {
         // console.log("🛑 Driver fermé avec succès");
       }
     } catch (error) {
-      console.error("❌ Erreur lors de la fermeture du driver:", error);
+      // console.error("❌ Erreur lors de la fermeture du driver:", error);
       throw error;
     }
   }

@@ -21,7 +21,7 @@ exports.postSmsWhatsapp = async () => {
     // // console.log('Message SID:', message.sid); // Affiche le SID du message
     return message;
   } catch (error) {
-    console.error('Erreur d’envoi WhatsApp :', error);
+    // console.error('Erreur d’envoi WhatsApp :', error);
     throw error;
   }
 };

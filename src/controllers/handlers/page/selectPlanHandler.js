@@ -50,7 +50,7 @@ const selectPlanHandler = async (req, res) => {
       until.elementLocated(By.css(planSelector)),
       10000
     ).catch(async (error) => {
-      console.error(`❌ Plan non trouvé: ${planSelector}`);
+      // console.error(`❌ Plan non trouvé: ${planSelector}`);
 
       // Capturer l'état actuel pour debug
       const currentUrl = await driver.getCurrentUrl();
@@ -73,7 +73,7 @@ const selectPlanHandler = async (req, res) => {
 
     // Attendre que l'élément soit cliquable
     await driver.wait(until.elementIsEnabled(planElement), 5000).catch(() => {
-      console.warn("⚠️ L'élément du plan n'est pas devenu cliquable dans le délai");
+      // console.warn("⚠️ L'élément du plan n'est pas devenu cliquable dans le délai");
     });
 
     // console.log(`🎯 Clic sur le plan...`);
@@ -103,7 +103,7 @@ const selectPlanHandler = async (req, res) => {
       message: "Plan sélectionné avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire selectPlan:", error);
+    // console.error("Erreur dans le gestionnaire selectPlan:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors de la sélection du plan",

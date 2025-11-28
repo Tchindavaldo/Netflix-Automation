@@ -62,10 +62,10 @@ class CookieService {
         count: Object.keys(importantCookies).length,
       };
     } catch (error) {
-      console.error(
-        "❌ Erreur lors de la mise à jour des cookies:",
-        error.message,
-      );
+      // console.error(
+      //   "❌ Erreur lors de la mise à jour des cookies:",
+      //   error.message,
+      // );
       return {
         success: false,
         message: error.message,
@@ -128,10 +128,10 @@ class CookieService {
         message: "Cookies supprimés avec succès",
       };
     } catch (error) {
-      console.error(
-        "❌ Erreur lors de la suppression des cookies:",
-        error.message,
-      );
+      // console.error(
+      //   "❌ Erreur lors de la suppression des cookies:",
+      //   error.message,
+      // );
       return {
         success: false,
         message: error.message,

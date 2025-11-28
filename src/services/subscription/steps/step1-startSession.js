@@ -24,7 +24,7 @@ async function startSession(baseUrl) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur lors du démarrage de la session:', error.message);
+    // console.error('❌ Erreur lors du démarrage de la session:', error.message);
     return {
       success: false,
       error: error.message,

@@ -80,9 +80,9 @@ class RetryHelper {
     }
 
     // Après tous les retries, enregistrer l'erreur en base
-    console.error(
-      `❌ Échec définitif de ${stepName} après ${maxRetries + 1} tentatives`
-    );
+    // console.error(
+    //   `❌ Échec définitif de ${stepName} après ${maxRetries + 1} tentatives`
+    // );
 
     await this.logErrorToDatabase(baseUrl, {
       stepName,
@@ -120,10 +120,10 @@ class RetryHelper {
       const response = await axios.post(`${baseUrl}/api/netflix/page/current`, { sessionId });
       return response.data?.currentUrl || response.data?.url || null;
     } catch (error) {
-      console.error(
-        "❌ Impossible de récupérer l'URL actuelle:",
-        error.message
-      );
+      // console.error(
+      //   "❌ Impossible de récupérer l'URL actuelle:",
+      //   error.message
+      // );
       return null;
     }
   }
@@ -171,7 +171,7 @@ class RetryHelper {
 
       return null;
     } catch (error) {
-      console.error("❌ Impossible de capturer le snapshot:", error.message);
+      // console.error("❌ Impossible de capturer le snapshot:", error.message);
       return null;
     }
   }
@@ -244,20 +244,20 @@ class RetryHelper {
                   });
                   // console.log('✅ Dossier local supprimé avec succès');
                 } catch (deleteError) {
-                  console.error(`⚠️ Échec de la suppression automatique du dossier local:`, deleteError.message);
+                  // console.error(`⚠️ Échec de la suppression automatique du dossier local:`, deleteError.message);
                   // Ne pas bloquer le processus si la suppression échoue
                 }
               }
             } else {
-              console.error(`❌ Échec upload Google Drive: ${uploadResponse.data?.error || 'Erreur inconnue'}`);
+              // console.error(`❌ Échec upload Google Drive: ${uploadResponse.data?.error || 'Erreur inconnue'}`);
             }
           } catch (uploadError) {
-            console.error(`❌ Exception lors de l'upload Google Drive:`, uploadError.message);
-            if (uploadError.response) {
-              console.error(`   Statut: ${uploadError.response.status}`);
-              console.error(`   Données: ${JSON.stringify(uploadError.response.data)}`);
-            }
-            console.error(`   Stack: ${uploadError.stack}`);
+            // console.error(`❌ Exception lors de l'upload Google Drive:`, uploadError.message);
+            // if (uploadError.response) {
+            //   console.error(`   Statut: ${uploadError.response.status}`);
+            //   console.error(`   Données: ${JSON.stringify(uploadError.response.data)}`);
+            // }
+            // console.error(`   Stack: ${uploadError.stack}`);
           }
         }
       }
@@ -318,20 +318,20 @@ class RetryHelper {
           // console.log("✅ Erreur enregistrée avec succès en base de données");
           // console.log(`   ID d'erreur: ${response.data.data?.id || 'non fourni'}`);
         } else {
-          console.error("❌ L'API a répondu avec une erreur:", response.data);
+          // console.error("❌ L'API a répondu avec une erreur:", response.data);
         }
       } catch (apiError) {
-        console.error("❌ Erreur lors de l'appel à l'API d'erreur:", {
-          message: apiError.message,
-          code: apiError.code,
-          status: apiError.response?.status,
-          data: apiError.response?.data,
-          config: {
-            url: apiError.config?.url,
-            method: apiError.config?.method,
-            data: apiError.config?.data
-          }
-        });
+        // console.error("❌ Erreur lors de l'appel à l'API d'erreur:", {
+        //   message: apiError.message,
+        //   code: apiError.code,
+        //   status: apiError.response?.status,
+        //   data: apiError.response?.data,
+        //   config: {
+        //     url: apiError.config?.url,
+        //     method: apiError.config?.method,
+        //     data: apiError.config?.data
+        //   }
+        // });
         throw apiError; // Relancer pour une meilleure gestion en amont
       }
 
@@ -345,10 +345,10 @@ class RetryHelper {
       //     // console.log(`   - Metadata: ${snapshotUrls.metadataUrl}`);
       // }
     } catch (error) {
-      console.error(
-        "❌ Impossible d'enregistrer l'erreur en base:",
-        error.message
-      );
+      // console.error(
+      //   "❌ Impossible d'enregistrer l'erreur en base:",
+      //   error.message
+      // );
       // Ne pas bloquer le processus si l'enregistrement échoue
     }
   }

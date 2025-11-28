@@ -91,7 +91,7 @@ const subscriptionController = {
       }
 
     } catch (error) {
-      console.error('❌ Erreur dans le contrôleur d\'abonnement:', error);
+      // console.error('❌ Erreur dans le contrôleur d\'abonnement:', error);
       res.status(500).json({
         success: false,
         message: error.message || 'Erreur lors du processus d\'abonnement',

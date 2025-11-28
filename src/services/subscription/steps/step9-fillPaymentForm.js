@@ -45,8 +45,14 @@ async function fillPaymentForm(baseUrl, sessionId, planActivationId, userId, sub
             value: cardInfo.cardholderName
           },
           {
+            selector: selectors.paymentForm.postalCode,
+            value: "10001",
+            optional: false
+          },
+          {
             selector: selectors.paymentForm.legalCheckbox,
-            value: true
+            value: true,
+            optional: true
           }
         ]
       });

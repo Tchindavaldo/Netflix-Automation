@@ -8,7 +8,7 @@ exports.getNotificationByIdService = async id => {
     const doc = { id: docRef.id, ...docRef.data() };
     return { success: true, data: doc, message: 'Notification récupérée avec succès' };
   } catch (error) {
-    console.error('Erreur dans getNotificationService:', error);
+    // console.error('Erreur dans getNotificationService:', error);
     return { success: false, message: error.message };
   }
 };

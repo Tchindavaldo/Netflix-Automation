@@ -41,7 +41,7 @@ exports.markNotificationAsReadService = async data => {
     io.to(userId).emit('isRead', { notificationId, userId });
     return { success: true, message: 'Notification marquée comme lue' };
   } catch (error) {
-    console.error('Erreur dans markNotificationAsRead:', error);
+    // console.error('Erreur dans markNotificationAsRead:', error);
     return { success: false, message: error.message };
   }
 };

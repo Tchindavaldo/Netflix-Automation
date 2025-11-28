@@ -54,7 +54,7 @@ const getCurrentPageHandler = async (req, res) => {
       message: "URL récupérée avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire getCurrentPage:", error);
+    // console.error("Erreur dans le gestionnaire getCurrentPage:", error);
     res.status(500).json({
       success: false,
       message:

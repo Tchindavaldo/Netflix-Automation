@@ -87,7 +87,7 @@ const initPaymentHandler = async (req, res) => {
       });
       // console.log(`🔔 Socket.IO: Activation créée envoyée à ${userId}`);
     } catch (socketError) {
-      console.error('❌ Erreur lors de l\'\u00e9mission Socket.IO:', socketError);
+      // console.error('❌ Erreur lors de l\'\u00e9mission Socket.IO:', socketError);
     }
 
     // Simuler le traitement du paiement Orange Money (remplacer par vraie logique API)
@@ -175,7 +175,7 @@ const initPaymentHandler = async (req, res) => {
             
           } else {
             // ÉTAPE 5: Si échec, mettre reqteStatusSuccess='failed' SANS changer le statut
-            console.error(`❌ Échec du processus d'abonnement pour ${email} (userId: ${userId}):`, subscriptionResponse.data.message);
+            // console.error(`❌ Échec du processus d'abonnement pour ${email} (userId: ${userId}):`, subscriptionResponse.data.message);
             
             await planActivationService.updateActivation(planActivationId, {
               reqteStatusSuccess: 'failed',
@@ -199,7 +199,7 @@ const initPaymentHandler = async (req, res) => {
           
         } catch (subscriptionError) {
           // Erreur lors de l'appel à l'orchestrateur
-          console.error(`❌ Erreur lors de l'appel à l'orchestrateur d'abonnement (userId: ${userId}):`, subscriptionError.message);
+          // console.error(`❌ Erreur lors de l'appel à l'orchestrateur d'abonnement (userId: ${userId}):`, subscriptionError.message);
           
           await planActivationService.updateActivation(planActivationId, {
             reqteStatusSuccess: 'failed',
@@ -222,12 +222,12 @@ const initPaymentHandler = async (req, res) => {
         }
         
       } catch (error) {
-        console.error('❌ Erreur lors du traitement post-paiement (userId: ${userId}):', error);
+        // console.error('❌ Erreur lors du traitement post-paiement (userId: ${userId}):', error);
       }
     }, 10000); // 10 secondes après la réponse initiale
 
   } catch (error) {
-    console.error('❌ Erreur dans le gestionnaire initPayment:', error);
+    // console.error('❌ Erreur dans le gestionnaire initPayment:', error);
     
     // Si la réponse n'a pas encore été envoyée
     if (!res.headersSent) {

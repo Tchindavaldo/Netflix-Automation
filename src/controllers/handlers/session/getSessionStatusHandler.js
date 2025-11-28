@@ -38,7 +38,7 @@ const getSessionStatusHandler = async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire getSessionStatus:", error);
+    // console.error("Erreur dans le gestionnaire getSessionStatus:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors de la récupération du statut de la session",

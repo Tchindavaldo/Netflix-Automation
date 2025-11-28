@@ -11,7 +11,7 @@ const serviceAccount = require('./serviceAccountKey.js');
 
 // Vérification des variables d'environnement critiques
 if (!process.env.FB_PROJECT_ID || !process.env.FB_PRIVATE_KEY || !process.env.FB_CLIENT_EMAIL) {
-  console.error("Variables d'environnement Firebase manquantes");
+  // console.error("Variables d'environnement Firebase manquantes");
   process.exit(1);
 }
 
@@ -23,7 +23,7 @@ try {
   });
   // console.log('Firebase Admin SDK initialisé avec succès');
 } catch (error) {
-  console.error("Erreur lors de l'initialisation de Firebase:", error);
+  // console.error("Erreur lors de l'initialisation de Firebase:", error);
   throw error;
 }
 

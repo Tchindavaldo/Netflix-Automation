@@ -195,9 +195,9 @@ const fillPaymentFormHandler = async (req, res) => {
           // Vérifier que la valeur a bien été entrée
           const enteredValue = await element.getAttribute("value");
           if (enteredValue !== String(field.value)) {
-            console.warn(
-              `⚠️ La valeur entrée ne correspond pas: attendu="${field.value}", obtenu="${enteredValue}"`,
-            );
+            // console.warn(
+            //   `⚠️ La valeur entrée ne correspond pas: attendu="${field.value}", obtenu="${enteredValue}"`,
+            // );
           }
         }
 
@@ -216,10 +216,10 @@ const fillPaymentFormHandler = async (req, res) => {
         await driver.sleep(300);
       } catch (error) {
         errorCount++;
-        console.error(
-          `❌ [${i + 1}/${fields.length}] Erreur pour le champ ${field.selector}:`,
-          error.message,
-        );
+        // console.error(
+        //   `❌ [${i + 1}/${fields.length}] Erreur pour le champ ${field.selector}:`,
+        //   error.message,
+        // );
 
         results.push({
           index: i,
@@ -270,7 +270,7 @@ const fillPaymentFormHandler = async (req, res) => {
             : `${successCount} champ(s) traité(s), ${errorCount} échec(s)`,
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire fillPaymentForm:", error);
+    // console.error("Erreur dans le gestionnaire fillPaymentForm:", error);
     res.status(500).json({
       success: false,
       message:

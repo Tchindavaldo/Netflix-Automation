@@ -113,7 +113,7 @@ const subscriptionErrorService = {
       return result;
 
     } catch (error) {
-      console.error('❌ Erreur lors de l\'enregistrement de l\'erreur d\'abonnement:', error);
+      // console.error('❌ Erreur lors de l\'enregistrement de l\'erreur d\'abonnement:', error);
       throw new Error(`Erreur lors de l'enregistrement: ${error.message}`);
     }
   },
@@ -141,7 +141,7 @@ const subscriptionErrorService = {
       return errors;
 
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des erreurs:', error);
+      // console.error('❌ Erreur lors de la récupération des erreurs:', error);
       throw new Error(`Erreur lors de la récupération: ${error.message}`);
     }
   }

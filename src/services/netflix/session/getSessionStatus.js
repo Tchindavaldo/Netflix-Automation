@@ -45,7 +45,7 @@ const getSessionStatus = async (sessionId) => {
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("Erreur dans le service getSessionStatus:", error);
+    // console.error("Erreur dans le service getSessionStatus:", error);
     return {
       success: false,
       message:

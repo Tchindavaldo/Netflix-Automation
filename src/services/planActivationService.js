@@ -22,7 +22,7 @@ const planActivationService = {
       return result;
 
     } catch (error) {
-      console.error('❌ Erreur lors de la création de l\'activation:', error);
+      // console.error('❌ Erreur lors de la création de l\'activation:', error);
       throw new Error(`Erreur lors de la création de l'activation: ${error.message}`);
     }
   },
@@ -44,7 +44,7 @@ const planActivationService = {
       };
 
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération de l\'activation:', error);
+      // console.error('❌ Erreur lors de la récupération de l\'activation:', error);
       throw new Error(`Erreur lors de la récupération de l'activation: ${error.message}`);
     }
   },
@@ -86,7 +86,7 @@ const planActivationService = {
       };
 
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des activations utilisateur:', error);
+      // console.error('❌ Erreur lors de la récupération des activations utilisateur:', error);
       throw new Error(`Erreur lors de la récupération des activations: ${error.message}`);
     }
   },
@@ -118,7 +118,7 @@ const planActivationService = {
       return result;
 
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour de l\'activation:', error);
+      // console.error('❌ Erreur lors de la mise à jour de l\'activation:', error);
       throw new Error(`Erreur lors de la mise à jour de l'activation: ${error.message}`);
     }
   },
@@ -143,7 +143,7 @@ const planActivationService = {
       return true;
 
     } catch (error) {
-      console.error('❌ Erreur lors de la suppression de l\'activation:', error);
+      // console.error('❌ Erreur lors de la suppression de l\'activation:', error);
       throw new Error(`Erreur lors de la suppression de l'activation: ${error.message}`);
     }
   },
@@ -191,7 +191,7 @@ const planActivationService = {
       };
 
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération de toutes les activations:', error);
+      // console.error('❌ Erreur lors de la récupération de toutes les activations:', error);
       throw new Error(`Erreur lors de la récupération des activations: ${error.message}`);
     }
   },
@@ -233,7 +233,7 @@ const planActivationService = {
       };
 
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des activations par statut:', error);
+      // console.error('❌ Erreur lors de la récupération des activations par statut:', error);
       throw new Error(`Erreur lors de la récupération des activations: ${error.message}`);
     }
   },
@@ -251,7 +251,7 @@ const planActivationService = {
       return await planActivationService.updateActivation(activationId, updateData);
 
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour du statut:', error);
+      // console.error('❌ Erreur lors de la mise à jour du statut:', error);
       throw new Error(`Erreur lors de la mise à jour du statut: ${error.message}`);
     }
   }

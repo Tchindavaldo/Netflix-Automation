@@ -28,7 +28,7 @@ const getAllActiveSessions = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération des sessions:', error);
+    // console.error('❌ Erreur lors de la récupération des sessions:', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des sessions actives',
@@ -81,7 +81,7 @@ const closeAllSessions = async (req, res) => {
           success: false,
           error: error.message
         });
-        console.error(`❌ Échec fermeture session ${sessionId}:`, error.message);
+        // console.error(`❌ Échec fermeture session ${sessionId}:`, error.message);
       }
     }
 
@@ -97,7 +97,7 @@ const closeAllSessions = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Erreur lors de la fermeture des sessions:', error);
+    // console.error('❌ Erreur lors de la fermeture des sessions:', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur lors de la fermeture des sessions',

@@ -82,9 +82,9 @@ class GoogleDriveUploadService {
       // console.log(`✅ Dossier utilisateur créé: userId_${userId}`);
       return folder.data.id;
     } catch (error) {
-      console.error('❌ Erreur lors de la création du dossier utilisateur:', error.message);
-      console.error(`   Code erreur: ${error.code}`);
-      console.error(`   Stack: ${error.stack}`);
+      // console.error('❌ Erreur lors de la création du dossier utilisateur:', error.message);
+      // console.error(`   Code erreur: ${error.code}`);
+      // console.error(`   Stack: ${error.stack}`);
       throw error;
     }
   }
@@ -127,7 +127,7 @@ class GoogleDriveUploadService {
       // console.log(`✅ Dossier date créé: ${folderName}`);
       return folder.data.id;
     } catch (error) {
-      console.error('Erreur lors de la création du dossier date:', error.message);
+      // console.error('Erreur lors de la création du dossier date:', error.message);
       throw error;
     }
   }
@@ -169,7 +169,7 @@ class GoogleDriveUploadService {
       // console.log(`✅ Dossier planActivation créé: planActivationId_${planActivationId}`);
       return folder.data.id;
     } catch (error) {
-      console.error('Erreur lors de la création du dossier planActivation:', error.message);
+      // console.error('Erreur lors de la création du dossier planActivation:', error.message);
       throw error;
     }
   }
@@ -223,7 +223,7 @@ class GoogleDriveUploadService {
         webContentLink: file.data.webContentLink,
       };
     } catch (error) {
-      console.error(`❌ Erreur lors de l'upload de ${fileName}:`, error.message);
+      // console.error(`❌ Erreur lors de l'upload de ${fileName}:`, error.message);
       throw error;
     }
   }
@@ -305,7 +305,7 @@ class GoogleDriveUploadService {
         urls: uploadResults,
       };
     } catch (error) {
-      console.error('❌ Erreur lors de l\'upload du snapshot vers Google Drive:', error.message);
+      // console.error('❌ Erreur lors de l\'upload du snapshot vers Google Drive:', error.message);
       return {
         success: false,
         error: error.message,
@@ -324,7 +324,7 @@ class GoogleDriveUploadService {
       // console.log(`🗑️ Fichier local supprimé: ${path.basename(filePath)}`);
       return true;
     } catch (error) {
-      console.error(`❌ Erreur lors de la suppression de ${filePath}:`, error.message);
+      // console.error(`❌ Erreur lors de la suppression de ${filePath}:`, error.message);
       return false;
     }
   }

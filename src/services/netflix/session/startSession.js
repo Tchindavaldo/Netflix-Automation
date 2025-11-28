@@ -46,7 +46,7 @@ const startSession = async () => {
       url: result.url,
     };
   } catch (error) {
-    console.error("Erreur dans le service startSession:", error);
+    // console.error("Erreur dans le service startSession:", error);
     return {
       success: false,
       message: error.message || "Erreur lors du démarrage de la session",

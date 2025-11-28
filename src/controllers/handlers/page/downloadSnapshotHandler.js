@@ -67,7 +67,7 @@ const downloadSnapshotHandler = async (req, res) => {
 
     // Gérer les erreurs de l'archive
     archive.on("error", (err) => {
-      console.error("❌ Erreur lors de la création de l'archive:", err);
+      // console.error("❌ Erreur lors de la création de l'archive:", err);
       res.status(500).json({
         success: false,
         message: "Erreur lors de la création de l'archive",
@@ -94,7 +94,7 @@ const downloadSnapshotHandler = async (req, res) => {
 
     // console.log(`✅ Téléchargement du dossier '${folderName}' terminé`);
   } catch (error) {
-    console.error("❌ Erreur dans le gestionnaire downloadSnapshot:", error);
+    // console.error("❌ Erreur dans le gestionnaire downloadSnapshot:", error);
     
     // Si les headers n'ont pas encore été envoyés
     if (!res.headersSent) {

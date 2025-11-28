@@ -16,7 +16,7 @@ const getAllUsers = async (req, res) => {
       count: users.length
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération des utilisateurs:', error);
+    // console.error('Erreur lors de la récupération des utilisateurs:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des utilisateurs',
@@ -36,7 +36,7 @@ const getUserById = async (req, res) => {
       data: user
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+    // console.error('Erreur lors de la récupération de l\'utilisateur:', error);
     // Vérifier si l'erreur est due à l'absence de l'utilisateur
     if (error.message.includes('Aucun utilisateur trouvé')) {
       res.status(404).json({
@@ -65,7 +65,7 @@ const getUserByUID = async (req, res) => {
       data: user
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'utilisateur par UID:', error);
+    // console.error('Erreur lors de la récupération de l\'utilisateur par UID:', error);
     // Vérifier si l'erreur est due à l'absence de l'utilisateur
     if (error.message.includes('Aucun utilisateur trouvé')) {
       res.status(404).json({
@@ -94,7 +94,7 @@ const getUserByEmail = async (req, res) => {
       data: user
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'utilisateur par email:', error);
+    // console.error('Erreur lors de la récupération de l\'utilisateur par email:', error);
     // Vérifier si l'erreur est due à l'absence de l'utilisateur
     if (error.message.includes('Aucun utilisateur trouvé')) {
       res.status(404).json({
@@ -123,7 +123,7 @@ const createUser = async (req, res) => {
       data: { id: userId, ...userData }
     });
   } catch (error) {
-    console.error('Erreur lors de la création de l\'utilisateur:', error);
+    // console.error('Erreur lors de la création de l\'utilisateur:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la création de l\'utilisateur',
@@ -144,7 +144,7 @@ const updateUser = async (req, res) => {
       data: updatedUser
     });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
+    // console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la mise à jour de l\'utilisateur',
@@ -163,7 +163,7 @@ const deleteUser = async (req, res) => {
       message: 'Utilisateur supprimé avec succès'
     });
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+    // console.error('Erreur lors de la suppression de l\'utilisateur:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression de l\'utilisateur',

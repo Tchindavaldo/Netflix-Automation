@@ -55,7 +55,7 @@ app.use((req, res) => {
 
 // Gestion des erreurs globales
 app.use((err, req, res, next) => {
-  console.error("Erreur non gérée:", err);
+  // console.error("Erreur non gérée:", err);
   res.status(500).json({
     success: false,
     message: "Une erreur est survenue sur le serveur",

@@ -97,7 +97,7 @@ const uploadSnapshotHandler = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('❌ Erreur lors de l\'upload manuel:', error);
+    // console.error('❌ Erreur lors de l\'upload manuel:', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'upload vers Google Drive',

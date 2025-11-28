@@ -44,7 +44,7 @@ class FileUploadService {
       return publicUrl;
 
     } catch (error) {
-      console.error(`❌ Erreur lors de l'upload de ${fileName}:`, error.message);
+      // console.error(`❌ Erreur lors de l'upload de ${fileName}:`, error.message);
       throw new Error(`Erreur upload: ${error.message}`);
     }
   }
@@ -105,7 +105,7 @@ class FileUploadService {
       };
 
     } catch (error) {
-      console.error('❌ Erreur lors de l\'upload du snapshot:', error.message);
+      // console.error('❌ Erreur lors de l\'upload du snapshot:', error.message);
       return {
         success: false,
         error: error.message
@@ -124,7 +124,7 @@ class FileUploadService {
       // console.log(`🗑️ Fichier local supprimé: ${path.basename(filePath)}`);
       return true;
     } catch (error) {
-      console.error(`❌ Erreur lors de la suppression de ${filePath}:`, error.message);
+      // console.error(`❌ Erreur lors de la suppression de ${filePath}:`, error.message);
       return false;
     }
   }

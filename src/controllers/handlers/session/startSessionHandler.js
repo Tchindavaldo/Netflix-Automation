@@ -37,7 +37,7 @@ const startSessionHandler = async (req, res) => {
     });
   } catch (error) {
     clearTimeout(timeout);
-    console.error("Erreur dans le gestionnaire startSession:", error);
+    // console.error("Erreur dans le gestionnaire startSession:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors du démarrage de la session",

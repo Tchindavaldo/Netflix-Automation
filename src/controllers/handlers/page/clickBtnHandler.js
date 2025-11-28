@@ -68,7 +68,7 @@ const clickBtnHandler = async (req, res) => {
         10000,
       );
     } catch (error) {
-      console.error(`❌ Bouton non trouvé: ${buttonSelector}`);
+      // console.error(`❌ Bouton non trouvé: ${buttonSelector}`);
 
       // Capturer l'état actuel pour debug
       const currentUrl = await driver.getCurrentUrl();
@@ -87,7 +87,7 @@ const clickBtnHandler = async (req, res) => {
 
     // Attendre que le bouton soit cliquable
     await driver.wait(until.elementIsEnabled(button), 5000).catch(() => {
-      console.warn("⚠️ Le bouton n'est pas devenu cliquable dans le délai");
+      // console.warn("⚠️ Le bouton n'est pas devenu cliquable dans le délai");
     });
 
     // console.log(`🎯 Clic sur le bouton...`);
@@ -117,7 +117,7 @@ const clickBtnHandler = async (req, res) => {
       message: "Clic effectué avec succès",
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire clickBtn:", error);
+    // console.error("Erreur dans le gestionnaire clickBtn:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors du clic sur le bouton",

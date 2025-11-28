@@ -34,7 +34,7 @@ const stopSessionHandler = async (req, res) => {
       message: result.message || "Session arrêtée avec succès"
     });
   } catch (error) {
-    console.error("Erreur dans le gestionnaire stopSession:", error);
+    // console.error("Erreur dans le gestionnaire stopSession:", error);
     res.status(500).json({
       success: false,
       message: error.message || "Erreur lors de l'arrêt de la session",
