@@ -25,13 +25,17 @@ const subscriptionErrorService = {
       const { 
         stepName, error, sessionId, userId, planActivationId, 
         email, motDePasse, typeDePlan, amount, 
-        buttonSelector, planSelector, cardInfo, snapshotUrls,
+        buttonSelector, planSelector, cardInfo, snapshotUrls, // ✅ Retour à snapshotUrls
         currentUrl, attempts, isSessionRetry, previousSessionId,
-        sessionRetryAttempt, retryReason, errorContext
+        sessionRetryAttempt, retryReason, errorContext, errorId, // ✅ errorId conservé
+        backendRegion // ✅ backendRegion conservé
       } = errorData;
 
       // Créer un enregistrement structuré avec toutes les données importantes
       const errorRecord = {
+        // ID unique de l'erreur (généré avant la capture du snapshot)
+        errorId: errorId || `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        
         // Identifiants
         sessionId: sessionId || errorContext?.sessionId || 'inconnu',
         userId: userId || errorContext?.userId || 'inconnu',
@@ -48,6 +52,7 @@ const subscriptionErrorService = {
         email: email || errorContext?.email || 'inconnu',
         typeDePlan: typeDePlan || errorContext?.typeDePlan || 'inconnu',
         amount: amount || errorContext?.amount || 0,
+        backendRegion: backendRegion || errorContext?.backendRegion || 'basic', // ✅ Région backend
         
         // Contexte de l'erreur
         currentUrl: currentUrl || errorContext?.currentUrl || 'inconnue',
@@ -73,9 +78,9 @@ const subscriptionErrorService = {
           };
         })(),
         
-        // URLs des snapshots
+        // ✅ Utilisation de snapshotUrls (qui contient maintenant les chemins locaux)
         snapshotUrls: snapshotUrls || errorContext?.snapshotUrls || null,
-        snapshotFolder: errorContext?.snapshotFolder || null,
+        snapshotFolder: errorContext?.snapshotFolder || (snapshotUrls?.folderName) || null,
         
         // Données brutes complètes (pour référence)
         rawErrorData: JSON.parse(JSON.stringify(errorData, (key, value) => {

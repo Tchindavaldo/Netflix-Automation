@@ -22,11 +22,12 @@ class SubscriptionOrchestrator {
   /**
    * Exécuter le processus complet d'abonnement Netflix
    * @param {Object} subscriptionData - Données pour l'abonnement
-   * @param {string} subscriptionData.typeDePlan - Type de plan (mobile, basic, standard, premium)
+   * @param {string} subscriptionData.typeDePlan - Type de plan (mobile, basic, standard, premium, standardWithAds)
    * @param {string} subscriptionData.email - Email de l'utilisateur
    * @param {string} subscriptionData.motDePasse - Mot de passe de l'utilisateur
    * @param {string} subscriptionData.planActivationId - ID de l'activation du plan
    * @param {string} subscriptionData.userId - ID de l'utilisateur (pour traçabilité)
+   * @param {string} subscriptionData.backendRegion - Région backend (basic, usa) - défaut: basic
    * @param {Object} subscriptionData.cardInfo - Informations de la carte
    * @param {string} subscriptionData.cardInfo.cardNumber - Numéro de carte
    * @param {string} subscriptionData.cardInfo.expirationDate - Date d'expiration (MM/YY)
@@ -39,10 +40,14 @@ class SubscriptionOrchestrator {
     let sessionId = null;
 
     try {
+      // Extraire la région backend (par défaut: basic)
+      const backendRegion = subscriptionData.backendRegion || 'basic';
+      
       // console.log("\n🚀 Démarrage du processus d'abonnement Netflix\n");
       // console.log(`👤 UserId: ${subscriptionData.userId}`);
       // console.log(`🏷️ PlanActivationId: ${subscriptionData.planActivationId}`);
       // console.log(`📦 Plan sélectionné: ${subscriptionData.typeDePlan}`);
+      // console.log(`🌍 Région backend: ${backendRegion}`);
       // console.log(`📧 Email: ${subscriptionData.email}\n`);
 
       // Étape 1: Démarrer la session
@@ -156,19 +161,37 @@ class SubscriptionOrchestrator {
       }
       // console.log("");
 
-      // Étape 3: Sélectionner le plan
-      const step3Result = await step3_selectPlan(
-        this.baseUrl,
-        sessionId,
-        subscriptionData.typeDePlan,
-        subscriptionData.planActivationId,
-        subscriptionData.userId,
-        subscriptionData // Passer tout le contexte pour les erreurs
-      );
-      processLog.push({ step: 3, name: "selectPlan", result: step3Result });
+      // Vérifier si le plan nécessite une sélection selon la région
+      const selectors = require('../../../selectors/subscription-selectors.json');
+      const regionPlans = selectors.planSelection.backendRegions[backendRegion];
+      const planExists = regionPlans && regionPlans[subscriptionData.typeDePlan.toLowerCase()];
 
-      if (!step3Result.success) {
-        throw new Error(`Échec étape 3: ${step3Result.error}`);
+      let step3Result;
+      
+      if (!planExists) {
+        // Le plan n'existe pas dans cette région, on saute l'étape 3
+        // console.log(`⏭️ Étape 3 ignorée: Le plan ${subscriptionData.typeDePlan} n'existe pas dans la région ${backendRegion}`);
+        step3Result = {
+          success: true,
+          skipped: true,
+          reason: `Plan ${subscriptionData.typeDePlan} non disponible dans la région ${backendRegion}, sélection automatique`
+        };
+        processLog.push({ step: 3, name: "selectPlan", result: step3Result, skipped: true });
+      } else {
+        // Étape 3: Sélectionner le plan
+        step3Result = await step3_selectPlan(
+          this.baseUrl,
+          sessionId,
+          subscriptionData.typeDePlan,
+          subscriptionData.planActivationId,
+          subscriptionData.userId,
+          subscriptionData // Passer tout le contexte pour les erreurs
+        );
+        processLog.push({ step: 3, name: "selectPlan", result: step3Result });
+
+        if (!step3Result.success) {
+          throw new Error(`Échec étape 3: ${step3Result.error}`);
+        }
       }
       // console.log("");
 

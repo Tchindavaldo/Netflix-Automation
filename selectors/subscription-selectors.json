@@ -6,10 +6,47 @@
     "nextToPaymentMethod": "button.ea2wixt2"
   },
   "planSelection": {
-    "mobile": "label[for=\"select-4120\"]",
-    "basic": "label[for=\"select-4001\"]",
-    "standard": "label[for=\"select-3088\"]",
-    "premium": "label[for=\"select-3108\"]"
+    "backendRegions": {
+      "basic": {
+        "mobile": {
+          "selector": "label[for=\"select-4120\"]",
+          "planId": "4120",
+          "price": "ZAR 59"
+        },
+        "basic": {
+          "selector": "label[for=\"select-4001\"]",
+          "planId": "4001",
+          "price": "ZAR 99"
+        },
+        "standard": {
+          "selector": "label[for=\"select-3088\"]",
+          "planId": "3088",
+          "price": "ZAR 179"
+        },
+        "premium": {
+          "selector": "label[for=\"select-3108\"]",
+          "planId": "3108",
+          "price": "ZAR 299"
+        }
+      },
+      "usa": {
+        "standardWithAds": {
+          "selector": "label[for=\"select-5200\"]",
+          "planId": "5200",
+          "price": "$7.99"
+        },
+        "standard": {
+          "selector": "label[for=\"select-3088\"]",
+          "planId": "3088",
+          "price": "$17.99"
+        },
+        "premium": {
+          "selector": "label[for=\"select-3108\"]",
+          "planId": "3108",
+          "price": "$24.99"
+        }
+      }
+    }
   },
   "authentication": {
     "email": "input[data-uia=\"email\"]",

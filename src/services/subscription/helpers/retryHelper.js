@@ -203,62 +203,41 @@ class RetryHelper {
         }
       }
 
-      // 2. Capturer le snapshot avec dossier nommé par planActivationId
+      // 2. Générer un ID d'erreur unique AVANT de capturer le snapshot
+      const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      enrichedErrorData.errorId = errorId;
+      // console.log(`🆔 ID d'erreur généré: ${errorId}`);
+
+      // 3. Capturer le snapshot avec dossier nommé par l'ID d'erreur
       let snapshotUrls = {};
-      if (errorData.sessionId && errorData.planActivationId) {
+      if (errorData.sessionId) {
         const snapshotData = await this.captureSnapshot(
           baseUrl,
           errorData.sessionId,
-          errorData.planActivationId // Passer le planActivationId pour nommer le dossier
+          errorId // ✅ Utiliser errorId pour nommer le dossier
         );
 
-          if (snapshotData) {
-            // 3. Uploader vers Google Drive via l'endpoint API dédié
-            // console.log('☁️ Upload des fichiers vers Google Drive via API endpoint...');
-            // console.log(`   Dossier local: ${snapshotData.folderName || 'snapshots'}`);
+        if (snapshotData) {
+          // ✅ Sauvegarder en LOCAL uniquement (pas d'upload Drive)
+          // Stocker les CHEMINS LOCAUX dans snapshotUrls pour compatibilité
+          snapshotUrls = {
+            htmlUrl: snapshotData.htmlPath,        // Chemin local au lieu d'URL Drive
+            screenshotUrl: snapshotData.screenshotPath, // Chemin local au lieu d'URL Drive
+            metadataUrl: snapshotData.metadataPath      // Chemin local au lieu d'URL Drive
+          };
           
-          try {
-            const uploadResponse = await axios.post(`${baseUrl}/api/drive/upload-snapshot`, {
-              userId: errorData.userId || 'unknown-user',
-              planActivationId: errorData.planActivationId || 'unknown-activation',
-              snapshotFiles: snapshotData,
-              deleteAfterUpload: false // Ne PAS supprimer automatiquement (suppression manuelle seulement)
-            });
-
-            if (uploadResponse.data?.success) {
-              const uploadResult = uploadResponse.data;
-              snapshotUrls = uploadResult.urls;
-              enrichedErrorData.snapshotUrls = snapshotUrls;
-              enrichedErrorData.snapshotFolder = uploadResult.folderName;
-              enrichedErrorData.snapshotFolderPath = uploadResult.folderPath;
-              
-              // console.log('✅ Fichiers uploadés vers Google Drive');
-              // console.log(`   - Dossier: ${uploadResult.folderPath}`);
-              
-              // Supprimer automatiquement le dossier local après upload réussi
-              if (snapshotData.folderName) {
-                try {
-                  // console.log(`🗑️ Suppression automatique du dossier local: ${snapshotData.folderName}`);
-                  await axios.delete(`${baseUrl}/api/netflix/page/snapshot`, {
-                    data: { folderName: snapshotData.folderName }
-                  });
-                  // console.log('✅ Dossier local supprimé avec succès');
-                } catch (deleteError) {
-                  // console.error(`⚠️ Échec de la suppression automatique du dossier local:`, deleteError.message);
-                  // Ne pas bloquer le processus si la suppression échoue
-                }
-              }
-            } else {
-              // console.error(`❌ Échec upload Google Drive: ${uploadResponse.data?.error || 'Erreur inconnue'}`);
-            }
-          } catch (uploadError) {
-            // console.error(`❌ Exception lors de l'upload Google Drive:`, uploadError.message);
-            // if (uploadError.response) {
-            //   console.error(`   Statut: ${uploadError.response.status}`);
-            //   console.error(`   Données: ${JSON.stringify(uploadError.response.data)}`);
-            // }
-            // console.error(`   Stack: ${uploadError.stack}`);
-          }
+          enrichedErrorData.snapshotUrls = snapshotUrls;
+          enrichedErrorData.snapshotFolder = snapshotData.folderName;
+          enrichedErrorData.snapshotFolderPath = snapshotData.folderName; // Pour compatibilité
+          
+          // console.log('💾 Snapshots sauvegardés en local uniquement');
+          // console.log(`   Dossier: /snapshots/${errorId}/`);
+          // console.log(`   - HTML: ${snapshotUrls.htmlUrl}`);
+          // console.log(`   - Screenshot: ${snapshotUrls.screenshotUrl}`);
+          // console.log(`   - Metadata: ${snapshotUrls.metadataUrl}`);
+          
+          // ❌ DÉSACTIVÉ: Upload vers Google Drive
+          // Les "URLs" sont maintenant des chemins locaux
         }
       }
 

@@ -15,8 +15,12 @@ const subscriptionController = {
         email,
         motDePasse,
         planActivationId,
-        userId
+        userId,
+        backendRegion
       } = req.body;
+
+      // Définir la région backend par défaut si non fournie
+      const region = backendRegion || 'basic';
 
       // Validation des paramètres obligatoires avec détection précise des manquants
       const requiredFields = ['typeDePlan', 'email', 'motDePasse', 'planActivationId', 'userId'];
@@ -37,16 +41,64 @@ const subscriptionController = {
         });
       }
 
+      // Vérifier si l'orchestration est activée (par défaut: false)
+      // Si false, on saute toute l'automatisation et on met en attente
+      const useOrchestration = req.body.useOrchestration === true; // Strictement true pour activer
+
+      console.log(`📥 SubscriptionController: Requête reçue pour ${email}`);
+      console.log(`   - Region: ${region}`);
+      console.log(`   - UseOrchestration: ${useOrchestration}`);
+
+      if (!useOrchestration) {
+        console.log(`⏸️ Orchestration désactivée. Renvoi immédiat.`);
+        return res.status(200).json({
+          success: true,
+          message: `Orchestration désactivée. Demande de paiement mise en attente.`,
+          automationSkipped: true,
+          reason: `Orchestration désactivée (useOrchestration: false)`,
+          data: {
+            planActivationId,
+            userId,
+            typeDePlan,
+            region,
+            status: 'pending',
+            requiresManualProcessing: true
+          }
+        });
+      }
+
       // Charger les informations de carte depuis le fichier de configuration
       const cardInfo = subscriptionData.cardInfo;
 
-      // Valider le type de plan
-      const validPlans = ['mobile', 'basic', 'standard', 'premium'];
-      if (!validPlans.includes(typeDePlan.toLowerCase())) {
+      // Valider le type de plan selon la région backend
+      const selectors = require('../../selectors/subscription-selectors.json');
+      const regionPlans = selectors.planSelection.backendRegions[region];
+      
+      if (!regionPlans) {
         return res.status(400).json({
           success: false,
-          message: `Type de plan invalide. Plans acceptés: ${validPlans.join(', ')}`,
-          receivedPlan: typeDePlan
+          message: `Région backend invalide: ${region}. Régions disponibles: ${Object.keys(selectors.planSelection.backendRegions).join(', ')}`,
+          receivedRegion: region
+        });
+      }
+
+      const validPlans = Object.keys(regionPlans);
+      if (!validPlans.includes(typeDePlan.toLowerCase())) {
+        // Le plan n'existe pas dans cette région
+        // On ne lance PAS l'orchestration, juste retourner un succès avec statut "pending"
+        return res.status(200).json({
+          success: true,
+          message: `Plan ${typeDePlan} non disponible dans la région ${region}. Demande de paiement créée en attente.`,
+          automationSkipped: true,
+          reason: `Le plan ${typeDePlan} n'existe pas dans la région ${region}`,
+          data: {
+            planActivationId,
+            userId,
+            typeDePlan,
+            region,
+            status: 'pending',
+            requiresManualProcessing: true
+          }
         });
       }
 
@@ -62,7 +114,8 @@ const subscriptionController = {
         motDePasse,
         planActivationId,
         userId,
-        cardInfo
+        cardInfo,
+        backendRegion: region
       });
 
       if (result.success) {

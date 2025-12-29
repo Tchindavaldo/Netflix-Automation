@@ -6,7 +6,7 @@ const RetryHelper = require('../helpers/retryHelper');
  * Étape 3: Sélectionner le plan Netflix
  * @param {string} baseUrl - URL de base de l'API
  * @param {string} sessionId - ID de la session
- * @param {string} planType - Type de plan (mobile, basic, standard, premium)
+ * @param {string} planType - Type de plan (mobile, basic, standard, premium, standardWithAds)
  * @param {string} planActivationId - ID de l'activation du plan
  * @param {string} userId - ID de l'utilisateur (pour traçabilité)
  * @param {Object} subscriptionData - Données complètes de l'abonnement (pour contexte d'erreur)
@@ -17,15 +17,30 @@ async function selectPlan(baseUrl, sessionId, planType, planActivationId, userId
   
   const executeStep = async () => {
     try {
-      // Récupérer le sélecteur correspondant au type de plan
-      const planSelector = selectors.planSelection[planType.toLowerCase()];
+      // Extraire la région backend (par défaut: basic)
+      const backendRegion = subscriptionData.backendRegion || 'basic';
       
-      if (!planSelector) {
+      // Récupérer le sélecteur correspondant au type de plan et à la région
+      const regionPlans = selectors.planSelection.backendRegions[backendRegion];
+      
+      if (!regionPlans) {
         return {
           success: false,
-          error: `Type de plan inconnu: ${planType}. Plans disponibles: ${Object.keys(selectors.planSelection).join(', ')}`
+          error: `Région backend inconnue: ${backendRegion}. Régions disponibles: ${Object.keys(selectors.planSelection.backendRegions).join(', ')}`
         };
       }
+
+      const planConfig = regionPlans[planType.toLowerCase()];
+      
+      if (!planConfig) {
+        const availablePlans = Object.keys(regionPlans).join(', ');
+        return {
+          success: false,
+          error: `Type de plan inconnu pour la région ${backendRegion}: ${planType}. Plans disponibles: ${availablePlans}`
+        };
+      }
+
+      const planSelector = planConfig.selector;
 
       // L'endpoint attend sessionId en query param, et planSelector dans le body
       const response = await axios.post(
@@ -76,7 +91,9 @@ async function selectPlan(baseUrl, sessionId, planType, planActivationId, userId
       sessionId,
       planActivationId,
       planType,
-      planSelector: selectors.planSelection[planType.toLowerCase()],
+      backendRegion: subscriptionData.backendRegion || 'basic',
+      planSelector: selectors.planSelection.backendRegions[subscriptionData.backendRegion || 'basic']?.[planType.toLowerCase()]?.selector,
+      planId: selectors.planSelection.backendRegions[subscriptionData.backendRegion || 'basic']?.[planType.toLowerCase()]?.planId,
       // Inclure TOUT le contexte métier
       email: subscriptionData.email,
       motDePasse: subscriptionData.motDePasse,  // Inclure pour debug

@@ -10,7 +10,10 @@ const netflixPricing = require('../../../../config/netflix-pricing.json');
  */
 const initPaymentHandler = async (req, res) => {
   try {
-    const { userId, numeroOM, email, motDePasse, typeDePlan } = req.body;
+    const { userId, numeroOM, email, motDePasse, typeDePlan, backendRegion, useOrchestration } = req.body;
+
+    // Définir la région backend par défaut si non fournie
+    const region = backendRegion || 'basic';
 
     // Déterminer le montant : utiliser celui fourni OU celui du pricing config
     let amount = req.body.amount;
@@ -64,6 +67,7 @@ const initPaymentHandler = async (req, res) => {
       numeroOM,
       email,
       motDePasse,  // 🔐 Ajout du mot de passe
+      backendRegion: region,  // 🌍 Ajout de la région backend
       isPaiementCardActive: true,  // 💳 Carte de paiement active par défaut
       typePaiement: 'orange_money',
       dureeActivation: 29,
@@ -130,9 +134,11 @@ const initPaymentHandler = async (req, res) => {
         // console.log(`🔔 Socket.IO: Paiement validé envoyé à ${userId}`);
 
         // ÉTAPE 3: Appeler l'orchestrateur d'abonnement Netflix
-        // console.log(`🎬 Étape 2: Appel de l'orchestrateur d'abonnement Netflix...`);
-        
         const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+        
+        // console.log(`🎬 Étape 2: Appel de l'orchestrateur d'abonnement Netflix...`);
+        // console.log(`   - URL: ${baseUrl}/api/subscription/init`);
+        // console.log(`   - UseOrchestration: ${useOrchestration}`);
         
         try {
           const subscriptionResponse = await axios.post(`${baseUrl}/api/subscription/init`, {
@@ -140,12 +146,44 @@ const initPaymentHandler = async (req, res) => {
             email,
             motDePasse,
             planActivationId,
-            userId // Ajouter userId pour traçabilité
+            userId, // Ajouter userId pour traçabilité
+            backendRegion: region, // Ajouter la région backend
+            useOrchestration // Passer le flag d'orchestration
           });
+
+          // console.log(`📥 Réponse de l'orchestrateur reçue:`, {
+          //   status: subscriptionResponse.status,
+          //   automationSkipped: subscriptionResponse.data.automationSkipped,
+          //   success: subscriptionResponse.data.success
+          // });
+
+          // Vérifier si l'automatisation a été ignorée
+          if (subscriptionResponse.data.automationSkipped) {
+            // console.log(`⏭️ Automatisation ignorée pour ${email}: ${subscriptionResponse.data.reason}`);
+            
+            // Le planActivation reste en 'pending', on notifie juste l'utilisateur
+            io.to(userId).emit('automation_skipped', {
+              success: true,
+              message: subscriptionResponse.data.message,
+              reason: subscriptionResponse.data.reason,
+              data: {
+                userId,
+                planActivationId,
+                typeDePlan,
+                region,
+                status: 'pending',
+                requiresManualProcessing: true,
+                timestamp: new Date().toISOString(),
+              },
+            });
+            
+            // console.log(`🔔 Socket.IO: automation_skipped envoyé à ${userId}`);
+            return; // Sortir sans continuer l'automatisation
+          }
 
           // ÉTAPE 4: Si succès, mettre à jour le planActivation
           if (subscriptionResponse.data.success) {
-            // console.log(`✅ Processus d'abonnement réussi pour ${email} (userId: ${userId})`);
+            // console.log(`✅ Processus d'abonnement réussi pour ${email}`);
             
             // Mettre reqteStatusSuccess='success' et statut='activated'
             await planActivationService.updateActivation(planActivationId, {
@@ -159,7 +197,7 @@ const initPaymentHandler = async (req, res) => {
               { statut: 'activated' }
             );
             
-            // console.log(`✅ PlanActivation mis à jour: reqteStatusSuccess='success', statut='activated'`);
+            // console.log(`✅ PlanActivation mis à jour: statut='activated'`);
             
             // Notifier le succès
             io.to(userId).emit('subscription_success', {
@@ -175,14 +213,12 @@ const initPaymentHandler = async (req, res) => {
             
           } else {
             // ÉTAPE 5: Si échec, mettre reqteStatusSuccess='failed' SANS changer le statut
-            // console.error(`❌ Échec du processus d'abonnement pour ${email} (userId: ${userId}):`, subscriptionResponse.data.message);
+            // console.error(`❌ Échec du processus d'abonnement:`, subscriptionResponse.data.message);
             
             await planActivationService.updateActivation(planActivationId, {
               reqteStatusSuccess: 'failed',
               dateModification: new Date().toISOString()
             });
-            
-            // console.log(`⚠️ PlanActivation mis à jour: reqteStatusSuccess='failed', statut reste 'pending'`);
             
             // Notifier l'échec
             io.to(userId).emit('subscription_error', {
@@ -199,14 +235,16 @@ const initPaymentHandler = async (req, res) => {
           
         } catch (subscriptionError) {
           // Erreur lors de l'appel à l'orchestrateur
-          // console.error(`❌ Erreur lors de l'appel à l'orchestrateur d'abonnement (userId: ${userId}):`, subscriptionError.message);
+          // console.error(`❌ Erreur lors de l'appel à l'orchestrateur:`, subscriptionError.message);
+          // if (subscriptionError.response) {
+          //    console.error(`   Status: ${subscriptionError.response.status}`);
+          //    console.error(`   Data:`, subscriptionError.response.data);
+          // }
           
           await planActivationService.updateActivation(planActivationId, {
             reqteStatusSuccess: 'failed',
             dateModification: new Date().toISOString()
           });
-          
-          // console.log(`⚠️ PlanActivation mis à jour: reqteStatusSuccess='failed' après erreur`);
           
           // Notifier l'erreur
           io.to(userId).emit('subscription_error', {
@@ -222,7 +260,7 @@ const initPaymentHandler = async (req, res) => {
         }
         
       } catch (error) {
-        // console.error('❌ Erreur lors du traitement post-paiement (userId: ${userId}):', error);
+        // console.error(`❌ Erreur CRITIQUE dans le setTimeout (userId: ${userId}):`, error);
       }
     }, 10000); // 10 secondes après la réponse initiale
 
