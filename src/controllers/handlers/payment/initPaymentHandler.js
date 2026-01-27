@@ -55,53 +55,42 @@ const initPaymentHandler = async (req, res) => {
     // console.log(`📦 Type de plan: ${typeDePlan}`);
     // console.log(`💵 Montant: ${amount}`);
 
-    // ÉTAPE 1: Créer le planActivation avec reqteStatusSuccess='pending'
-    // console.log(`📝 Étape 1: Création du planActivation...`);
-    
-    const activationData = {
-      userId,
-      planNetflix: typeDePlan,
-      amount: parseFloat(amount),
-      statut: 'pending',
-      reqteStatusSuccess: 'pending', // String: 'pending' au départ
-      numeroOM,
-      email,
-      motDePasse,  // 🔐 Ajout du mot de passe
-      backendRegion: region,  // 🌍 Ajout de la région backend
-      isPaiementCardActive: true,  // 💳 Carte de paiement active par défaut
-      typePaiement: 'orange_money',
-      dureeActivation: 29,
-      dateCreation: new Date().toISOString(),
-      dateModification: new Date().toISOString()
+    // --- NOUVEAU: Appel à l'API externe pour obtenir le lien de paiement ---
+    const paymentUserId = process.env.PAYMENT_USER_ID || '6973dd008d4b9ebd7cd86b9f';
+    const externalApiUrl = `https://app.digikuntz.com/dev/transaction/${paymentUserId}/SK-1769201488919-237f468b`;
+
+    // Nettoyer le numéro de téléphone
+    let sanitizedPhone = numeroOM.replace(/^\+?237/, '');
+
+    const payload = {
+      estimation: parseFloat(amount),
+      raisonForTransfer: 'netflix-paiment',
+      userEmail: email,
+      userPhone: sanitizedPhone,
+      userCountry: 'Cameroon',
+      senderName: 'moobilpay'
     };
 
-    const newActivation = await planActivationService.createActivation(activationData);
-    const planActivationId = newActivation.id;
-    
-    // console.log(`✅ PlanActivation créé avec l'ID: ${planActivationId}`);
-    
-    // Émettre l'événement Socket.IO pour la création
-    try {
-      const io = socketModule.getIO();
-      io.to(userId).emit('activationcreated', {
-        success: true,
-        message: 'Activation créée avec succès',
-        data: newActivation,
-        timestamp: new Date().toISOString(),
-      });
-      // console.log(`🔔 Socket.IO: Activation créée envoyée à ${userId}`);
-    } catch (socketError) {
-      // console.error('❌ Erreur lors de l\'\u00e9mission Socket.IO:', socketError);
+    // console.log('Initiating external payment with payload:', payload);
+    const externalResponse = await axios.post(externalApiUrl, payload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const transactionId = externalResponse.data.transactionId || externalResponse.data.id;
+    const { paymentLink } = externalResponse.data;
+
+    if (!transactionId || !paymentLink) {
+      throw new Error('Réponse invalide du fournisseur de paiement');
     }
 
-    // Simuler le traitement du paiement Orange Money (remplacer par vraie logique API)
-    // Répondre immédiatement avec le planActivationId
+    // Répondre avec les informations nécessaires pour la 2ème requête du frontend
     res.status(200).json({
       success: true,
-      message: 'Paiement initié et planActivation créé',
+      message: 'Paiement initié avec succès',
+      transactionId,
+      paymentLink,
       data: {
         userId,
-        planActivationId,
         numeroOM,
         email,
         typeDePlan,
@@ -111,158 +100,7 @@ const initPaymentHandler = async (req, res) => {
     });
 
     // console.log(`✅ Paiement initié pour ${email} (userId: ${userId})`);
-
-    // ÉTAPE 2: Simuler validation du paiement puis appeler init_subscription_process
-    setTimeout(async () => {
-      try {
-        const io = socketModule.getIO();
-        
-        // Émettre l'événement de validation du paiement
-        io.to(userId).emit('payment_validated', {
-          success: true,
-          message: 'Paiement validé par Orange Money',
-          data: {
-            userId,
-            planActivationId,
-            numeroOM,
-            email,
-            typeDePlan,
-            timestamp: new Date().toISOString(),
-          },
-        });
-
-        // console.log(`🔔 Socket.IO: Paiement validé envoyé à ${userId}`);
-
-        // ÉTAPE 3: Appeler l'orchestrateur d'abonnement Netflix
-        const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
-        
-        // console.log(`🎬 Étape 2: Appel de l'orchestrateur d'abonnement Netflix...`);
-        // console.log(`   - URL: ${baseUrl}/api/subscription/init`);
-        // console.log(`   - UseOrchestration: ${useOrchestration}`);
-        
-        try {
-          const subscriptionResponse = await axios.post(`${baseUrl}/api/subscription/init`, {
-            typeDePlan,
-            email,
-            motDePasse,
-            planActivationId,
-            userId, // Ajouter userId pour traçabilité
-            backendRegion: region, // Ajouter la région backend
-            useOrchestration // Passer le flag d'orchestration
-          });
-
-          // console.log(`📥 Réponse de l'orchestrateur reçue:`, {
-          //   status: subscriptionResponse.status,
-          //   automationSkipped: subscriptionResponse.data.automationSkipped,
-          //   success: subscriptionResponse.data.success
-          // });
-
-          // Vérifier si l'automatisation a été ignorée
-          if (subscriptionResponse.data.automationSkipped) {
-            // console.log(`⏭️ Automatisation ignorée pour ${email}: ${subscriptionResponse.data.reason}`);
-            
-            // Le planActivation reste en 'pending', on notifie juste l'utilisateur
-            io.to(userId).emit('automation_skipped', {
-              success: true,
-              message: subscriptionResponse.data.message,
-              reason: subscriptionResponse.data.reason,
-              data: {
-                userId,
-                planActivationId,
-                typeDePlan,
-                region,
-                status: 'pending',
-                requiresManualProcessing: true,
-                timestamp: new Date().toISOString(),
-              },
-            });
-            
-            // console.log(`🔔 Socket.IO: automation_skipped envoyé à ${userId}`);
-            return; // Sortir sans continuer l'automatisation
-          }
-
-          // ÉTAPE 4: Si succès, mettre à jour le planActivation
-          if (subscriptionResponse.data.success) {
-            // console.log(`✅ Processus d'abonnement réussi pour ${email}`);
-            
-            // Mettre reqteStatusSuccess='success' et statut='activated'
-            await planActivationService.updateActivation(planActivationId, {
-              reqteStatusSuccess: 'success',
-              dateModification: new Date().toISOString()
-            });
-            
-            // Changer le statut à 'activated' (cela déclenchera les dates automatiquement)
-            const statusChangeResponse = await axios.put(
-              `${baseUrl}/api/plan-activation/${planActivationId}/status`,
-              { statut: 'activated' }
-            );
-            
-            // console.log(`✅ PlanActivation mis à jour: statut='activated'`);
-            
-            // Notifier le succès
-            io.to(userId).emit('subscription_success', {
-              success: true,
-              message: 'Abonnement Netflix activé avec succès',
-              data: {
-                userId,
-                planActivationId,
-                activation: statusChangeResponse.data.data,
-                timestamp: new Date().toISOString(),
-              },
-            });
-            
-          } else {
-            // ÉTAPE 5: Si échec, mettre reqteStatusSuccess='failed' SANS changer le statut
-            // console.error(`❌ Échec du processus d'abonnement:`, subscriptionResponse.data.message);
-            
-            await planActivationService.updateActivation(planActivationId, {
-              reqteStatusSuccess: 'failed',
-              dateModification: new Date().toISOString()
-            });
-            
-            // Notifier l'échec
-            io.to(userId).emit('subscription_error', {
-              success: false,
-              message: 'Erreur lors de l\'activation de l\'abonnement Netflix',
-              error: subscriptionResponse.data.message,
-              data: {
-                userId,
-                planActivationId,
-                timestamp: new Date().toISOString(),
-              },
-            });
-          }
-          
-        } catch (subscriptionError) {
-          // Erreur lors de l'appel à l'orchestrateur
-          // console.error(`❌ Erreur lors de l'appel à l'orchestrateur:`, subscriptionError.message);
-          // if (subscriptionError.response) {
-          //    console.error(`   Status: ${subscriptionError.response.status}`);
-          //    console.error(`   Data:`, subscriptionError.response.data);
-          // }
-          
-          await planActivationService.updateActivation(planActivationId, {
-            reqteStatusSuccess: 'failed',
-            dateModification: new Date().toISOString()
-          });
-          
-          // Notifier l'erreur
-          io.to(userId).emit('subscription_error', {
-            success: false,
-            message: 'Erreur technique lors de l\'activation',
-            error: subscriptionError.message,
-            data: {
-              userId,
-              planActivationId,
-              timestamp: new Date().toISOString(),
-            },
-          });
-        }
-        
-      } catch (error) {
-        // console.error(`❌ Erreur CRITIQUE dans le setTimeout (userId: ${userId}):`, error);
-      }
-    }, 10000); // 10 secondes après la réponse initiale
+    // L'ÉTAPE 2 (setTimeout) a été supprimée car la vérification est maintenant gérée par le frontend via un second appel.
 
   } catch (error) {
     // console.error('❌ Erreur dans le gestionnaire initPayment:', error);

@@ -9,6 +9,8 @@ const initPaymentHandler = require('./handlers/payment/initPaymentHandler');
 const paymentController = {
   // Initialiser un paiement Orange Money
   initPayment: initPaymentHandler,
+  // Initialiser un paiement Mobile Money (Nouveau)
+  initMobileMoneyPayment: require('./handlers/payment/initMobileMoneyPaymentHandler'),
 };
 
 module.exports = paymentController;

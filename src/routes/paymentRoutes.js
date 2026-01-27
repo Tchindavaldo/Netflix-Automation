@@ -49,4 +49,43 @@ const paymentController = require('../controllers/paymentController');
  */
 router.post('/initpaiment', paymentController.initPayment);
 
+/**
+ * @swagger
+ * /init-mobile-money:
+ *   post:
+ *     summary: Initialiser un paiement Mobile Money (Nouveau endpoint)
+ *     tags:
+ *       - Payment
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - email
+ *               - phone
+ *               - amount
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *               reason:
+ *                 type: string
+ *               senderName:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Paiement initialisé avec transactionId et paymentLink
+ */
+router.post('/init-mobile-money', paymentController.initMobileMoneyPayment);
+
 module.exports = router;

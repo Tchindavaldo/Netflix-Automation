@@ -115,4 +115,31 @@ router.post('/error', subscriptionErrorController.logError);
  */
 router.get('/error/:planActivationId', subscriptionErrorController.getErrorsByActivationId);
 
+/**
+ * @swagger
+ * /cancel:
+ *   post:
+ *     summary: Annuler la vérification d'un paiement en cours
+ *     tags:
+ *       - Subscription
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - transactionId
+ *             properties:
+ *               transactionId:
+ *                 type: string
+ *                 description: ID de la transaction à annuler
+ *     responses:
+ *       200:
+ *         description: Annulation enregistrée
+ *       404:
+ *         description: Transaction non trouvée
+ */
+router.post('/cancel', subscriptionController.cancelPaymentVerification);
+
 module.exports = router;

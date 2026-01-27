@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-11-25T22:39:16.736Z",
+  "sessionId": "sess_1764107078682_hoi7vslll",
+  "url": "https://www.netflix.com/signup?serverState=%7B%22realm%22%3A%22growth%22%2C%22name%22%3A%22PLAN_SELECTION%22%2C%22clcsSessionId%22%3A%220fdae3f7-1f9a-472b-b9ed-166fac55bea2%22%2C%22sessionContext%22%3A%7B%22session-breadcrumbs%22%3A%7B%22funnel_name%22%3A%22signupSimplicity%22%7D%7D%7D",
+  "title": "Netflix",
+  "readyState": "complete",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:117.0) Gecko/20100101 Firefox/117.0",
+  "htmlLength": 453816,
+  "files": {
+    "html": "snapshot_1764110356337.html",
+    "screenshot": "snapshot_1764110356337.png"
+  }
+}
