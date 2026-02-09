@@ -81,9 +81,9 @@ ENV FB_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
 ENV FB_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40mobilpay-c1872.iam.gserviceaccount.com
 ENV FB_UNIVERSE_DOMAIN=googleapis.com
 
-ENV PAYMENT_USER_ID=6973dd008d4b9ebd7cd86b9f
-ENV PAYMENT_SECRET_KEY=SK-1769201488919-237f468b
-ENV PAYMENT_API_URL=https://app.digikuntz.com/dev/transaction
+# ENV PAYMENT_USER_ID=6973dd008d4b9ebd7cd86b9f
+# ENV PAYMENT_SECRET_KEY=SK-1769201488919-237f468b
+# ENV PAYMENT_API_URL=https://app.digikuntz.com/dev/transaction
 
 # Google Drive OAuth2 Configuration
 ENV GOOGLE_DRIVE_CLIENT_ID="583417452577-j828mc5hmjg4b4smpp4nb935p5qtqvj3.apps.googleusercontent.com"
