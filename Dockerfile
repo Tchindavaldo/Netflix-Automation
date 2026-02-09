@@ -82,6 +82,7 @@ ENV FB_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/fi
 ENV FB_UNIVERSE_DOMAIN=googleapis.com
 
 ENV PAYMENT_USER_ID=6973dd008d4b9ebd7cd86b9f
+
 ENV PAYMENT_SECRET_KEY=PK-1769201488919-0221f103
 
 
