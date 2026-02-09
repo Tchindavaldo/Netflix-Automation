@@ -18,9 +18,9 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
       });
     }
 
-    const paymentUserId = process.env.PAYMENT_USER_ID || '6973dd008d4b9ebd7cd86b9f';
-    const secretKey = process.env.PAYMENT_SECRET_KEY || 'PK-1769201488919-0221f103';
-    const externalApiUrl = `https://app.digikuntz.com/dev/transaction/${paymentUserId}/SK-1769201488919-237f468b`;
+    const paymentUserId = process.env.PAYMENT_USER_ID;
+    const secretKey = process.env.PAYMENT_SECRET_KEY; 
+    const externalApiUrl = process.env.PAYMENT_API_URL;
 
     // Sanitize phone number (remove +237 or 237 if present)
     let sanitizedPhone = phone || '696080087';
@@ -61,7 +61,9 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
 
     const response = await axios.post(externalApiUrl, payload, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-user-id': paymentUserId,
+        'x-secret-key': secretKey
       }
     });
 

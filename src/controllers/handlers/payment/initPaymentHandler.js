@@ -56,8 +56,9 @@ const initPaymentHandler = async (req, res) => {
     // console.log(`💵 Montant: ${amount}`);
 
     // --- NOUVEAU: Appel à l'API externe pour obtenir le lien de paiement ---
-    const paymentUserId = process.env.PAYMENT_USER_ID || '6973dd008d4b9ebd7cd86b9f';
-    const externalApiUrl = `https://app.digikuntz.com/dev/transaction/${paymentUserId}/SK-1769201488919-237f468b`;
+    const paymentUserId = process.env.PAYMENT_USER_ID;
+    const secretKey = process.env.PAYMENT_SECRET_KEY; 
+    const externalApiUrl = process.env.PAYMENT_API_URL;
 
     // Nettoyer le numéro de téléphone
     let sanitizedPhone = numeroOM.replace(/^\+?237/, '');
@@ -73,7 +74,11 @@ const initPaymentHandler = async (req, res) => {
 
     // console.log('Initiating external payment with payload:', payload);
     const externalResponse = await axios.post(externalApiUrl, payload, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-user-id': paymentUserId,
+        'x-secret-key': secretKey
+      }
     });
 
     const transactionId = externalResponse.data.transactionId || externalResponse.data.id;

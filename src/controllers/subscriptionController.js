@@ -52,9 +52,10 @@ const subscriptionController = {
 
       // --- 1. VÉRIFICATION DE LA TRANSACTION (SI FOURNIE) ---
       if (transactionId) {
-        console.log(`🔍 Vérification de la transaction ${transactionId}...`);
-        const paymentUserId = process.env.PAYMENT_USER_ID || '6973dd008d4b9ebd7cd86b9f';
-        const verifyUrl = `https://app.digikuntz.com/dev/transaction/${paymentUserId}/SK-1769201488919-237f468b`;
+        // console.log(`🔍 Vérification de la transaction ${transactionId}...`);
+        const paymentUserId = process.env.PAYMENT_USER_ID;
+        const secretKey = process.env.PAYMENT_SECRET_KEY;
+        const verifyUrl = process.env.PAYMENT_API_URL;
         
         const PAYMENT_POLLING_INTERVAL_MS = 5000;
         const PAYMENT_TIMEOUT_MINUTES = 15;
@@ -75,11 +76,15 @@ const subscriptionController = {
             const verifyResponse = await axios({
               method: 'get',
               url: verifyUrl,
-              data: { transactionId },
-              headers: { 'Content-Type': 'application/json' }
+              params: { transactionId },
+              headers: { 
+                'Content-Type': 'application/json',
+                'x-user-id': paymentUserId,
+                'x-secret-key': secretKey
+              }
             });
             const { status } = verifyResponse.data;
-            console.log(`   - Statut transaction: ${status}`);
+            // console.log(`   - Statut transaction: ${status}`);
 
             if (status === 'error' || status === 'failed' || status === 'cancelled') {
               activeRequests.delete(transactionId);
@@ -88,19 +93,19 @@ const subscriptionController = {
 
             if (status === 'success' || status === 'completed') {
                transactionVerified = true;
-               console.log(`✅ Paiement confirmé pour la transaction ${transactionId}`);
+               // console.log(`✅ Paiement confirmé pour la transaction ${transactionId}`);
                
                // Émettre immédiatement le signal de validation du paiement
                 try {
                   const io = require('../../socket').getIO();
-                  console.log(`📡 Émission 'payment_validated' vers l'utilisateur: ${userId}`);
+                  // console.log(`📡 Émission 'payment_validated' vers l'utilisateur: ${userId}`);
                   
                   io.to(userId).emit('payment_validated', {
                     success: true,
                     message: 'Paiement validé avec succès !',
                     data: { userId, transactionId }
                   });
-                  console.log(`✅ Événement 'payment_validated' envoyé à la room ${userId}`);
+                  // console.log(`✅ Événement 'payment_validated' envoyé à la room ${userId}`);
                 } catch (e) {
                   console.error('❌ Erreur lors de l\'émission socket (polling):', e.message);
                 }
@@ -127,7 +132,7 @@ const subscriptionController = {
           return res.status(400).json({ success: false, message: 'planActivationId ou transactionId requis.' });
         }
 
-        console.log('📝 Création du planActivation après succès du paiement...');
+        // console.log('📝 Création du planActivation après succès du paiement...');
         const planActivationService = require('../services/planActivationService');
         const activationData = {
           userId,
@@ -148,7 +153,7 @@ const subscriptionController = {
 
         const newActivation = await planActivationService.createActivation(activationData);
         finalPlanActivationId = newActivation.id;
-        console.log(`✅ PlanActivation créé: ${finalPlanActivationId}`);
+        // console.log(`✅ PlanActivation créé: ${finalPlanActivationId}`);
 
         // Notification Socket
         try {
@@ -160,7 +165,7 @@ const subscriptionController = {
               success: true,
               data: newActivation
             });
-            console.log(`✅ Événement 'activationcreated' envoyé après 3s`);
+            // console.log(`✅ Événement 'activationcreated' envoyé après 3s`);
           }, 5000);
         } catch (e) {
           console.error('❌ Erreur lors de l\'émission socket (creation):', e.message);
@@ -307,7 +312,7 @@ const subscriptionController = {
       if (requestStatus) {
         // Mark as cancelled
         requestStatus.cancelled = true;
-        console.log('✅ Transaction marquée pour annulation:', transactionId);
+        // console.log('✅ Transaction marquée pour annulation:', transactionId);
         
         return res.status(200).json({
           success: true,
