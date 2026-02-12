@@ -43,6 +43,7 @@ app.use("/api/users", userRouter);
 app.use("/api/plan-activation", planActivationRouter);
 app.use("/api/subscription", subscriptionRouter);
 app.use("/api/drive", driveRouter);
+app.use("/api/netflix/plans", require("./routes/netflixPlanRoutes"));
 app.use("/api/netflix", require("./routes/passwordManagerRoutes"));
 
 // Gestion des erreurs 404

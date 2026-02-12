@@ -25,12 +25,17 @@ const createCredentials = async (userId, nom, prenom, customEmail = null, custom
     email = `${cleanPrenom}.${cleanNom}@moobilpay.com`;
   }
 
-  // 2. Vérifier si cet EMAIL existe déjà (C'est la SEULE vérification qui compte)
-  // Si l'email existe, on retourne les identifiants existants (peu importe le userId associé initialement)
+  // 2. Vérifier si cet EMAIL existe déjà
   const existingEmail = await getCredentials({ email: email }, 1);
 
   if (existingEmail) {
-    // console.log(`♻️ Email ${email} existe déjà. Réutilisation des identifiants.`);
+    // Si l'email existe déjà, il DOIT appartenir à l'utilisateur actuel
+    // On compare les IDs de manière stricte (strings)
+    if (String(existingEmail.user_id) !== String(userId)) {
+      // console.log(`⚠️ Email ${email} appartient à l'utilisateur ${existingEmail.user_id}, pas à ${userId}`);
+      throw new Error('EMAIL_TAKEN_BY_OTHER_USER');
+    }
+
     return {
       ...existingEmail,
       password: existingEmail.password_text,
