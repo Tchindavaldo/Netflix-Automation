@@ -18,11 +18,13 @@ const server = http.createServer(app);
 // Configuration de Socket.io
 socket.init(server);
 
+const initEmailSyncCron = require('./src/scripts/emailSyncCron');
+
 // Démarrage du serveur
 server.listen(PORT, HOST, () => {
   // console.log(`🚀 Serveur lancé sur http://localhost:${PORT}`);
-  // console.log(`Environnement: ${process.env.NODE_ENV || 'développement'}`);
-  // console.log(`Mode headless: ${process.env.HEADLESS === 'true' ? 'activé' : 'désactivé'}`);
+  // Lancer le cron de synchronisation des emails Zoho
+  initEmailSyncCron();
 });
 
 // Gestion des erreurs non capturées
