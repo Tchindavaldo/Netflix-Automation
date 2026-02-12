@@ -45,6 +45,7 @@ app.use("/api/subscription", subscriptionRouter);
 app.use("/api/drive", driveRouter);
 app.use("/api/netflix/plans", require("./routes/netflixPlanRoutes"));
 app.use("/api/netflix", require("./routes/passwordManagerRoutes"));
+app.use("/api/notification", require("./routes/notificationRoutes"));
 
 // Gestion des erreurs 404
 app.use((req, res) => {
