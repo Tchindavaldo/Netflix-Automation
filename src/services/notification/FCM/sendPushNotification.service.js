@@ -17,11 +17,11 @@ const sendPushNotification = async ({ tokens, token, title, body, data = {} }) =
   const message = {
     notification: {
       title,
-      body,
-      click_action: 'OPEN_NOTIF_SPLASH',
+      body, 
     },
     android: {
       notification: {
+        clickAction: 'OPEN_NOTIF_SPLASH',
         channelId: 'high_priority_channel',
         icon: 'ic_launcher',
         sound: 'default',
