@@ -18,6 +18,7 @@ const sendPushNotification = async ({ tokens, token, title, body, data = {} }) =
     notification: {
       title,
       body,
+      click_action: 'OPEN_NOTIF_SPLASH',
     },
     android: {
       notification: {
