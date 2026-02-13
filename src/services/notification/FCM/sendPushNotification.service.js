@@ -31,9 +31,16 @@ const sendPushNotification = async ({ token, title, body, data = {} }) => {
   };
 
   try {
+    console.log(`📤 Tentative d'envoi de notification push vers le token: ${token.substring(0, 15)}...`);
+    console.log(`📝 Titre: "${title}" | Corps: "${body}"`);
+    
     const response = await admin.messaging().send(message);
+    
+    console.log('✅ Notification push envoyée avec succès via Firebase:', response);
     return { success: true, response };
   } catch (error) {
+    console.error('❌ Erreur lors de l\'envoi de la notification push Firebase:', error.message);
+    if (error.code) console.error('Code d\'erreur Firebase:', error.code);
     return { success: false, error: error.message };
   }
 };

@@ -45,12 +45,40 @@ exports.createUser = async data => {
 
 // Mettre à jour un utilisateur
 exports.updateUser = async (id, data) => {
-  await db.collection('users').doc(id).update({
-    ...data,
-    updatedAt: new Date().toISOString()
-  });
-  // Récupérer et retourner l'utilisateur mis à jour
-  return exports.getUserById(id);
+  if (data.fcmToken) {
+    console.log(`🔔 Mise à jour du token FCM demandée pour l'identifiant: ${id}`);
+    console.log(`🎫 Token: ${data.fcmToken.substring(0, 20)}...`);
+  }
+
+  const userRef = db.collection('users').doc(id);
+  const doc = await userRef.get();
+
+  if (doc.exists) {
+    console.log(`✅ Utilisateur trouvé par ID de document: ${id}`);
+    await userRef.update({
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+    if (data.fcmToken) console.log(`🚀 Token FCM mis à jour avec succès pour le document ${id}`);
+    return { id: doc.id, ...doc.data(), ...data };
+  } else {
+    console.log(`🔍 Utilisateur non trouvé par ID de document, recherche par champ 'uid': ${id}`);
+    const snapshot = await db.collection('users').where('uid', '==', id).get();
+    
+    if (snapshot.empty) {
+      console.warn(`❌ Aucun utilisateur trouvé avec l'ID ou UID: ${id}`);
+      throw new Error(`Aucun utilisateur trouvé avec l'ID ou UID : ${id}`);
+    }
+
+    const userDoc = snapshot.docs[0];
+    console.log(`✅ Utilisateur trouvé par UID: ${id} (Document ID: ${userDoc.id})`);
+    await userDoc.ref.update({
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+    if (data.fcmToken) console.log(`🚀 Token FCM mis à jour avec succès pour l'UID ${id}`);
+    return { id: userDoc.id, ...userDoc.data(), ...data };
+  }
 };
 
 // Supprimer un utilisateur
