@@ -2,22 +2,28 @@
 
 const { admin } = require('../../../config/firebase');
 
-const sendPushNotification = async ({ token, title, body, data = {} }) => {
+const sendPushNotification = async ({ tokens, token, title, body, data = {} }) => {
+  // On gère à la fois un token unique ou un tableau de tokens
+  const targetTokens = tokens || (token ? [token] : []);
+  
+  if (!targetTokens || targetTokens.length === 0) {
+    console.warn('⚠️ Aucun token fourni pour l\'envoi de la notification push.');
+    return { success: false, message: 'No tokens provided' };
+  }
+
+  // Nettoyer les tokens (enlever les doublons ou valeurs vides)
+  const finalTokens = [...new Set(targetTokens.filter(t => t && typeof t === 'string'))];
+
   const message = {
-    token,
     notification: {
       title,
       body,
     },
     android: {
-      // priority: 'high',
       notification: {
         channelId: 'high_priority_channel',
         icon: 'ic_launcher',
         sound: 'default',
-        // tag: 'group_id', // identifiant pour grouper les notifs
-        // group: 'group_id', // identifiant de groupe
-        // groupSummary: false,
       },
     },
     apns: {
@@ -27,20 +33,33 @@ const sendPushNotification = async ({ token, title, body, data = {} }) => {
         },
       },
     },
-    data,
+    data: data || {},
   };
 
   try {
-    console.log(`📤 Tentative d'envoi de notification push vers le token: ${token.substring(0, 15)}...`);
+    console.log(`📤 Tentative d'envoi de notification push vers ${finalTokens.length} token(s)`);
     console.log(`📝 Titre: "${title}" | Corps: "${body}"`);
     
-    const response = await admin.messaging().send(message);
+    // Utilisation de sendEachForMulticast pour gérer plusieurs tokens efficacement
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens: finalTokens,
+      ...message
+    });
     
-    console.log('✅ Notification push envoyée avec succès via Firebase:', response);
+    console.log(`✅ Résultat Push : ${response.successCount} succès, ${response.failureCount} échecs`);
+    
+    // Log des erreurs spécifiques par token si besoin
+    if (response.failureCount > 0) {
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          console.error(`❌ Échec pour le token ${finalTokens[idx].substring(0, 10)}... :`, resp.error.message);
+        }
+      });
+    }
+
     return { success: true, response };
   } catch (error) {
-    console.error('❌ Erreur lors de l\'envoi de la notification push Firebase:', error.message);
-    if (error.code) console.error('Code d\'erreur Firebase:', error.code);
+    console.error('❌ Erreur critique lors de l\'envoi Multicast:', error.message);
     return { success: false, error: error.message };
   }
 };

@@ -1,11 +1,14 @@
-// interfaces/order.js
+// src/interface/notificationFields.js
 exports.notificationFields = {
   id: { type: 'string', required: false },
   userId: { type: 'string', required: false },
-  fastFoodId: { type: 'string', required: false },
+  userIds: { type: 'array', required: false },
+  token: { type: 'string', required: false },
+  tokens: { type: 'array', required: false },
   type: { type: 'string', required: true },
   title: { type: 'string', required: true },
-  target: { type: 'string', required: false },
   body: { type: 'string', required: true },
-  allNotif: { type: 'array', required: false },
+  data: { type: 'object', required: false },
+  createdAt: { type: 'string', required: false },
+  isRead: { type: 'array', required: false },
 };
