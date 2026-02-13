@@ -4,7 +4,8 @@ const { bucket } = require('../../config/firebase');
 exports.uploadImageToFirebase = async file => {
   if (!file) throw new Error('Aucun fichier fourni');
 
-  const fileName = `fastFood/${uuidv4()}_${file.originalname}`;
+  // Utilisation d'un dossier générique pour MoobilPay au lieu de fastFood
+  const fileName = `uploads/${uuidv4()}_${file.originalname}`;
   const fileRef = bucket.file(fileName);
 
   await fileRef.save(file.buffer, {
@@ -13,7 +14,7 @@ exports.uploadImageToFirebase = async file => {
     },
   });
 
-  // Rendre le fichier public (optionnel mais pratique)
+  // Rendre le fichier public
   await fileRef.makePublic();
 
   const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;

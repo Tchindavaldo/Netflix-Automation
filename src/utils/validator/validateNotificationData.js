@@ -35,8 +35,7 @@ exports.validateNotificationData = data => {
 
   // 🚫 Règles d'exclusion mutuelle
   const exclusifs = [
-    ['userId', 'target'],
-    ['userId', 'fastFoodId'],
+    ['userId', 'target']
   ];
 
   exclusifs.forEach(pair => {
