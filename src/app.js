@@ -30,11 +30,6 @@ app.use(
   }),
 );
 
-// Handler explicite pour les requêtes OPTIONS (preflight CORS)
-app.options("*", cors(), (req, res) => {
-  res.sendStatus(200);
-});
-
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

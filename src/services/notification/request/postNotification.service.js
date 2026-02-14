@@ -3,6 +3,7 @@ const { getIO } = require('../../../../socket');
 const { validateNotificationData } = require('../../../utils/validator/validateNotificationData');
 const sendPushNotification = require('../FCM/sendPushNotification.service');
 const { getNotificationService } = require('./getNotification.services');
+const userService = require('../../userService');
 
 exports.postNotificationService = async dataGet => {
   try {
@@ -63,17 +64,22 @@ exports.postNotificationService = async dataGet => {
         ...newNotif,
         isRead: JSON.stringify(newNotif.isRead)
       });
-      console.log(`📡 [SOCKET] Notification émise vers la room : ${currentUserId}`);
+      // console.log(`📡 [SOCKET] Notification émise vers la room : ${currentUserId} (Notification ID: ${newNotif.id})`);
       
       // ✅ Récupération des tokens FCM de l'utilisateur pour le push
       try {
+        console.log(`🔍 [FCM] Recherche de tokens pour l'utilisateur: ${currentUserId}`);
         const userDoc = await db.collection('users').doc(currentUserId).get();
+        let tokensFound = 0;
+
         if (userDoc.exists) {
           const userData = userDoc.data();
           if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
             targetTokens.push(...userData.fcmTokens);
+            tokensFound = userData.fcmTokens.length;
           } else if (userData.fcmToken) {
             targetTokens.push(userData.fcmToken);
+            tokensFound = 1;
           }
         } else {
           // Si non trouvé par ID, essayer par UID
@@ -82,13 +88,16 @@ exports.postNotificationService = async dataGet => {
             const userData = userSnapshot.docs[0].data();
             if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
               targetTokens.push(...userData.fcmTokens);
+              tokensFound = userData.fcmTokens.length;
             } else if (userData.fcmToken) {
               targetTokens.push(userData.fcmToken);
+              tokensFound = 1;
             }
           }
         }
+        console.log(`✅ [FCM] ${tokensFound} token(s) trouvé(s) pour l'utilisateur ${currentUserId}`);
       } catch (e) {
-        console.warn(`⚠️ Impossible de récupérer les tokens FCM pour l'utilisateur ${currentUserId}:`, e.message);
+        console.warn(`⚠️ [FCM] Erreur lors de la récupération des tokens pour ${currentUserId}:`, e.message);
       }
 
       results.push({ userId: currentUserId, notificationId: newNotif.id });
@@ -96,18 +105,33 @@ exports.postNotificationService = async dataGet => {
 
     // ✅ Nettoyer les tokens (enlever les doublons)
     const finalTokens = [...new Set(targetTokens.filter(t => t && typeof t === 'string'))];
+    console.log(`📱 [FCM] Total de tokens uniques à notifier : ${finalTokens.length}`);
+    if (finalTokens.length > 0) {
+      console.log(`🎫 [FCM] Liste complète des tokens cibles :`, finalTokens);
+    }
 
     // ✅ Envoi groupé des Push Notifications (FCM Multicast)
     if (finalTokens.length > 0) {
-      await sendPushNotification({
+      // console.log('🚀 [FCM] Lancement de l\'envoi push multicast...');
+      const pushResult = await sendPushNotification({
         tokens: finalTokens,
         title: data.title,
         body: data.body,
         data: {
-          ...data, // On passe toutes les datas
+          ...data,
           click_action: 'FLUTTER_NOTIFICATION_CLICK'
         }
       });
+
+      // ✅ Nettoyage automatique des tokens invalides
+      if (pushResult.tokensToDelete && pushResult.tokensToDelete.length > 0) {
+        userService.removeInvalidFcmTokens(pushResult.tokensToDelete).catch(err => 
+          console.error('❌ [FCM-CLEANUP] Erreur lors du nettoyage:', err.message)
+        );
+      }
+      // console.log(`🏁 [FCM] Résultat de l'envoi push : ${pushResult.success ? 'Succès' : 'Échec'}`);
+    } else {
+      // console.log('ℹ️ [FCM] Aucun token valide trouvé, envoi push ignoré.');
     }
 
     return {

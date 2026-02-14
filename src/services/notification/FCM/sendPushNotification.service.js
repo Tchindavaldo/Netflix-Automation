@@ -22,9 +22,12 @@ const sendPushNotification = async ({ tokens, token, title, body, data = {} }) =
     android: {
       notification: {
         clickAction: 'OPEN_NOTIF_SPLASH',
-        channelId: 'high_priority_channel',
-        icon: 'ic_launcher',
-        sound: 'default',
+        channelId: 'moobilpay_channel_v2',
+        icon: 'ic_notification',
+        color: '#dc2626', // Rouge officiel MoobilPay
+        notificationPriority: 'PRIORITY_MAX',
+        visibility: 'PUBLIC'
+        // On peut essayer d'ajouter un champ pour forcer l'icône mais c'est souvent géré par le client
       },
     },
     apns: {
@@ -38,8 +41,13 @@ const sendPushNotification = async ({ tokens, token, title, body, data = {} }) =
   };
 
   try {
-    console.log(`📤 Tentative d'envoi de notification push vers ${finalTokens.length} token(s)`);
-    console.log(`📝 Titre: "${title}" | Corps: "${body}"`);
+    console.log(`📤 [FCM-SERVICE] Tentative d'envoi vers ${finalTokens.length} token(s)`);
+    console.log(`📝 [FCM-SERVICE] Payload: { title: "${title}", body: "${body}" }`);
+    
+    if (finalTokens.length === 0) {
+      console.warn('⚠️ [FCM-SERVICE] Liste de tokens finaux vide après filtrage.');
+      return { success: false, message: 'No valid tokens' };
+    }
     
     // Utilisation de sendEachForMulticast pour gérer plusieurs tokens efficacement
     const response = await admin.messaging().sendEachForMulticast({
@@ -47,21 +55,31 @@ const sendPushNotification = async ({ tokens, token, title, body, data = {} }) =
       ...message
     });
     
-    console.log(`✅ Résultat Push : ${response.successCount} succès, ${response.failureCount} échecs`);
+    console.log(`✅ [FCM-SERVICE] Résultat : ${response.successCount} succès, ${response.failureCount} échecs`);
     
+    const tokensToDelete = [];
     // Log des erreurs spécifiques par token si besoin
     if (response.failureCount > 0) {
       response.responses.forEach((resp, idx) => {
         if (!resp.success) {
-          console.error(`❌ Échec pour le token ${finalTokens[idx].substring(0, 10)}... :`, resp.error.message);
+          const errorCode = resp.error.code;
+          const errorMsg = resp.error.message;
+          console.error(`❌ [FCM-SERVICE] Échec token ${finalTokens[idx].substring(0, 30)}... :`, errorMsg);
+          
+          // Identifier les tokens invalides à supprimer (Unregistered ou Not Found)
+          if (errorCode === 'messaging/registration-token-not-registered' || 
+              errorMsg.includes('Requested entity was not found') ||
+              errorMsg.includes('unregistered')) {
+            tokensToDelete.push(finalTokens[idx]);
+          }
         }
       });
     }
 
-    return { success: true, response };
+    return { success: true, response, tokensToDelete };
   } catch (error) {
-    console.error('❌ Erreur critique lors de l\'envoi Multicast:', error.message);
-    return { success: false, error: error.message };
+    console.error('❌ [FCM-SERVICE] Erreur critique:', error.message);
+    return { success: false, error: error.message, tokensToDelete: [] };
   }
 };
 
