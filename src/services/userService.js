@@ -53,14 +53,13 @@ exports.updateUser = async (id, data) => {
   const userRef = db.collection('users').doc(id);
   const doc = await userRef.get();
 
+  let userDoc;
+  let docId;
+
   if (doc.exists) {
     console.log(`✅ Utilisateur trouvé par ID de document: ${id}`);
-    await userRef.update({
-      ...data,
-      updatedAt: new Date().toISOString()
-    });
-    if (data.fcmToken) console.log(`🚀 Token FCM mis à jour avec succès pour le document ${id}`);
-    return { id: doc.id, ...doc.data(), ...data };
+    userDoc = doc;
+    docId = id;
   } else {
     console.log(`🔍 Utilisateur non trouvé par ID de document, recherche par champ 'uid': ${id}`);
     const snapshot = await db.collection('users').where('uid', '==', id).get();
@@ -70,15 +69,52 @@ exports.updateUser = async (id, data) => {
       throw new Error(`Aucun utilisateur trouvé avec l'ID ou UID : ${id}`);
     }
 
-    const userDoc = snapshot.docs[0];
-    console.log(`✅ Utilisateur trouvé par UID: ${id} (Document ID: ${userDoc.id})`);
-    await userDoc.ref.update({
-      ...data,
-      updatedAt: new Date().toISOString()
-    });
-    if (data.fcmToken) console.log(`🚀 Token FCM mis à jour avec succès pour l'UID ${id}`);
-    return { id: userDoc.id, ...userDoc.data(), ...data };
+    userDoc = snapshot.docs[0];
+    docId = userDoc.id;
+    console.log(`✅ Utilisateur trouvé par UID: ${id} (Document ID: ${docId})`);
   }
+
+  const userData = userDoc.data();
+  const updateData = {
+    ...data,
+    updatedAt: new Date().toISOString()
+  };
+
+  // Gérer le token FCM comme un tableau
+  if (data.fcmToken) {
+    let fcmTokens = userData.fcmTokens || [];
+    
+    // Migration : Si fcmTokens n'existe pas mais fcmToken (singulier) existe, 
+    // on initialise le tableau avec l'ancien token
+    if (!userData.fcmTokens && userData.fcmToken) {
+      fcmTokens = [userData.fcmToken];
+    }
+
+    // Si par erreur fcmTokens est stocké comme une chaîne, on la convertit
+    if (!Array.isArray(fcmTokens)) {
+      fcmTokens = [fcmTokens];
+    }
+
+    // Ajouter le nouveau token s'il n'est pas déjà présent
+    if (!fcmTokens.includes(data.fcmToken)) {
+      fcmTokens.push(data.fcmToken);
+      console.log(`➕ Nouveau token FCM ajouté à la liste (${fcmTokens.length} tokens au total)`);
+    } else {
+      console.log(`ℹ️ Le token FCM existe déjà dans la liste de l'utilisateur`);
+    }
+
+    updateData.fcmTokens = fcmTokens;
+    // On garde aussi fcmToken (singulier) pour la compatibilité
+    updateData.fcmToken = data.fcmToken;
+  }
+
+  await db.collection('users').doc(docId).update(updateData);
+  
+  if (data.fcmToken) {
+    console.log(`🚀 Tokens FCM mis à jour avec succès pour l'utilisateur ${docId}`);
+  }
+
+  return { id: docId, ...userData, ...updateData };
 };
 
 // Supprimer un utilisateur

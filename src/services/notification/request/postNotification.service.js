@@ -65,18 +65,47 @@ exports.postNotificationService = async dataGet => {
       });
       console.log(`📡 [SOCKET] Notification émise vers la room : ${currentUserId}`);
       
+      // ✅ Récupération des tokens FCM de l'utilisateur pour le push
+      try {
+        const userDoc = await db.collection('users').doc(currentUserId).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
+            targetTokens.push(...userData.fcmTokens);
+          } else if (userData.fcmToken) {
+            targetTokens.push(userData.fcmToken);
+          }
+        } else {
+          // Si non trouvé par ID, essayer par UID
+          const userSnapshot = await db.collection('users').where('uid', '==', currentUserId).get();
+          if (!userSnapshot.empty) {
+            const userData = userSnapshot.docs[0].data();
+            if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
+              targetTokens.push(...userData.fcmTokens);
+            } else if (userData.fcmToken) {
+              targetTokens.push(userData.fcmToken);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn(`⚠️ Impossible de récupérer les tokens FCM pour l'utilisateur ${currentUserId}:`, e.message);
+      }
+
       results.push({ userId: currentUserId, notificationId: newNotif.id });
     }
 
+    // ✅ Nettoyer les tokens (enlever les doublons)
+    const finalTokens = [...new Set(targetTokens.filter(t => t && typeof t === 'string'))];
+
     // ✅ Envoi groupé des Push Notifications (FCM Multicast)
-    if (targetTokens.length > 0) {
+    if (finalTokens.length > 0) {
       await sendPushNotification({
-        tokens: targetTokens,
+        tokens: finalTokens,
         title: data.title,
         body: data.body,
         data: {
-          type: data.type || 'info',
-          click_action: 'FLUTTER_NOTIFICATION_CLICK' // Utile pour certains plugins mobiles
+          ...data, // On passe toutes les datas
+          click_action: 'FLUTTER_NOTIFICATION_CLICK'
         }
       });
     }
