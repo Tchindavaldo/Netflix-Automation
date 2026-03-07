@@ -152,7 +152,7 @@ const planActivationController = {
   getActivationsByUser: async (req, res) => {
     try {
       const { userId } = req.params;
-      const { limit = 10, offset = 0 } = req.query;
+      const { limit = 10, offset = 0, all } = req.query;
 
       if (!userId) {
         return res.status(400).json({
@@ -165,7 +165,8 @@ const planActivationController = {
 
       const result = await planActivationService.getActivationsByUser(userId, {
         limit: parseInt(limit),
-        offset: parseInt(offset)
+        offset: parseInt(offset),
+        includeAll: all === 'true'
       });
 
       res.status(200).json({
@@ -295,7 +296,7 @@ const planActivationController = {
    */
   getAllActivations: async (req, res) => {
     try {
-      const { limit = 10, offset = 0, statut } = req.query;
+      const { limit = 10, offset = 0, statut, all } = req.query;
 
       const filters = {};
       if (statut) {
@@ -305,7 +306,8 @@ const planActivationController = {
       const result = await planActivationService.getAllActivations({
         limit: parseInt(limit),
         offset: parseInt(offset),
-        filters
+        filters,
+        includeAll: all === 'true'
       });
 
       res.status(200).json({
@@ -428,6 +430,57 @@ const planActivationController = {
         success: false,
         message: error.message || 'Erreur lors du changement de statut'
       });
+    }
+  },
+  
+  /**
+   * Mettre à jour manuellement la période d'une activation
+   */
+  updateActivationPeriod: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { dureePlan, joursMarge, dateFin, dateDebut } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ success: false, message: 'ID requis' });
+      }
+
+      const current = await planActivationService.getActivationById(id);
+      if (!current) {
+        return res.status(404).json({ success: false, message: 'Activation non trouvée' });
+      }
+
+      const updateData = {
+        dateModification: new Date().toISOString()
+      };
+
+      // Si on donne une date de fin précise
+      if (dateFin) updateData.dateExpiration = dateFin;
+      
+      // Si on change la durée ou la marge, on recalcule la date de fin
+      if (dureePlan !== undefined || joursMarge !== undefined || dateDebut) {
+        const dDebut = new Date(dateDebut || current.dateDebut || new Date());
+        const dDuree = dureePlan !== undefined ? parseInt(dureePlan) : (current.dureePlan || 30);
+        const dMarge = joursMarge !== undefined ? parseInt(joursMarge) : (current.joursMarge || 2);
+        
+        const dFin = new Date(dDebut);
+        dFin.setDate(dFin.getDate() + dDuree - dMarge);
+        
+        updateData.dateDebut = dDebut.toISOString();
+        updateData.dureePlan = dDuree;
+        updateData.joursMarge = dMarge;
+        updateData.dateExpiration = dFin.toISOString();
+      }
+
+      const result = await planActivationService.updateActivation(id, updateData);
+
+      res.status(200).json({
+        success: true,
+        message: 'Période mise à jour avec succès',
+        data: result
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
     }
   }
 };

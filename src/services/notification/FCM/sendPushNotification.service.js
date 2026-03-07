@@ -20,14 +20,14 @@ const sendPushNotification = async ({ tokens, token, title, body, data = {} }) =
       body, 
     },
     android: {
+      priority: 'high',
       notification: {
-        clickAction: 'OPEN_NOTIF_SPLASH',
+        clickAction: 'expo.modules.notifications.ROUTE_NOTIFICATION',
         channelId: 'moobilpay_channel_v2',
-        icon: 'ic_notification',
+        icon: 'notification_icon',
         color: '#dc2626', // Rouge officiel MoobilPay
         notificationPriority: 'PRIORITY_MAX',
         visibility: 'PUBLIC'
-        // On peut essayer d'ajouter un champ pour forcer l'icône mais c'est souvent géré par le client
       },
     },
     apns: {

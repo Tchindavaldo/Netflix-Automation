@@ -34,13 +34,13 @@ module.exports = {
     });
 
     io.on("connection", (socket) => {
-      // console.log("🟢 Client connecté:", socket.id);
+      console.log("🟢 [SOCKET-SERVER] Client connecté:", socket.id);
       socket.on("join_user", (userId) => {
         socket.join(userId);
-        // console.log(`🔐 Socket ${socket.id} a rejoint la room user: ${userId}`);
+        console.log(`🔐 [SOCKET-SERVER] Socket ${socket.id} joined room user: ${userId}`);
       });
       socket.on("disconnect", () => {
-        // console.log("🔴 Client déconnecté:", socket.id);
+        console.log("🔴 [SOCKET-SERVER] Client déconnecté:", socket.id);
       });
 
       // ➕ Utilise le handler ici

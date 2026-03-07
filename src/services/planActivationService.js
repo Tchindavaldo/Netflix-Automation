@@ -54,11 +54,17 @@ const planActivationService = {
    */
   getActivationsByUser: async (userId, options = {}) => {
     try {
-      const { limit = 10, offset = 0 } = options;
+      const { limit = 10, offset = 0, includeAll = false } = options;
       
       let query = db.collection('plan_activation')
-        .where('userId', '==', userId)
-        .orderBy('dateCreation', 'desc');
+        .where('userId', '==', userId);
+
+      // Par défaut, on ne renvoie que les paiements réussis
+      if (!includeAll) {
+        query = query.where('reqteStatusSuccess', '==', 'success');
+      }
+
+      query = query.orderBy('dateCreation', 'desc');
 
       // Compter le total
       const totalSnapshot = await query.get();
@@ -153,13 +159,18 @@ const planActivationService = {
    */
   getAllActivations: async (options = {}) => {
     try {
-      const { limit = 10, offset = 0, filters = {} } = options;
+      const { limit = 10, offset = 0, filters = {}, includeAll = false } = options;
       
       let query = db.collection('plan_activation');
 
       // Appliquer les filtres
       if (filters.statut) {
         query = query.where('statut', '==', filters.statut);
+      }
+
+      // Par défaut, ne renvoyer que les activations dont le paiement a réussi
+      if (!includeAll) {
+        query = query.where('reqteStatusSuccess', '==', 'success');
       }
 
       // Ordonner par date de création (plus récent en premier)

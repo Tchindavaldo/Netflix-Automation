@@ -1,3 +1,7 @@
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 // Chargement des variables d'environnement
 if (process.env.NODE_ENV === "production") {
   require("dotenv").config({ path: ".env.prod" });

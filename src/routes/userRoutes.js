@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const authUser = require('../middleware/authUser');
 
 /**
  * @swagger
@@ -16,6 +17,8 @@ const userController = require('../controllers/userController');
  *     summary: Créer un nouvel utilisateur
  *     tags:
  *       - Users
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -32,7 +35,7 @@ const userController = require('../controllers/userController');
  *         description: Utilisateur créé
  */
 router.get('/', userController.getAllUsers);
-router.post('/', userController.createUser);
+router.post('/', authUser, userController.createUser);
 
 /**
  * @swagger
@@ -91,9 +94,9 @@ router.post('/', userController.createUser);
  *       200:
  *         description: Utilisateur supprimé
  */
-router.get('/:id', userController.getUserById);
-router.put('/:id', userController.updateUser);
-router.delete('/:id', userController.deleteUser);
+router.get('/:id', authUser, userController.getUserById);
+router.put('/:id', authUser, userController.updateUser);
+router.delete('/:id', authUser, userController.deleteUser);
 
 /**
  * @swagger
@@ -112,7 +115,7 @@ router.delete('/:id', userController.deleteUser);
  *       200:
  *         description: Utilisateur trouvé
  */
-router.get('/uid/:uid', userController.getUserByUID);
+router.get('/uid/:uid', authUser, userController.getUserByUID);
 
 /**
  * @swagger

@@ -1,6 +1,11 @@
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 const SubscriptionOrchestrator = require('../services/subscription/subscriptionOrchestrator');
 const axios = require('axios');
 const subscriptionData = require('../../config/subscription-data.json');
+const transactionService = require('../services/transactionService');
 
 // Map to track active subscription verification requests
 const activeRequests = new Map();
@@ -57,8 +62,8 @@ const subscriptionController = {
         const secretKey = process.env.PAYMENT_SECRET_KEY;
         const verifyUrl = process.env.PAYMENT_API_URL;
         
-        const PAYMENT_POLLING_INTERVAL_MS = 5000;
-        const PAYMENT_TIMEOUT_MINUTES = 15;
+        const PAYMENT_POLLING_INTERVAL_MS = 2000;
+        const PAYMENT_TIMEOUT_MINUTES = parseInt(process.env.PAYMENT_TIMEOUT_MINUTES || '30');
         const maxAttempts = (PAYMENT_TIMEOUT_MINUTES * 60 * 1000) / PAYMENT_POLLING_INTERVAL_MS;
         let attempts = 0;
         let transactionVerified = false;
@@ -88,28 +93,32 @@ const subscriptionController = {
 
             if (status === 'error' || status === 'failed' || status === 'cancelled') {
               activeRequests.delete(transactionId);
+              // Mettre à jour la transaction en echec
+              try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'failed'); } catch (e) {}
               return res.status(400).json({ success: false, message: 'Le paiement a échoué.', error: verifyResponse.data });
             }
 
-            if (status === 'success' || status === 'completed') {
-               transactionVerified = true;
-               // console.log(`✅ Paiement confirmé pour la transaction ${transactionId}`);
-               
-               // Émettre immédiatement le signal de validation du paiement
-                try {
-                  const io = require('../../socket').getIO();
-                  // console.log(`📡 Émission 'payment_validated' vers l'utilisateur: ${userId}`);
-                  
-                  io.to(userId).emit('payment_validated', {
-                    success: true,
-                    message: 'Paiement validé avec succès !',
-                    data: { userId, transactionId }
-                  });
-                  // console.log(`✅ Événement 'payment_validated' envoyé à la room ${userId}`);
-                } catch (e) {
-                  console.error('❌ Erreur lors de l\'émission socket (polling):', e.message);
-                }
-            } else {
+                if (status === 'success' || status === 'completed') {
+                   transactionVerified = true;
+                   console.log(`✅ [PAYMENT] Succès confirmé pour Tx: ${transactionId} (User: ${userId})`);
+                   
+                   // Mettre à jour la transaction en succès
+                   try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'success'); } catch (e) {}
+
+                   // Émettre immédiatement le signal de validation du paiement
+                    try {
+                      const io = require('../../socket').getIO();
+                      console.log(`📡 [SOCKET] Émission 'payment_validated' vers room: ${userId}`);
+                      
+                      io.to(userId).emit('payment_validated', {
+                        success: true,
+                        message: 'Paiement validé avec succès !',
+                        data: { userId, transactionId }
+                      });
+                    } catch (e) {
+                      console.error('❌ [SOCKET-ERROR] Échec émission payment_validated:', e.message);
+                    }
+                } else {
               attempts++;
               await new Promise(resolve => setTimeout(resolve, PAYMENT_POLLING_INTERVAL_MS));
             }
@@ -121,55 +130,87 @@ const subscriptionController = {
 
         activeRequests.delete(transactionId);
         if (!transactionVerified) {
+             // Marquer comme failed pour cause de timeout
+             try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'failed'); } catch (e) {}
              return res.status(400).json({ success: false, message: 'Délai de vérification dépassé.' });
         }
       }
 
       // --- 2. CRÉATION DE L'ACTIVATION (SI PAS DÉJÀ EXISTANTE) ---
+      const planActivationService = require('../services/planActivationService');
+
+      // Calcul des dates
+      const dateDebut = new Date();
+      const dureePlan = parseInt(process.env.DEFAULT_PLAN_DURATION || '30'); 
+      const joursMarge = parseInt(process.env.DEFAULT_PLAN_MARGIN || '2'); 
+      const dateFin = new Date(dateDebut);
+      dateFin.setDate(dateFin.getDate() + dureePlan - joursMarge);
+
       // On ne crée l'activation que si on a soit un planActivationId existant, soit une transaction validée
       if (!finalPlanActivationId) {
         if (!transactionId) {
           return res.status(400).json({ success: false, message: 'planActivationId ou transactionId requis.' });
         }
 
-        // console.log('📝 Création du planActivation après succès du paiement...');
-        const planActivationService = require('../services/planActivationService');
         const activationData = {
           userId,
           planNetflix: typeDePlan,
           amount: parseFloat(req.body.amount || 0),
           statut: 'pending',
-          reqteStatusSuccess: 'pending',
+          reqteStatusSuccess: 'success',
           numeroOM: req.body.numeroOM || 'N/A',
           email,
           motDePasse,
           backendRegion: region,
           isPaiementCardActive: true,
           typePaiement: 'orange_money',
-          dureeActivation: 29,
+          dureePlan: dureePlan,
+          joursMarge: joursMarge,
+          dateDebut: dateDebut.toISOString(),
+          dateExpiration: dateFin.toISOString(),
           dateCreation: new Date().toISOString(),
           dateModification: new Date().toISOString()
         };
 
         const newActivation = await planActivationService.createActivation(activationData);
         finalPlanActivationId = newActivation.id;
-        // console.log(`✅ PlanActivation créé: ${finalPlanActivationId}`);
+        console.log(`📝 [ACTIVATION] Nouvelle activation créée ID: ${finalPlanActivationId} pour User: ${userId}`);
+      } else {
+        // L'activation existe déjà (cas de l'app mobile), on la met à jour
+        console.log(`📝 [ACTIVATION] Mise à jour de l'activation existante ID: ${finalPlanActivationId}`);
+        await planActivationService.updateActivation(finalPlanActivationId, {
+          reqteStatusSuccess: 'success',
+          dureePlan: dureePlan,
+          joursMarge: joursMarge,
+          dateDebut: dateDebut.toISOString(),
+          dateExpiration: dateFin.toISOString(),
+          dateModification: new Date().toISOString()
+        });
+      }
 
-        // Notification Socket
-        try {
-          const io = require('../../socket').getIO();
-          
-          // Informer que l'activation est créée (pour le store) avec un délai de 3s
-          setTimeout(() => {
-            io.to(userId).emit('activationcreated', {
-              success: true,
-              data: newActivation
-            });
-            // console.log(`✅ Événement 'activationcreated' envoyé après 3s`);
-          }, 5000);
-        } catch (e) {
-          console.error('❌ Erreur lors de l\'émission socket (creation):', e.message);
-        }
+      // --- 2.5 ENREGISTREMENT DE LA TRANSACTION ---
+      try {
+        await transactionService.updateTransactionStatusByExternalId(transactionId, 'success');
+        console.log(`💰 [TRANSACTION] Historique mis à jour vers SUCCESS pour Tx: ${transactionId}`);
+      } catch (err) {
+        console.error('❌ [TRANSACTION-ERROR] Échec mise à jour transaction finale:', err.message);
+      }
+
+      // Notification Socket systématique pour passer à l'étape suivante (Reçu)
+      try {
+        const io = require('../../socket').getIO();
+        const updatedActivation = await planActivationService.getActivationById(finalPlanActivationId);
+        
+        console.log(`🕒 [ACTIVATION] Programmation de l'émission 'activationcreated' vers room: ${userId}`);
+        setTimeout(() => {
+          console.log(`📡 [SOCKET] Émission 'activationcreated' vers room: ${userId}`);
+          io.to(userId).emit('activationcreated', {
+            success: true,
+            data: updatedActivation || { id: finalPlanActivationId }
+          });
+        }, 3000);
+      } catch (e) {
+        console.error('❌ [SOCKET-ERROR] Échec émission activationcreated:', e.message);
       }
 
       // --- 3. VÉRIFICATION DES CONDITIONS D'ORCHESTRATION ---

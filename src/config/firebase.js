@@ -28,6 +28,7 @@ try {
 }
 
 const db = admin.firestore();
+db.settings({ ignoreUndefinedProperties: true });
 const bucket = admin.storage().bucket();
 
 module.exports = {

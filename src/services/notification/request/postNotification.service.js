@@ -119,7 +119,8 @@ exports.postNotificationService = async dataGet => {
         body: data.body,
         data: {
           ...data,
-          click_action: 'FLUTTER_NOTIFICATION_CLICK'
+          click_action: 'expo.modules.notifications.ROUTE_NOTIFICATION',
+         
         }
       });
 

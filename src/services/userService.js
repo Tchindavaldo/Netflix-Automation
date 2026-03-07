@@ -12,11 +12,34 @@ exports.getAllUsers = async () => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-// Récupérer un utilisateur par son ID
+// Récupérer un utilisateur par son ID ou son UID Firebase (Normalisation Yakkoo Style)
 exports.getUserById = async id => {
+  // 1. Tenter de récupérer par l'ID du document directement
   const doc = await db.collection('users').doc(id).get();
-  if (!doc.exists) throw new Error(`Aucun utilisateur trouvé avec l'ID : ${id}`);
-  return { id: doc.id, ...doc.data() };
+  let rawData;
+  let docId;
+
+  if (doc.exists) {
+    rawData = doc.data();
+    docId = doc.id;
+  } else {
+    // 2. Fallback : Rechercher par le champ 'uid' (Firebase UID)
+    const snapshot = await db.collection('users').where('uid', '==', id).limit(1).get();
+    if (snapshot.empty) {
+      throw new Error(`Aucun utilisateur trouvé avec l'ID ou UID : ${id}`);
+    }
+    const userDoc = snapshot.docs[0];
+    rawData = userDoc.data();
+    docId = userDoc.id;
+  }
+
+  // Normalisation style Yaammoo
+  const uid = rawData.uid || rawData.infos?.uid || docId;
+  return {
+    id: docId,
+    uid: uid,
+    ...rawData
+  };
 };
 
 // Récupérer un utilisateur par son UID (alias de getUserById)
@@ -24,18 +47,31 @@ exports.getUserByUID = async uid => {
   return exports.getUserById(uid);
 };
 
-// Récupérer un utilisateur par son email
+// Récupérer un utilisateur par son email (Yaammoo style: infos.email)
 exports.getUserByEmail = async email => {
-  const snapshot = await db.collection('users').where('email', '==', email).get();
-  if (snapshot.empty) {
-    throw new Error(`Aucun utilisateur trouvé avec l'email : ${email}`);
-  }
+  const snapshot = await db.collection('users').where('infos.email', '==', email).limit(1).get();
+  if (snapshot.empty) return null;
   const doc = snapshot.docs[0];
-  return { id: doc.id, ...doc.data() };
+  const rawData = doc.data();
+  const uid = rawData.uid || rawData.infos?.uid || doc.id;
+
+  return { id: doc.id, uid, ...rawData };
 };
 
 // Créer un nouvel utilisateur
 exports.createUser = async data => {
+  const userId = data.uid || data.infos?.uid;
+
+  if (userId) {
+    // Si on a un UID, on l'utilise comme ID de document pour la cohérence
+    await db.collection('users').doc(userId).set({
+      ...data,
+      createdAt: new Date().toISOString()
+    });
+    return userId;
+  }
+
+  // Sinon generateur auto-id
   const newUserRef = await db.collection('users').add({ 
     ...data, 
     createdAt: new Date().toISOString() 

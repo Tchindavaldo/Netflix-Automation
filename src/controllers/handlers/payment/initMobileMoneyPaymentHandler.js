@@ -1,5 +1,6 @@
 const axios = require('axios');
 const planActivationService = require('../../../services/planActivationService');
+const transactionService = require('../../../services/transactionService');
 
 /**
  * Handler to initiate a Mobile Money payment via the new external endpoint.
@@ -64,7 +65,9 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
         'Content-Type': 'application/json',
         'x-user-id': paymentUserId,
         'x-secret-key': secretKey
-      }
+      },
+      timeout: 30000, // 30 seconds timeout
+      family: 4 // Force IPv4
     });
 
     console.log('External API Response Status:', response.status);
@@ -79,6 +82,22 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
       throw new Error('Invalid response from payment provider: ' + JSON.stringify(response.data));
     }
 
+    // Enregistrer la transaction en statut PENDING
+    try {
+      await transactionService.createTransaction({
+        userId,
+        planActivationId,
+        externalTransactionId: transactionId,
+        amount: parseFloat(amount),
+        type: 'mobile_money',
+        status: 'pending',
+        planType: typeDePlan
+      });
+      console.log(`📝 [TRANSACTION] Enregistrée comme PENDING pour Tx: ${transactionId}`);
+    } catch (err) {
+      console.error('❌ [TRANSACTION-ERROR] Échec enregistrement pending:', err.message);
+    }
+
     return res.status(200).json({
       success: true,
       transactionId,
@@ -87,9 +106,11 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
     });
 
   } catch (error) {
-    // console.error('Error initiating Mobile Money payment:', error.message);
+    console.error('❌ [PAYMENT-INIT-ERROR] Erreur:', error.message);
+    if (error.code) console.error('🔍 [ERROR-CODE]:', error.code);
+    
     if (error.response) {
-      // console.error('Provider response:', error.response.data);
+      console.error('❌ [PROVIDER-RESPONSE] Détails:', JSON.stringify(error.response.data, null, 2));
       return res.status(error.response.status).json({
         success: false,
         message: 'Payment provider error',
@@ -99,7 +120,8 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error during payment initiation',
-      error: error.message
+      error: error.message,
+      code: error.code
     });
   }
 };

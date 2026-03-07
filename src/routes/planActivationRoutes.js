@@ -197,4 +197,35 @@ router.put('/:id/status', planActivationController.changeActivationStatus);
  */
 router.get('/user/:userId', planActivationController.getActivationsByUser);
 
+/**
+ * @swagger
+ * /{id}/period:
+ *   put:
+ *     summary: Modifier la période (durée, marge, fin) d'une activation
+ *     tags:
+ *       - Plan Activation
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               dureePlan:
+ *                 type: integer
+ *               joursMarge:
+ *                 type: integer
+ *               dateFin:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Période mise à jour
+ */
+router.put('/:id/period', planActivationController.updateActivationPeriod);
+
 module.exports = router;
