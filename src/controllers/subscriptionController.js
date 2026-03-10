@@ -57,7 +57,7 @@ const subscriptionController = {
 
       // --- 1. VÉRIFICATION DE LA TRANSACTION (SI FOURNIE) ---
       if (transactionId) {
-        // console.log(`🔍 Vérification de la transaction ${transactionId}...`);
+        console.log(`\n🔍 [POLLING] DÉBUT: Vérification de la transaction ${transactionId}...`);
         const paymentUserId = process.env.PAYMENT_USER_ID;
         const secretKey = process.env.PAYMENT_SECRET_KEY;
         const verifyUrl = process.env.PAYMENT_API_URL;
@@ -73,11 +73,16 @@ const subscriptionController = {
         while (!transactionVerified && attempts < maxAttempts) {
           const requestStatus = activeRequests.get(transactionId);
           if (requestStatus && requestStatus.cancelled) {
+            console.log(`⚠️ [POLLING] ANNULÉ: Transaction ${transactionId} (par l'utilisateur)`);
             activeRequests.delete(transactionId);
             return res.status(200).json({ success: false, message: 'Vérification annulée.', cancelled: true });
           }
 
           try {
+            if (attempts % 5 === 0) { // Log tous les 10 secondes pour éviter de spammer
+              console.log(`⏳ [POLLING] Tentative ${attempts}/${maxAttempts} pour Tx: ${transactionId} (Attente de paiement...)`);
+            }
+
             const verifyResponse = await axios({
               method: 'get',
               url: verifyUrl,
@@ -89,40 +94,49 @@ const subscriptionController = {
               }
             });
             const { status } = verifyResponse.data;
-            // console.log(`   - Statut transaction: ${status}`);
+            
+            // Log si le statut change 
+            if (attempts === 0 || status !== 'pending') {
+               console.log(`📡 [POLLING-API] Statut reçu pour ${transactionId}: "${status}"`);
+            }
 
             if (status === 'error' || status === 'failed' || status === 'cancelled') {
+              console.log(`❌ [POLLING] ÉCHEC: Transaction ${transactionId} refusée/échouée.`);
               activeRequests.delete(transactionId);
               // Mettre à jour la transaction en echec
               try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'failed'); } catch (e) {}
               return res.status(400).json({ success: false, message: 'Le paiement a échoué.', error: verifyResponse.data });
             }
 
-                if (status === 'success' || status === 'completed') {
-                   transactionVerified = true;
-                   console.log(`✅ [PAYMENT] Succès confirmé pour Tx: ${transactionId} (User: ${userId})`);
-                   
-                   // Mettre à jour la transaction en succès
-                   try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'success'); } catch (e) {}
+            if (status === 'success' || status === 'completed') {
+               transactionVerified = true;
+               console.log(`✅ [POLLING] SUCCÈS CONFIRMÉ pour Tx: ${transactionId} (User: ${userId})`);
+               
+               // Mettre à jour la transaction en succès
+               try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'success'); } catch (e) {}
 
-                   // Émettre immédiatement le signal de validation du paiement
-                    try {
-                      const io = require('../../socket').getIO();
-                      console.log(`📡 [SOCKET] Émission 'payment_validated' vers room: ${userId}`);
-                      
-                      io.to(userId).emit('payment_validated', {
-                        success: true,
-                        message: 'Paiement validé avec succès !',
-                        data: { userId, transactionId }
-                      });
-                    } catch (e) {
-                      console.error('❌ [SOCKET-ERROR] Échec émission payment_validated:', e.message);
-                    }
-                } else {
+               // Émettre immédiatement le signal de validation du paiement
+                try {
+                  const io = require('../../socket').getIO();
+                  console.log(`📡 [SOCKET] Émission 'payment_validated' vers room: ${userId}`);
+                  
+                  io.to(userId).emit('payment_validated', {
+                    success: true,
+                    message: 'Paiement validé avec succès !',
+                    data: { userId, transactionId }
+                  });
+                } catch (e) {
+                  console.error('❌ [SOCKET-ERROR] Échec émission payment_validated:', e.message);
+                }
+            } else {
               attempts++;
               await new Promise(resolve => setTimeout(resolve, PAYMENT_POLLING_INTERVAL_MS));
             }
           } catch (err) {
+            if (attempts % 5 === 0) {
+              const errorDetail = err.response ? JSON.stringify(err.response.data) : (err.code || err.message);
+              console.error(`⚠️ [POLLING-ERROR] Échec réseau/API pour ${transactionId} | Détail: ${errorDetail}`);
+            }
             attempts++;
             await new Promise(resolve => setTimeout(resolve, PAYMENT_POLLING_INTERVAL_MS));
           }

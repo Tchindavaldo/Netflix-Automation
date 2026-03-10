@@ -47,11 +47,17 @@ const transactionService = {
    */
   getTransactionsByUser: async (userId, options = {}) => {
     try {
-      const { limit = 20, offset = 0 } = options;
+      const { limit = 20, offset = 0, includeAll = false } = options;
       
       let query = db.collection('transactions')
-        .where('userId', '==', userId)
-        .orderBy('dateCreation', 'desc');
+        .where('userId', '==', userId);
+
+      // Par défaut, ne renvoyer que les transactions réussies
+      if (!includeAll) {
+        query = query.where('status', 'in', ['success', 'completed']);
+      }
+
+      query = query.orderBy('dateCreation', 'desc');
 
       // Compter le total
       const totalSnapshot = await query.get();

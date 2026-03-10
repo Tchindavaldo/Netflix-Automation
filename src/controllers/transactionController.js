@@ -7,7 +7,7 @@ const transactionController = {
   getTransactionsByUser: async (req, res) => {
     try {
       const { userId } = req.params;
-      const { limit = 20, offset = 0 } = req.query;
+      const { limit = 20, offset = 0, all } = req.query;
 
       if (!userId) {
         return res.status(400).json({
@@ -18,7 +18,8 @@ const transactionController = {
 
       const result = await transactionService.getTransactionsByUser(userId, {
         limit: parseInt(limit),
-        offset: parseInt(offset)
+        offset: parseInt(offset),
+        includeAll: all === 'true'
       });
 
       res.status(200).json({
