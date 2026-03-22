@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 /**
+
  * @swagger
- * /:
+ * /health:
  *   get:
  *     summary: Vérifier l'état du serveur
  *     description: Retourne le statut du serveur et les informations de service

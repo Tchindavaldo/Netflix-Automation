@@ -4,7 +4,7 @@ const paymentController = require('../controllers/paymentController');
 
 /**
  * @swagger
- * /initpaiment:
+ * /api/payment/initpaiment:
  *   post:
  *     summary: Initialiser un paiement Orange Money
  *     tags:
@@ -51,7 +51,7 @@ router.post('/initpaiment', paymentController.initPayment);
 
 /**
  * @swagger
- * /init-mobile-money:
+ * /api/payment/init-mobile-money:
  *   post:
  *     summary: Initialiser un paiement Mobile Money (Nouveau endpoint)
  *     tags:
@@ -67,6 +67,7 @@ router.post('/initpaiment', paymentController.initPayment);
  *               - email
  *               - phone
  *               - amount
+ *               - typeDePlan
  *             properties:
  *               userId:
  *                 type: string
@@ -76,6 +77,8 @@ router.post('/initpaiment', paymentController.initPayment);
  *                 type: string
  *               amount:
  *                 type: number
+ *               typeDePlan:
+ *                 type: string
  *               reason:
  *                 type: string
  *               senderName:

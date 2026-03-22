@@ -3,8 +3,9 @@ const router = express.Router();
 const uploadSnapshotHandler = require('../controllers/handlers/drive/uploadSnapshotHandler');
 
 /**
+
  * @swagger
- * /upload-snapshot:
+ * /api/drive/upload-snapshot:
  *   post:
  *     summary: Upload des snapshots vers Google Drive
  *     tags:

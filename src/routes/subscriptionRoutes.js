@@ -5,7 +5,7 @@ const subscriptionErrorController = require('../controllers/subscriptionErrorCon
 
 /**
  * @swagger
- * /init:
+ * /api/subscription/init:
  *   post:
  *     summary: Initialiser le processus d'abonnement Netflix
  *     tags:
@@ -49,7 +49,7 @@ router.post('/init', subscriptionController.initSubscriptionProcess);
 
 /**
  * @swagger
- * /error:
+ * /api/subscription/error:
  *   post:
  *     summary: Enregistrer une erreur d'abonnement
  *     tags:
@@ -97,7 +97,7 @@ router.post('/error', subscriptionErrorController.logError);
 
 /**
  * @swagger
- * /error/{planActivationId}:
+ * /api/subscription/error/{planActivationId}:
  *   get:
  *     summary: Récupérer les erreurs par planActivationId
  *     tags:
@@ -117,7 +117,7 @@ router.get('/error/:planActivationId', subscriptionErrorController.getErrorsByAc
 
 /**
  * @swagger
- * /cancel:
+ * /api/subscription/cancel:
  *   post:
  *     summary: Annuler la vérification d'un paiement en cours
  *     tags:

@@ -4,7 +4,7 @@ const planActivationController = require('../controllers/planActivationControlle
 
 /**
  * @swagger
- * /:
+ * /api/plan-activation:
  *   get:
  *     summary: Récupérer toutes les activations
  *     tags:
@@ -88,7 +88,7 @@ router.get('/', planActivationController.getAllActivations);
 
 /**
  * @swagger
- * /{id}:
+ * /api/plan-activation/{id}:
  *   get:
  *     summary: Récupérer une activation par ID
  *     tags:
@@ -149,7 +149,7 @@ router.delete('/:id', planActivationController.deleteActivation);
 
 /**
  * @swagger
- * /{id}/status:
+ * /api/plan-activation/{id}/status:
  *   put:
  *     summary: Changer le statut d'une activation
  *     tags:
@@ -179,7 +179,7 @@ router.put('/:id/status', planActivationController.changeActivationStatus);
 
 /**
  * @swagger
- * /user/{userId}:
+ * /api/plan-activation/user/{userId}:
  *   get:
  *     summary: Récupérer les activations d'un utilisateur
  *     tags:
@@ -199,7 +199,7 @@ router.get('/user/:userId', planActivationController.getActivationsByUser);
 
 /**
  * @swagger
- * /{id}/period:
+ * /api/plan-activation/{id}/period:
  *   put:
  *     summary: Modifier la période (durée, marge, fin) d'une activation
  *     tags:

@@ -5,7 +5,7 @@ const authUser = require('../middleware/authUser');
 
 /**
  * @swagger
- * /:
+ * /api/user:
  *   get:
  *     summary: Récupérer tous les utilisateurs
  *     tags:
@@ -39,7 +39,7 @@ router.post('/', authUser, userController.createUser);
 
 /**
  * @swagger
- * /{id}:
+ * /api/user/{id}:
  *   get:
  *     summary: Récupérer un utilisateur par ID
  *     tags:
@@ -100,7 +100,7 @@ router.delete('/:id', authUser, userController.deleteUser);
 
 /**
  * @swagger
- * /uid/{uid}:
+ * /api/user/uid/{uid}:
  *   get:
  *     summary: Récupérer un utilisateur par UID
  *     tags:
@@ -119,7 +119,7 @@ router.get('/uid/:uid', authUser, userController.getUserByUID);
 
 /**
  * @swagger
- * /email/{email}:
+ * /api/user/email/{email}:
  *   get:
  *     summary: Récupérer un utilisateur par email
  *     tags:

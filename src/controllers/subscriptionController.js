@@ -141,8 +141,9 @@ const subscriptionController = {
             await new Promise(resolve => setTimeout(resolve, PAYMENT_POLLING_INTERVAL_MS));
           }
         }
-
         activeRequests.delete(transactionId);
+        console.log(`🏁 [POLLING] FIN: Boucle terminée pour Tx: ${transactionId}`);
+
         if (!transactionVerified) {
              // Marquer comme failed pour cause de timeout
              try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'failed'); } catch (e) {}
@@ -367,16 +368,17 @@ const subscriptionController = {
       if (requestStatus) {
         // Mark as cancelled
         requestStatus.cancelled = true;
-        // console.log('✅ Transaction marquée pour annulation:', transactionId);
+        console.log(`🛑 [BACKEND] Annulation demandée pour Tx: ${transactionId}. Le polling s'arrêtera à la prochaine itération.`);
         
         return res.status(200).json({
           success: true,
-          message: 'Demande d\'annulation enregistrée'
+          message: 'Demande d\'annulation enregistrée. Le processus s\'arrête.'
         });
       } else {
-        return res.status(404).json({
-          success: false,
-          message: 'Aucune vérification active trouvée pour cette transaction'
+        console.log(`⚠️ [BACKEND] Annulation impossible : pas de polling actif trouvé pour Tx: ${transactionId}`);
+        return res.status(200).json({ // 200 car l'effet voulu (arrêt) est déjà effectif
+          success: true,
+          message: 'Aucune vérification active (déjà terminée ou inexistante).'
         });
       }
     } catch (error) {
