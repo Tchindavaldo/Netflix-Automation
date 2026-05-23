@@ -116,35 +116,33 @@ exports.updateUser = async (id, data) => {
     updatedAt: new Date().toISOString()
   };
 
-  // Gérer le token FCM comme un tableau
+  // Gérer le token push : FCM (Android) dans fcmTokens, APNs (iOS) dans apnsTokens
   if (data.fcmToken) {
-    let fcmTokens = userData.fcmTokens || [];
-    
-    // Migration : Si fcmTokens n'existe pas mais fcmToken (singulier) existe, 
-    // on initialise le tableau avec l'ancien token
-    if (!userData.fcmTokens && userData.fcmToken) {
-      fcmTokens = [userData.fcmToken];
+    const isIos = data.tokenType === 'ios';
+    const fieldName = isIos ? 'apnsTokens' : 'fcmTokens';
+    let tokens = userData[fieldName] || [];
+
+    // Migration legacy: si fcmTokens vide mais fcmToken (singulier) existe → Android
+    if (!isIos && !userData.fcmTokens && userData.fcmToken) {
+      tokens = [userData.fcmToken];
     }
 
-    // Si par erreur fcmTokens est stocké comme une chaîne, on la convertit
-    if (!Array.isArray(fcmTokens)) {
-      fcmTokens = [fcmTokens];
+    if (!Array.isArray(tokens)) {
+      tokens = [tokens];
     }
 
-    // Ajouter le nouveau token s'il n'est pas déjà présent
-    console.log(`📜 [USER-SERVICE] Tokens déjà présents:`, fcmTokens.length);
-    
-    if (!fcmTokens.includes(data.fcmToken)) {
-      fcmTokens.push(data.fcmToken);
-      console.log(`➕ [USER-SERVICE] Nouveau token ajouté. Total: ${fcmTokens.length}`);
+    console.log(`📜 [USER-SERVICE] Tokens ${fieldName} présents:`, tokens.length);
+
+    if (!tokens.includes(data.fcmToken)) {
+      tokens.push(data.fcmToken);
+      console.log(`➕ [USER-SERVICE] Nouveau token ${fieldName} ajouté. Total: ${tokens.length}`);
     } else {
-      console.log(`ℹ️ [USER-SERVICE] Le token existe déjà dans la liste.`);
+      console.log(`ℹ️ [USER-SERVICE] Le token ${fieldName} existe déjà.`);
     }
 
-    console.log(`📝 [USER-SERVICE] Liste finale des tokens:`, fcmTokens);
-    updateData.fcmTokens = fcmTokens;
-    // On garde aussi fcmToken (singulier) pour la compatibilité
-    updateData.fcmToken = data.fcmToken;
+    updateData[fieldName] = tokens;
+    updateData.fcmToken = data.fcmToken; // compat legacy
+    updateData.tokenType = data.tokenType || 'android';
   }
 
   await db.collection('users').doc(docId).update(updateData);

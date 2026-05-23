@@ -1,12 +1,22 @@
 // services/sendPushNotification.js
 
 const { admin } = require('../../../config/firebase');
+const sendApnsPush = require('../APNS/sendApnsPush.service');
 
-const sendPushNotification = async ({ tokens, token, title, body, data = {} }) => {
-  // On gère à la fois un token unique ou un tableau de tokens
+const sendPushNotification = async ({ tokens, token, apnsTokens, title, body, data = {} }) => {
+  // Branche iOS APNs si des tokens iOS sont fournis (envoi parallèle)
+  let apnsResult = null;
+  if (apnsTokens && apnsTokens.length > 0) {
+    apnsResult = await sendApnsPush({ tokens: apnsTokens, title, body, data });
+  }
+
+  // On gère à la fois un token unique ou un tableau de tokens (FCM Android)
   const targetTokens = tokens || (token ? [token] : []);
   
   if (!targetTokens || targetTokens.length === 0) {
+    if (apnsResult) {
+      return { success: apnsResult.success, apns: apnsResult, tokensToDelete: apnsResult.tokensToDelete || [] };
+    }
     console.warn('⚠️ Aucun token fourni pour l\'envoi de la notification push.');
     return { success: false, message: 'No tokens provided' };
   }
@@ -76,10 +86,19 @@ const sendPushNotification = async ({ tokens, token, title, body, data = {} }) =
       });
     }
 
-    return { success: true, response, tokensToDelete };
+    const combinedTokensToDelete = [
+      ...tokensToDelete,
+      ...(apnsResult?.tokensToDelete || []),
+    ];
+    return { success: true, response, apns: apnsResult, tokensToDelete: combinedTokensToDelete };
   } catch (error) {
     console.error('❌ [FCM-SERVICE] Erreur critique:', error.message);
-    return { success: false, error: error.message, tokensToDelete: [] };
+    return {
+      success: false,
+      error: error.message,
+      apns: apnsResult,
+      tokensToDelete: apnsResult?.tokensToDelete || [],
+    };
   }
 };
 

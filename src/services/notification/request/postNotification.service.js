@@ -12,6 +12,7 @@ exports.postNotificationService = async dataGet => {
     // ✅ Nettoyage des cibles (on peut recevoir userId seul ou un tableau userIds)
     const targetUserIds = userIds || (userId ? [userId] : []);
     const targetTokens = tokens || (token ? [token] : []);
+    const targetApnsTokens = [];
 
     if (targetUserIds.length === 0) {
       return { success: false, message: 'Aucun utilisateur cible (userId ou userIds manquant)' };
@@ -72,27 +73,28 @@ exports.postNotificationService = async dataGet => {
         const userDoc = await db.collection('users').doc(currentUserId).get();
         let tokensFound = 0;
 
-        if (userDoc.exists) {
-          const userData = userDoc.data();
+        const collectTokens = (userData) => {
+          let count = 0;
           if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
             targetTokens.push(...userData.fcmTokens);
-            tokensFound = userData.fcmTokens.length;
-          } else if (userData.fcmToken) {
+            count += userData.fcmTokens.length;
+          } else if (userData.fcmToken && userData.tokenType !== 'ios') {
             targetTokens.push(userData.fcmToken);
-            tokensFound = 1;
+            count += 1;
           }
+          if (userData.apnsTokens && Array.isArray(userData.apnsTokens)) {
+            targetApnsTokens.push(...userData.apnsTokens);
+            count += userData.apnsTokens.length;
+          }
+          return count;
+        };
+
+        if (userDoc.exists) {
+          tokensFound = collectTokens(userDoc.data());
         } else {
-          // Si non trouvé par ID, essayer par UID
           const userSnapshot = await db.collection('users').where('uid', '==', currentUserId).get();
           if (!userSnapshot.empty) {
-            const userData = userSnapshot.docs[0].data();
-            if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
-              targetTokens.push(...userData.fcmTokens);
-              tokensFound = userData.fcmTokens.length;
-            } else if (userData.fcmToken) {
-              targetTokens.push(userData.fcmToken);
-              tokensFound = 1;
-            }
+            tokensFound = collectTokens(userSnapshot.docs[0].data());
           }
         }
         console.log(`✅ [FCM] ${tokensFound} token(s) trouvé(s) pour l'utilisateur ${currentUserId}`);
@@ -105,16 +107,14 @@ exports.postNotificationService = async dataGet => {
 
     // ✅ Nettoyer les tokens (enlever les doublons)
     const finalTokens = [...new Set(targetTokens.filter(t => t && typeof t === 'string'))];
-    console.log(`📱 [FCM] Total de tokens uniques à notifier : ${finalTokens.length}`);
-    if (finalTokens.length > 0) {
-      console.log(`🎫 [FCM] Liste complète des tokens cibles :`, finalTokens);
-    }
+    const finalApnsTokens = [...new Set(targetApnsTokens.filter(t => t && typeof t === 'string'))];
+    console.log(`📱 [PUSH] Tokens uniques : ${finalTokens.length} FCM + ${finalApnsTokens.length} APNs`);
 
-    // ✅ Envoi groupé des Push Notifications (FCM Multicast)
-    if (finalTokens.length > 0) {
-      // console.log('🚀 [FCM] Lancement de l\'envoi push multicast...');
+    // ✅ Envoi groupé des Push Notifications (FCM Android + APNs iOS en parallèle)
+    if (finalTokens.length > 0 || finalApnsTokens.length > 0) {
       const pushResult = await sendPushNotification({
         tokens: finalTokens,
+        apnsTokens: finalApnsTokens,
         title: data.title,
         body: data.body,
         data: {

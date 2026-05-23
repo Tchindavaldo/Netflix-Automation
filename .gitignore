@@ -8,3 +8,5 @@ config/oauth2-tokens.json
 config/oauth2-credentials.json
 .env.dev
 .env.prod
+secrets/
+*.p8
