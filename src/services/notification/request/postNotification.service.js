@@ -73,28 +73,19 @@ exports.postNotificationService = async dataGet => {
         const userDoc = await db.collection('users').doc(currentUserId).get();
         let tokensFound = 0;
 
-        const collectTokens = (userData) => {
-          let count = 0;
-          if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
-            targetTokens.push(...userData.fcmTokens);
-            count += userData.fcmTokens.length;
-          } else if (userData.fcmToken && userData.tokenType !== 'ios') {
-            targetTokens.push(userData.fcmToken);
-            count += 1;
-          }
-          if (userData.apnsTokens && Array.isArray(userData.apnsTokens)) {
-            targetApnsTokens.push(...userData.apnsTokens);
-            count += userData.apnsTokens.length;
-          }
-          return count;
+        const consume = (userData) => {
+          const { fcm, apns } = userService.collectUserTokens(userData);
+          targetTokens.push(...fcm);
+          targetApnsTokens.push(...apns);
+          return fcm.length + apns.length;
         };
 
         if (userDoc.exists) {
-          tokensFound = collectTokens(userDoc.data());
+          tokensFound = consume(userDoc.data());
         } else {
           const userSnapshot = await db.collection('users').where('uid', '==', currentUserId).get();
           if (!userSnapshot.empty) {
-            tokensFound = collectTokens(userSnapshot.docs[0].data());
+            tokensFound = consume(userSnapshot.docs[0].data());
           }
         }
         console.log(`✅ [FCM] ${tokensFound} token(s) trouvé(s) pour l'utilisateur ${currentUserId}`);

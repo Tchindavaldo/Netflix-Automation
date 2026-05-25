@@ -1,6 +1,7 @@
 require("dotenv").config({ path: ".env.dev" });
 const { db } = require('./src/config/firebase');
 const sendPushNotification = require('./src/services/notification/FCM/sendPushNotification.service');
+const userService = require('./src/services/userService');
 
 // Usage: node test-push.js <UID_optional>
 const uidArg = process.argv[2];
@@ -16,9 +17,7 @@ async function testPush() {
             return;
         }
 
-        const userData = userDoc.data();
-        const fcmTokens = Array.isArray(userData.fcmTokens) ? userData.fcmTokens : (userData.fcmToken ? [userData.fcmToken] : []);
-        const apnsTokens = Array.isArray(userData.apnsTokens) ? userData.apnsTokens : [];
+        const { fcm: fcmTokens, apns: apnsTokens } = userService.collectUserTokens(userDoc.data());
 
         console.log(`📱 Tokens trouvés : ${fcmTokens.length} FCM (Android) + ${apnsTokens.length} APNs (iOS)`);
 
