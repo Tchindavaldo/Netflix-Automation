@@ -2,9 +2,12 @@ require("dotenv").config({ path: ".env.dev" });
 const { db } = require('./src/config/firebase');
 const sendPushNotification = require('./src/services/notification/FCM/sendPushNotification.service');
 
+// Usage: node test-push.js <UID_optional>
+const uidArg = process.argv[2];
+
 async function testPush() {
-    const uid = "NgOcjUW5nZgdEpVMeVyQyYRQgIS2";
-    console.log(`🔍 Recherche du token pour l'UID: ${uid}`);
+    const uid = uidArg || "NgOcjUW5nZgdEpVMeVyQyYRQgIS2";
+    console.log(`🔍 Recherche des tokens pour l'UID: ${uid}`);
 
     try {
         const userDoc = await db.collection('users').doc(uid).get();
@@ -14,34 +17,29 @@ async function testPush() {
         }
 
         const userData = userDoc.data();
-        const token = userData.fcmToken || (userData.fcmTokens && userData.fcmTokens[0]);
+        const fcmTokens = Array.isArray(userData.fcmTokens) ? userData.fcmTokens : (userData.fcmToken ? [userData.fcmToken] : []);
+        const apnsTokens = Array.isArray(userData.apnsTokens) ? userData.apnsTokens : [];
 
-        if (!token) {
-            console.error("❌ Aucun token FCM trouvé pour cet utilisateur.");
+        console.log(`📱 Tokens trouvés : ${fcmTokens.length} FCM (Android) + ${apnsTokens.length} APNs (iOS)`);
+
+        if (fcmTokens.length === 0 && apnsTokens.length === 0) {
+            console.error("❌ Aucun token push trouvé pour cet utilisateur.");
             return;
         }
 
-        console.log(`🚀 Envoi d'une notification de test vers le token: ${token.substring(0, 20)}...`);
-
         const result = await sendPushNotification({
-            token: token,
+            tokens: fcmTokens,
+            apnsTokens,
             title: "Test MoobilPay 🚀",
-            body: "Ceci est une notification de test pour vérifier la configuration Expo !",
-            data: {
-                type: "test",
-                click_action: "FLUTTER_NOTIFICATION_CLICK" // Pour compatibilité si besoin
-            }
+            body: `Test du ${new Date().toLocaleTimeString()}`,
+            data: { type: "test" },
         });
 
-        if (result.success) {
-            console.log("✅ Notification envoyée avec succès !");
-        } else {
-            console.error("❌ Échec de l'envoi:", result.message);
-        }
-
+        console.log("\n=== RÉSULTAT ===");
+        console.log(JSON.stringify(result, null, 2));
     } catch (error) {
         console.error("❌ Erreur lors du test:", error);
     }
 }
 
-testPush();
+testPush().then(() => process.exit(0));
