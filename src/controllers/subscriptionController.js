@@ -6,9 +6,10 @@ const SubscriptionOrchestrator = require('../services/subscription/subscriptionO
 const axios = require('axios');
 const subscriptionData = require('../../config/subscription-data.json');
 const transactionService = require('../services/transactionService');
+const paymentRegistry = require('../services/payment/paymentEventRegistry');
 
-// Map to track active subscription verification requests
-const activeRequests = new Map();
+// Registre partagé avec le webhook (permet l'annulation du polling à la réception)
+const { activeRequests } = paymentRegistry;
 
 /**
  * Contrôleur pour la gestion du processus d'abonnement Netflix
@@ -94,21 +95,29 @@ const subscriptionController = {
               }
             });
             const { status } = verifyResponse.data;
-            
-            // Log si le statut change 
-            if (attempts === 0 || status !== 'pending') {
-               console.log(`📡 [POLLING-API] Statut reçu pour ${transactionId}: "${status}"`);
+
+            // Mapping des statuts Digikuntz (nouveau format) → statuts internes
+            const STATUS_MAP = {
+              payin_pending: 'pending',
+              payin_success: 'success',
+              payin_error: 'failed',
+              payin_closed: 'cancelled',
+            };
+            const internalStatus = STATUS_MAP[status] || status;
+
+            // Log si le statut change
+            if (attempts === 0 || (internalStatus !== 'pending' && status !== 'pending')) {
+               console.log(`📡 [POLLING-API] Statut reçu pour ${transactionId}: "${status}" → "${internalStatus}"`);
             }
 
-            if (status === 'error' || status === 'failed' || status === 'cancelled') {
+            if (internalStatus === 'failed' || internalStatus === 'cancelled' || status === 'error') {
               console.log(`❌ [POLLING] ÉCHEC: Transaction ${transactionId} refusée/échouée.`);
               activeRequests.delete(transactionId);
-              // Mettre à jour la transaction en echec
-              try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'failed'); } catch (e) {}
+              try { await transactionService.updateTransactionStatusByExternalId(transactionId, internalStatus === 'cancelled' ? 'cancelled' : 'failed'); } catch (e) {}
               return res.status(400).json({ success: false, message: 'Le paiement a échoué.', error: verifyResponse.data });
             }
 
-            if (status === 'success' || status === 'completed') {
+            if (internalStatus === 'success' || status === 'completed') {
                transactionVerified = true;
                console.log(`✅ [POLLING] SUCCÈS CONFIRMÉ pour Tx: ${transactionId} (User: ${userId})`);
                
