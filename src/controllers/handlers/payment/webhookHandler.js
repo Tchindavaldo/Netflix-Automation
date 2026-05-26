@@ -21,6 +21,10 @@ const STATUS_MAP = {
 const isTerminal = (status) => status === 'success' || status === 'failed' || status === 'cancelled';
 
 const webhookHandler = async (req, res) => {
+  // LOG: Enregistrer TOUS les appels webhook reçus
+  console.log('🪝 [WEBHOOK-RECEIVED] Appel reçu de:', req.ip, 'Headers:', JSON.stringify(req.headers));
+  console.log('🪝 [WEBHOOK-BODY] Payload complet:', JSON.stringify(req.body, null, 2));
+
   // Toujours répondre 200 rapidement à Digikuntz (sinon ils retry).
   // On traite l'event en arrière-plan.
   res.status(200).json({ received: true });
