@@ -22,7 +22,8 @@ const isTerminal = (status) => status === 'success' || status === 'failed' || st
 
 const webhookHandler = async (req, res) => {
   // LOG: Enregistrer TOUS les appels webhook reçus
-  console.log('🪝 [WEBHOOK-RECEIVED] Appel reçu de:', req.ip, 'Headers:', JSON.stringify(req.headers));
+  console.log('\n🪝🪝🪝 [WEBHOOK-RECEIVED] ✅ WEBHOOK APPELÉ PAR DIGIKUNTZ! 🪝🪝🪝');
+  console.log('🪝 [WEBHOOK-RECEIVED] Appel reçu de:', req.ip);
   console.log('🪝 [WEBHOOK-BODY] Payload complet:', JSON.stringify(req.body, null, 2));
 
   // Toujours répondre 200 rapidement à Digikuntz (sinon ils retry).
@@ -49,7 +50,8 @@ const webhookHandler = async (req, res) => {
 
     // 2. Idempotence: ne rien refaire si on a déjà traité ce statut terminal
     if (transaction.status === internalStatus && isTerminal(internalStatus)) {
-      console.log(`ℹ️ [WEBHOOK] Statut déjà à jour (${internalStatus}), skip.`);
+      console.log(`ℹ️ [WEBHOOK] Statut déjà à jour (${internalStatus}) - probablement détecté par polling en premier. Skip.`);
+      console.log(`📋 [WEBHOOK-SKIPPED] Tx: ${externalTransactionId}, Status: ${internalStatus} (already processed)`);
       return;
     }
 
