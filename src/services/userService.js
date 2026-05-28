@@ -116,36 +116,11 @@ exports.updateUser = async (id, data) => {
     updatedAt: new Date().toISOString()
   };
 
-  // Gérer le token FCM comme un tableau
-  if (data.fcmToken) {
-    let fcmTokens = userData.fcmTokens || [];
-    
-    // Migration : Si fcmTokens n'existe pas mais fcmToken (singulier) existe, 
-    // on initialise le tableau avec l'ancien token
-    if (!userData.fcmTokens && userData.fcmToken) {
-      fcmTokens = [userData.fcmToken];
-    }
-
-    // Si par erreur fcmTokens est stocké comme une chaîne, on la convertit
-    if (!Array.isArray(fcmTokens)) {
-      fcmTokens = [fcmTokens];
-    }
-
-    // Ajouter le nouveau token s'il n'est pas déjà présent
-    console.log(`📜 [USER-SERVICE] Tokens déjà présents:`, fcmTokens.length);
-    
-    if (!fcmTokens.includes(data.fcmToken)) {
-      fcmTokens.push(data.fcmToken);
-      console.log(`➕ [USER-SERVICE] Nouveau token ajouté. Total: ${fcmTokens.length}`);
-    } else {
-      console.log(`ℹ️ [USER-SERVICE] Le token existe déjà dans la liste.`);
-    }
-
-    console.log(`📝 [USER-SERVICE] Liste finale des tokens:`, fcmTokens);
-    updateData.fcmTokens = fcmTokens;
-    // On garde aussi fcmToken (singulier) pour la compatibilité
-    updateData.fcmToken = data.fcmToken;
-  }
+  // Note: la gestion des tokens push est maintenant gérée via les endpoints dédiés
+  // POST /api/user/push-token/add et /remove (avec deviceId). On ignore ici tout champ
+  // fcmToken/tokenType qui viendrait via updateUser pour éviter les conflits.
+  delete updateData.fcmToken;
+  delete updateData.tokenType;
 
   await db.collection('users').doc(docId).update(updateData);
   
@@ -194,6 +169,101 @@ exports.removeInvalidFcmTokens = async (tokens) => {
       console.error(`❌ [CLEANUP] Erreur pour le token ${token.substring(0, 10)}... :`, e.message);
     }
   }
+};
+
+// ===== Push tokens (multi-device) =====
+
+const findUserDoc = async (id) => {
+  let snap = await db.collection('users').doc(id).get();
+  if (snap.exists) return snap;
+  const q = await db.collection('users').where('uid', '==', id).get();
+  if (q.empty) return null;
+  return q.docs[0];
+};
+
+// Upsert d'un token push lié à un device. Évite les doublons par deviceId.
+exports.addPushToken = async (userId, { token, platform, deviceId }) => {
+  if (!token || !platform || !deviceId) {
+    throw new Error('token, platform et deviceId sont requis');
+  }
+  if (platform !== 'ios' && platform !== 'android') {
+    throw new Error('platform doit être "ios" ou "android"');
+  }
+
+  const userDoc = await findUserDoc(userId);
+  if (!userDoc) throw new Error(`Utilisateur ${userId} introuvable`);
+
+  const data = userDoc.data();
+  const existing = Array.isArray(data.pushTokens) ? data.pushTokens : [];
+
+  // Retire toute entrée existante avec le même deviceId (refresh propre)
+  const filtered = existing.filter(e => e.deviceId !== deviceId);
+  filtered.push({
+    token,
+    platform,
+    deviceId,
+    lastSeen: new Date().toISOString(),
+  });
+
+  await userDoc.ref.update({
+    pushTokens: filtered,
+    updatedAt: new Date().toISOString(),
+  });
+
+  console.log(`✅ [PUSH-TOKEN] add ${platform} pour user=${userId} device=${deviceId} (total=${filtered.length})`);
+  return { count: filtered.length };
+};
+
+// Supprime le token push correspondant à un device (logout).
+exports.removePushToken = async (userId, { deviceId }) => {
+  if (!deviceId) throw new Error('deviceId requis');
+
+  const userDoc = await findUserDoc(userId);
+  if (!userDoc) throw new Error(`Utilisateur ${userId} introuvable`);
+
+  const data = userDoc.data();
+  const existing = Array.isArray(data.pushTokens) ? data.pushTokens : [];
+  const filtered = existing.filter(e => e.deviceId !== deviceId);
+
+  if (filtered.length === existing.length) {
+    console.log(`ℹ️ [PUSH-TOKEN] remove: aucun token trouvé pour device=${deviceId}`);
+    return { removed: 0, count: existing.length };
+  }
+
+  await userDoc.ref.update({
+    pushTokens: filtered,
+    updatedAt: new Date().toISOString(),
+  });
+
+  console.log(`🗑️ [PUSH-TOKEN] remove device=${deviceId} pour user=${userId} (reste=${filtered.length})`);
+  return { removed: existing.length - filtered.length, count: filtered.length };
+};
+
+// Helper: agrège les tokens d'un user à partir de pushTokens (+ fallback legacy fcmTokens/apnsTokens).
+exports.collectUserTokens = (userData) => {
+  const fcm = [];
+  const apns = [];
+
+  // Source principale: pushTokens (nouveau format)
+  if (Array.isArray(userData.pushTokens)) {
+    userData.pushTokens.forEach(e => {
+      if (!e || !e.token) return;
+      if (e.platform === 'ios') apns.push(e.token);
+      else if (e.platform === 'android') fcm.push(e.token);
+    });
+  }
+
+  // Fallback legacy pour les users pas encore migrés
+  if (Array.isArray(userData.fcmTokens)) {
+    userData.fcmTokens.forEach(t => t && !fcm.includes(t) && fcm.push(t));
+  } else if (userData.fcmToken && userData.tokenType !== 'ios') {
+    if (!fcm.includes(userData.fcmToken)) fcm.push(userData.fcmToken);
+  }
+  if (Array.isArray(userData.apnsTokens)) {
+    userData.apnsTokens.forEach(t => t && !apns.includes(t) && apns.push(t));
+  }
+
+  return { fcm, apns };
 };
 
 // Supprimer un utilisateur

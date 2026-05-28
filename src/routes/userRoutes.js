@@ -37,6 +37,10 @@ const authUser = require('../middleware/authUser');
 router.get('/', userController.getAllUsers);
 router.post('/', authUser, userController.createUser);
 
+// Push tokens multi-device
+router.post('/push-token/add', authUser, userController.addPushToken);
+router.post('/push-token/remove', authUser, userController.removePushToken);
+
 /**
  * @swagger
  * /api/user/delete-account:

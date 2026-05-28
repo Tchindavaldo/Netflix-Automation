@@ -91,4 +91,10 @@ router.post('/initpaiment', paymentController.initPayment);
  */
 router.post('/init-mobile-money', paymentController.initMobileMoneyPayment);
 
+// Webhook Digikuntz (pas d'auth — l'IP/le payload sont la sécurité, idéalement signer)
+router.post('/webhook', paymentController.webhook);
+
+// Vérification manuelle du statut (utile pour debug et fallback)
+router.get('/status/:transactionId', paymentController.checkStatus);
+
 module.exports = router;

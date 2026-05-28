@@ -33,7 +33,8 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
       userEmail: email,
       userPhone: sanitizedPhone,
       userCountry: country || 'Cameroon',
-      senderName: senderName || 'moobilpay'
+      senderName: senderName || 'moobilpay',
+      callbackUrl: process.env.PAYMENT_WEBHOOK_URL || undefined,
     };
 
     // Create Plan Activation
@@ -73,12 +74,12 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
     console.log('External API Response Status:', response.status);
     console.log('External API Response Data:', JSON.stringify(response.data, null, 2));
 
-    // Map 'id' from response to 'transactionId' if 'transactionId' is missing
-    const transactionId = response.data.transactionId || response.data.id;
-    const { paymentLink } = response.data;
+    // Nouveau format Digikuntz: { id, status, data: { paymentLink, ... } }
+    const transactionId = response.data.id || response.data.transactionId;
+    const paymentLink = response.data.data?.paymentLink || response.data.paymentLink;
 
     if (!transactionId || !paymentLink) {
-      console.error('Missing transactionId (or id) or paymentLink in response:', response.data);
+      console.error('Missing id or paymentLink in response:', response.data);
       throw new Error('Invalid response from payment provider: ' + JSON.stringify(response.data));
     }
 

@@ -9,8 +9,12 @@ const initPaymentHandler = require('./handlers/payment/initPaymentHandler');
 const paymentController = {
   // Initialiser un paiement Orange Money
   initPayment: initPaymentHandler,
-  // Initialiser un paiement Mobile Money (Nouveau)
+  // Initialiser un paiement Mobile Money (Digikuntz)
   initMobileMoneyPayment: require('./handlers/payment/initMobileMoneyPaymentHandler'),
+  // Webhook callback Digikuntz (events temps réel)
+  webhook: require('./handlers/payment/webhookHandler'),
+  // Vérification manuelle du statut (fallback / debug)
+  checkStatus: require('./handlers/payment/checkPaymentStatusHandler'),
 };
 
 module.exports = paymentController;

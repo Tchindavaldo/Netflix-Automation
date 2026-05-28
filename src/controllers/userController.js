@@ -172,6 +172,28 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const addPushToken = async (req, res) => {
+  try {
+    const userId = req.user?.uid || req.params.id;
+    const { token, platform, deviceId } = req.body;
+    const result = await userService.addPushToken(userId, { token, platform, deviceId });
+    res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+const removePushToken = async (req, res) => {
+  try {
+    const userId = req.user?.uid || req.params.id;
+    const { deviceId } = req.body;
+    const result = await userService.removePushToken(userId, { deviceId });
+    res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
 // Suppression complète du compte (RGPD / Apple Guideline 5.1.1(v))
 const deleteOwnAccount = async (req, res) => {
   try {
@@ -196,7 +218,6 @@ const deleteOwnAccount = async (req, res) => {
     });
   }
 };
-
 const userController = {
   getAllUsers,
   getUserById,
@@ -205,7 +226,9 @@ const userController = {
   createUser,
   updateUser,
   deleteUser,
-  deleteOwnAccount
+  deleteOwnAccount,
+  addPushToken,
+  removePushToken,
 };
 
 module.exports = userController;
