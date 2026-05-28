@@ -1,5 +1,5 @@
 // src/services/userService.js
-const { db } = require('../config/firebase');
+const { db, admin } = require('../config/firebase');
 
 /**
  * Service de gestion des utilisateurs
@@ -199,4 +199,67 @@ exports.removeInvalidFcmTokens = async (tokens) => {
 // Supprimer un utilisateur
 exports.deleteUser = async id => {
   await db.collection('users').doc(id).delete();
+};
+
+// Suppression complète du compte utilisateur (RGPD / Apple Guideline 5.1.1(v))
+// Supprime : compte Firebase Auth + document users + toutes les données liées
+exports.deleteUserAccount = async uid => {
+  if (!uid) throw new Error('UID requis pour la suppression');
+
+  console.log(`🗑️  [DELETE-ACCOUNT] Début de la suppression pour UID: ${uid}`);
+
+  const collectionsLiees = [
+    { name: 'plan_activation', field: 'userId' },
+    { name: 'transactions', field: 'userId' },
+    { name: 'notification', field: 'userId' },
+    { name: 'subscription_errors', field: 'userId' },
+    { name: 'error_logs', field: 'userId' },
+    { name: 'netflix_credentials', field: 'userId' },
+  ];
+
+  for (const { name, field } of collectionsLiees) {
+    try {
+      const snapshot = await db.collection(name).where(field, '==', uid).get();
+      if (snapshot.empty) continue;
+
+      const batch = db.batch();
+      snapshot.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+      console.log(`✅ [DELETE-ACCOUNT] ${snapshot.size} doc(s) supprimé(s) dans ${name}`);
+    } catch (err) {
+      console.warn(`⚠️  [DELETE-ACCOUNT] Erreur sur ${name}: ${err.message}`);
+    }
+  }
+
+  // Supprimer le document utilisateur (par ID doc OU par champ uid)
+  try {
+    const userDoc = await db.collection('users').doc(uid).get();
+    if (userDoc.exists) {
+      await db.collection('users').doc(uid).delete();
+      console.log(`✅ [DELETE-ACCOUNT] Document users/${uid} supprimé`);
+    } else {
+      const snap = await db.collection('users').where('uid', '==', uid).get();
+      const batch = db.batch();
+      snap.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      console.log(`✅ [DELETE-ACCOUNT] ${snap.size} doc(s) users supprimé(s) via champ uid`);
+    }
+  } catch (err) {
+    console.warn(`⚠️  [DELETE-ACCOUNT] Erreur suppression users: ${err.message}`);
+  }
+
+  // Supprimer le compte Firebase Auth
+  try {
+    await admin.auth().deleteUser(uid);
+    console.log(`✅ [DELETE-ACCOUNT] Compte Firebase Auth supprimé: ${uid}`);
+  } catch (err) {
+    if (err.code === 'auth/user-not-found') {
+      console.warn(`ℹ️  [DELETE-ACCOUNT] Firebase Auth déjà absent pour ${uid}`);
+    } else {
+      throw new Error(`Échec suppression Firebase Auth: ${err.message}`);
+    }
+  }
+
+  console.log(`🎉 [DELETE-ACCOUNT] Suppression complète terminée pour ${uid}`);
+  return { uid, deletedAt: new Date().toISOString() };
 };

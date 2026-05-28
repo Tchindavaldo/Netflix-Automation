@@ -39,6 +39,24 @@ router.post('/', authUser, userController.createUser);
 
 /**
  * @swagger
+ * /api/user/delete-account:
+ *   delete:
+ *     summary: Supprimer définitivement son propre compte (RGPD / Apple 5.1.1(v))
+ *     description: Supprime le compte Firebase Auth, le document utilisateur et toutes les données liées.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Compte supprimé
+ *       401:
+ *         description: Non authentifié
+ */
+router.delete('/delete-account', authUser, userController.deleteOwnAccount);
+
+/**
+ * @swagger
  * /api/user/{id}:
  *   get:
  *     summary: Récupérer un utilisateur par ID
