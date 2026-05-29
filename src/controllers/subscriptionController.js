@@ -56,8 +56,28 @@ const subscriptionController = {
       // Variable pour stocker l'ID de l'activation (soit fourni, soit créé après paiement)
       let finalPlanActivationId = planActivationId;
 
+      // --- MODE REVIEW APPLE : on considère le paiement validé sans polling ---
+      // Piloté par APPLE_REVIEW_MODE. On émet immédiatement payment_validated
+      // puis on laisse le reste du flux (création/MAJ activation + activationcreated)
+      // s'exécuter normalement. ⚠️ Temporaire : à désactiver après validation Apple.
+      const appleReviewMode = process.env.APPLE_REVIEW_MODE === 'true';
+      if (appleReviewMode && transactionId) {
+        console.log(`🍏 [APPLE-REVIEW] Polling sauté pour Tx: ${transactionId}. Paiement considéré validé.`);
+        try { await transactionService.updateTransactionStatusByExternalId(transactionId, 'success'); } catch (e) {}
+        try {
+          const io = require('../../socket').getIO();
+          io.to(userId).emit('payment_validated', {
+            success: true,
+            message: 'Paiement validé (mode review Apple).',
+            data: { userId, transactionId }
+          });
+        } catch (e) {
+          console.error('❌ [SOCKET-ERROR] Échec émission payment_validated (review):', e.message);
+        }
+      }
+
       // --- 1. VÉRIFICATION DE LA TRANSACTION (SI FOURNIE) ---
-      if (transactionId) {
+      if (transactionId && !appleReviewMode) {
         console.log(`\n🔍 [POLLING] DÉBUT: Vérification de la transaction ${transactionId}...`);
         const paymentUserId = process.env.PAYMENT_USER_ID;
         const secretKey = process.env.PAYMENT_SECRET_KEY;

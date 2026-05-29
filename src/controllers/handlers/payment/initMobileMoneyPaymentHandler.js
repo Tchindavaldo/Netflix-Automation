@@ -58,6 +58,38 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
     const newActivation = await planActivationService.createActivation(activationData);
     const planActivationId = newActivation.id;
 
+    // --- MODE REVIEW APPLE : on saute le paiement réel (validation App Store) ---
+    // Piloté par la variable d'env APPLE_REVIEW_MODE. Aucune passerelle externe
+    // n'est appelée : on renvoie un transactionId factice + le flag skipPayment
+    // pour que le frontend saute le webview et passe direct à l'activation.
+    // ⚠️ Temporaire : à désactiver après validation Apple.
+    if (process.env.APPLE_REVIEW_MODE === 'true') {
+      const fakeTransactionId = `APPLE_REVIEW_${Date.now()}`;
+      console.log(`🍏 [APPLE-REVIEW] Paiement sauté. Tx factice: ${fakeTransactionId}`);
+
+      try {
+        await transactionService.createTransaction({
+          userId,
+          planActivationId,
+          externalTransactionId: fakeTransactionId,
+          amount: parseFloat(amount),
+          type: 'mobile_money',
+          status: 'success',
+          planType: typeDePlan
+        });
+      } catch (err) {
+        console.error('❌ [APPLE-REVIEW] Échec enregistrement transaction:', err.message);
+      }
+
+      return res.status(200).json({
+        success: true,
+        skipPayment: true,
+        transactionId: fakeTransactionId,
+        paymentLink: '',
+        planActivationId
+      });
+    }
+
     console.log('Initiating Mobile Money payment with payload:', payload);
     console.log('External API URL:', externalApiUrl);
 
