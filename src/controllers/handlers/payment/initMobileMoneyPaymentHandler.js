@@ -37,13 +37,17 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
       callbackUrl: process.env.PAYMENT_WEBHOOK_URL || undefined,
     };
 
+    // En mode review Apple, l'activation est créée directement "active" (pas de
+    // paiement réel à attendre), pour que la liste n'affiche aucun "pending".
+    const isAppleReview = process.env.APPLE_REVIEW_MODE === 'true';
+
     // Create Plan Activation
     const activationData = {
       userId,
       planNetflix: typeDePlan,
       amount: parseFloat(amount),
-      statut: 'pending',
-      reqteStatusSuccess: 'pending',
+      statut: isAppleReview ? 'active' : 'pending',
+      reqteStatusSuccess: isAppleReview ? 'success' : 'pending',
       numeroOM: phone || 'N/A',
       email,
       motDePasse: motDePasse || 'N/A',

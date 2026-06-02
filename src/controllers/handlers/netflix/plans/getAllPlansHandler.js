@@ -9,7 +9,10 @@ const getAllPlansHandler = async (req, res) => {
     const plans = await netflixPlanService.getAllPlans();
     return res.json({
       success: true,
-      data: plans
+      data: plans,
+      // Mode review Apple : indique au front de court-circuiter tout le flux
+      // de paiement (piloté par la même var d'env que le skip webview).
+      appleReviewMode: process.env.APPLE_REVIEW_MODE === 'true'
     });
   } catch (error) {
     console.error('❌ Erreur getAllPlansHandler:', error);
