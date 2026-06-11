@@ -42,6 +42,11 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
     const isAppleReview = process.env.APPLE_REVIEW_MODE === 'true';
 
     // Create Plan Activation
+    const nowIso = new Date().toISOString();
+    // En mode review, l'activation est créée directement active sans passer par
+    // subscription/init : on pose donc dateDebut/dateExpiration ici pour que le
+    // front puisse calculer les jours restants (sinon NaN).
+    const reviewExpiration = new Date(Date.now() + 29 * 24 * 60 * 60 * 1000).toISOString();
     const activationData = {
       userId,
       planNetflix: typeDePlan,
@@ -55,8 +60,10 @@ const initMobileMoneyPaymentHandler = async (req, res) => {
       isPaiementCardActive: false,
       typePaiement: 'mobile_money',
       dureeActivation: 29,
-      dateCreation: new Date().toISOString(),
-      dateModification: new Date().toISOString()
+      dateCreation: nowIso,
+      dateModification: nowIso,
+      // Dates de suivi (uniquement en review : flux normal géré par subscription/init)
+      ...(isAppleReview ? { dateDebut: nowIso, dateExpiration: reviewExpiration } : {}),
     };
 
     const newActivation = await planActivationService.createActivation(activationData);
