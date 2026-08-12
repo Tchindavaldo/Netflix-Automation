@@ -149,9 +149,43 @@ Il révèle la cause exacte d'un OTP qui n'arrive pas :
 
 ## Les endpoints du backend
 
+### Authentification par WhatsApp (parcours complet)
+
 | Méthode | Route | Rôle |
 |---|---|---|
-| POST | `/api/whatsapp/message` | Envoyer un message WhatsApp |
+| POST | `/api/whatsapp/auth/request` | Envoyer un code de connexion |
+| POST | `/api/whatsapp/auth/verify` | Valider, connecter ou inscrire, émettre un token |
+| GET | `/api/whatsapp/costs/summary` | Récapitulatif des dépenses Bird |
+
+**`auth/request`** applique un **délai de 60 s** entre deux demandes pour un même
+numéro. Un renvoi trop rapproché renvoie `429` avec l'en-tête `Retry-After` et le
+nombre de secondes restantes dans `data.retryAfter` — le contrôle a lieu **avant**
+l'appel à Bird, donc un renvoi bloqué n'est pas facturé.
+
+**`auth/verify`** sert à la fois de connexion et d'inscription : le compte est
+créé si le numéro est inconnu, retrouvé sinon (`isNewUser` l'indique). Un code
+refusé renvoie `401` avec `reason` et `attemptsRemaining`.
+
+La réponse porte un **custom token Firebase** à usage unique. Le frontend doit
+appeler `signInWithCustomToken(customToken)` : Firebase délivre alors un refresh
+token persistant, et la session dure bien au-delà de six mois sans nouvelle
+saisie de code. Le compte créé est un compte Firebase Auth standard
+(uid `wa_<numéro>`, provider `phone`), donc `authUser` et tout le backend
+existant fonctionnent sans modification.
+
+### SMS
+
+| Méthode | Route | Rôle |
+|---|---|---|
+| POST | `/api/sms/send` | Envoyer un SMS (template uniquement) |
+| GET | `/api/sms/templates` | Catalogue des templates disponibles |
+| GET | `/api/sms/:id` | Statut de livraison et coût définitif |
+
+### OTP bas niveau et diagnostic
+
+| Méthode | Route | Rôle |
+|---|---|---|
+| POST | `/api/whatsapp/message` | Envoyer un message WhatsApp *(bloqué, voir Limites)* |
 | POST | `/api/whatsapp/otp/send` | Envoyer un code OTP |
 | POST | `/api/whatsapp/otp/verify` | Vérifier un code OTP |
 | GET | `/api/whatsapp/message/:id/cost` | Coût d'un message |
@@ -183,6 +217,42 @@ Envoi groupé : remplacer `to` par `"recipients": ["696...", "677..."]`.
 
 ---
 
+## Suivi des coûts (collection `birdCosts`)
+
+Bird n'expose **aucune vue agrégée par API** : le coût ne se lit qu'en
+interrogeant chaque message ou vérification un par un. Sans trace locale, la
+dépense est donc invisible. La collection `birdCosts` est alimentée
+automatiquement — un document par vérification OTP (id `vrf_...`) ou par SMS
+(id `sms_...`, champ `type: 'sms'`).
+
+**Le coût n'est pas connu à l'envoi.** Bird renvoie `cost: null` à l'acceptation
+et ne tarifie qu'ensuite. La trace est donc créée sans montant, puis complétée :
+à la vérification du code pour un OTP, ou lors de la consultation du
+récapitulatif pour tout ce qui reste en attente.
+
+`GET /api/whatsapp/costs/summary` relit chez Bird toute trace dont le coût est
+encore inconnu et la complète au passage — ce sont des **lectures, jamais des
+envois**, donc l'appel ne coûte rien. C'est ce qui rattrape les demandes
+abandonnées, qui sinon resteraient à `null` alors qu'elles ont bien été facturées.
+
+```json
+{ "count": 10, "verified": 4, "abandoned": 2, "pending": 4,
+  "totalCost": 1.0144, "currencyCode": "USD",
+  "byChannel": { "sms": { "count": 5, "cost": 0.9604 },
+                 "whatsapp": { "count": 6, "cost": 0.054 } } }
+```
+
+- `verified` — code saisi et validé
+- `abandoned` — expiré sans validation, **facturé quand même**
+- `pending` — encore valide, l'utilisateur peut saisir son code
+
+⚠️ **Un renvoi réutilise le même `verificationId` mais est facturé.** Bird
+n'ouvre pas de nouvelle vérification tant que la précédente est valide : deux
+envois donnent une vérification à `0,018 USD` avec deux tentatives. Le champ
+`sendCount` compte les renvois pour que la trace ne soit pas écrasée.
+
+---
+
 ## Limites connues
 
 **WhatsApp est en préversion chez Bird.** Le dashboard l'affiche :
@@ -206,6 +276,52 @@ annonce le support des expéditeurs dédiés « prochainement ».
 **Langue :** les OTP partent en **anglais** (`template_language: "en"`).
 Un réglage existe peut-être dans **Verify → Configure**.
 
+### SMS : templates uniquement, pas de texte libre
+
+`/v1/sms/senders` est **vide** : le workspace ne possède aucun expéditeur SMS.
+Tout envoi en texte libre est donc rejeté (*No eligible sender is available*).
+Seul l'envoi **par template** fonctionne — Bird choisit alors son expéditeur
+partagé (marque `Notifly`).
+
+**Conséquence : impossible d'envoyer un lien ou un texte arbitraire par SMS.**
+Les variables des templates sont typées et contraintes — testé :
+
+| Valeur | Résultat |
+|---|---|
+| `ref: "moobilpay.com"` | ❌ refusé (le `.` est interdit) |
+| `ref: "bit.ly/x9k2"` | ❌ refusé (le `/` est interdit) |
+| `code: "moobilpay"` | ❌ refusé (4–8 chiffres uniquement) |
+| `ref: "MP-AB12"` | ✅ accepté |
+
+`ref` n'accepte que A–Z, 0–9 et le tiret sur 16 caractères. Aucun raccourcisseur
+d'URL ne rentre dans ces règles. Pour transmettre un lien ou des identifiants,
+passer par l'e-mail.
+
+Débloquer le texte libre demande un **sender ID alphanumérique** enregistré
+auprès des opérateurs camerounais (délai + justificatifs). `sendSmsText` est déjà
+implémenté et n'attend qu'un `from`.
+
+**Templates utiles pour MoobilPay** (11 au total, tous en anglais) :
+
+| Template | Variables |
+|---|---|
+| `bird_payment_confirmation` | amount, currency, date |
+| `bird_order_confirmation` | ref, amount, currency |
+| `bird_renewal_reminder` | date, amount, currency |
+| `bird_signin_alert` | date_time |
+| `bird_otp_verification` | code |
+
+⚠️ **Un SMS refusé est facturé.** Un test `bird_signin_alert` est revenu `failed`
+avec `content_rejected` (code opérateur MTN 110) — filtrage de contenu côté
+opérateur — et a tout de même coûté 0,2401 USD. Toujours relire le statut via
+`GET /api/sms/:id` : `accepted` ne garantit rien.
+
+### E-mail Bird
+
+Disponible sur le compte mais **la clé API n'a pas le scope** (`403
+InsufficientScope` sur `/v1/email/*`). C'est la voie à privilégier pour tout ce
+que le SMS ne peut pas véhiculer : liens, identifiants, HTML, texte libre.
+
 ---
 
 ## Que faire si ça ne marche pas
@@ -221,6 +337,10 @@ Un réglage existe peut-être dans **Verify → Configure**.
 | OTP part en SMS coûteux au lieu de WhatsApp | Téléphone hors ligne → `carrier_rejected` | Normal : WhatsApp passe une fois le téléphone reconnecté |
 | Message texte libre refusé | Préversion WhatsApp | Utiliser un template, ou attendre l'ouverture |
 | `success: true` mais rien reçu | L'acceptation ≠ la livraison | `GET /api/whatsapp/verification/:id` |
+| `429` sur `auth/request` | Renvoi sous 60 s | Attendre `data.retryAfter` secondes (non facturé) |
+| SMS `failed` / `content_rejected` | Contenu filtré par l'opérateur | Facturé quand même ; essayer un autre template |
+| SMS texte libre refusé | Aucun expéditeur sur le workspace | Utiliser un template, ou enregistrer un sender ID |
+| Total des coûts trop bas | Demandes non résolues | Appeler `GET /api/whatsapp/costs/summary` (les complète) |
 
 ---
 
@@ -234,8 +354,12 @@ Un réglage existe peut-être dans **Verify → Configure**.
 | `src/services/notification/whatsapp/otp/sendOtp.service.js` | Envoi OTP |
 | `src/services/notification/whatsapp/otp/verifyOtp.service.js` | Vérification OTP |
 | `src/services/notification/whatsapp/getMessageCost.service.js` | Coûts et diagnostic |
+| `src/services/notification/whatsapp/otp/whatsappAuth.service.js` | Parcours d'authentification complet |
+| `src/services/notification/whatsapp/birdCost.service.js` | Journalisation des coûts (`birdCosts`) |
+| `src/services/notification/sms/sendSms.service.js` | Envoi SMS par template |
 | `src/utils/validator/validatePhoneNumber.js` | Normalisation E.164 |
-| `src/routes/whatsappRoutes.js` | Routes + Swagger |
+| `src/routes/whatsappRoutes.js` | Routes WhatsApp + Swagger |
+| `src/routes/smsRoutes.js` | Routes SMS + Swagger |
 
 ---
 

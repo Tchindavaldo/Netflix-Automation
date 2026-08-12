@@ -6,8 +6,156 @@ const {
   getMessageCostController,
   getVerificationDetailsController,
 } = require('../controllers/notifications/whatsapp/getMessageCost.controller');
+const {
+  requestAuthController,
+  verifyAuthController,
+  getCostSummaryController,
+} = require('../controllers/notifications/whatsapp/whatsappAuth.controller');
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /api/whatsapp/auth/request:
+ *   post:
+ *     summary: Demander un code de connexion par WhatsApp
+ *     description: >
+ *       Première étape de l'authentification par numéro WhatsApp. Envoie un code
+ *       à 6 chiffres via Bird (WhatsApp, avec repli SMS automatique) et journalise
+ *       le coût. La réponse est identique que le numéro soit déjà inscrit ou non,
+ *       afin de ne pas permettre l'énumération des comptes.
+ *     tags: [WhatsApp Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [phoneNumber]
+ *             properties:
+ *               phoneNumber: { type: 'string', example: '696080087' }
+ *     responses:
+ *       200:
+ *         description: Code envoyé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: 'boolean', example: true }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     verificationId: { type: 'string' }
+ *                     phoneNumber: { type: 'string' }
+ *                     expiresIn: { type: 'integer', example: 600 }
+ *       400:
+ *         description: Numéro invalide ou échec de l'envoi
+ */
+router.post('/auth/request', requestAuthController);
+
+/**
+ * @swagger
+ * /api/whatsapp/auth/verify:
+ *   post:
+ *     summary: Valider le code et se connecter (ou s'inscrire)
+ *     description: >
+ *       Seconde étape. Bird valide le code, le coût réel est enregistré, puis
+ *       l'utilisateur est connecté s'il existe ou créé sinon.
+ *       Renvoie un **custom token Firebase** à usage unique : le frontend doit
+ *       appeler `signInWithCustomToken(customToken)`. Firebase délivre alors un
+ *       refresh token persistant — la session dure bien au-delà de six mois sans
+ *       nouvelle saisie de code.
+ *     tags: [WhatsApp Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [phoneNumber, code]
+ *             properties:
+ *               phoneNumber: { type: 'string', example: '696080087' }
+ *               code: { type: 'string', example: '123456' }
+ *               name: { type: 'string', description: "Optionnel, utilisé à l'inscription" }
+ *               email: { type: 'string', description: "Optionnel, utilisé à l'inscription" }
+ *     responses:
+ *       200:
+ *         description: Connexion ou inscription réussie
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: 'boolean', example: true }
+ *                 message: { type: 'string', example: 'Connexion réussie' }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     customToken: { type: 'string', description: 'À échanger via signInWithCustomToken' }
+ *                     isNewUser: { type: 'boolean' }
+ *                     user: { type: 'object' }
+ *                     cost:
+ *                       type: object
+ *                       properties:
+ *                         totalCost: { type: 'number', example: 0.009 }
+ *                         currencyCode: { type: 'string', example: 'USD' }
+ *       401:
+ *         description: Code incorrect, expiré ou trop de tentatives
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: 'boolean', example: false }
+ *                 message: { type: 'string', example: 'Code OTP incorrect' }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     reason: { type: 'string', example: 'incorrect_code' }
+ *                     attemptsRemaining: { type: 'integer', example: 3 }
+ */
+router.post('/auth/verify', verifyAuthController);
+
+/**
+ * @swagger
+ * /api/whatsapp/costs/summary:
+ *   get:
+ *     summary: Récapitulatif des coûts Bird
+ *     description: >
+ *       Agrège les coûts enregistrés localement. Bird n'expose aucune vue
+ *       agrégée par API : ce récapitulatif s'appuie sur la collection `birdCosts`,
+ *       alimentée à chaque envoi puis complétée à la vérification.
+ *     tags: [WhatsApp Auth]
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema: { type: 'string', format: 'date-time' }
+ *         description: Date ISO de début (incluse)
+ *       - in: query
+ *         name: to
+ *         schema: { type: 'string', format: 'date-time' }
+ *         description: Date ISO de fin (exclue)
+ *     responses:
+ *       200:
+ *         description: Récapitulatif
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: 'boolean', example: true }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     count: { type: 'integer' }
+ *                     verified: { type: 'integer' }
+ *                     abandoned: { type: 'integer', description: 'Envoyés et facturés, code jamais saisi' }
+ *                     totalCost: { type: 'number' }
+ *                     currencyCode: { type: 'string' }
+ *                     byChannel: { type: 'object', description: 'Coût et volume par canal' }
+ */
+router.get('/costs/summary', getCostSummaryController);
 
 /**
  * @swagger
