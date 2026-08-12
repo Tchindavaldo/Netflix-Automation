@@ -166,12 +166,55 @@ l'appel à Bird, donc un renvoi bloqué n'est pas facturé.
 créé si le numéro est inconnu, retrouvé sinon (`isNewUser` l'indique). Un code
 refusé renvoie `401` avec `reason` et `attemptsRemaining`.
 
-La réponse porte un **custom token Firebase** à usage unique. Le frontend doit
-appeler `signInWithCustomToken(customToken)` : Firebase délivre alors un refresh
-token persistant, et la session dure bien au-delà de six mois sans nouvelle
-saisie de code. Le compte créé est un compte Firebase Auth standard
-(uid `wa_<numéro>`, provider `phone`), donc `authUser` et tout le backend
-existant fonctionnent sans modification.
+La réponse porte un **custom token Firebase** à usage unique. Le compte créé est
+un compte Firebase Auth standard (uid `wa_<numéro>`, provider `phone`), donc
+`authUser` et tout le backend existant fonctionnent sans modification.
+
+#### ⚠️ Côté frontend : le token doit être échangé
+
+**Le `customToken` n'est pas un token d'accès.** Il ne fonctionne pas dans un
+en-tête `Authorization` et n'est valable qu'une heure. Il doit être échangé
+contre une session Firebase, sans quoi l'authentification ne sert à rien.
+
+```js
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
+
+// 1. Demander le code
+await fetch('/api/whatsapp/auth/request', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ phoneNumber: '696080087' }),
+});
+
+// 2. Valider le code saisi par l'utilisateur
+const res = await fetch('/api/whatsapp/auth/verify', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ phoneNumber: '696080087', code: '123456' }),
+});
+const { data } = await res.json();
+
+// 3. Échanger le customToken contre une vraie session Firebase
+await signInWithCustomToken(getAuth(), data.customToken);
+
+// 4. Appeler le backend avec le token d'accès Firebase (pas le customToken)
+const idToken = await getAuth().currentUser.getIdToken();
+await fetch('/api/user', { headers: { Authorization: `Bearer ${idToken}` } });
+```
+
+**Persistance de la session.** Après l'étape 3, Firebase stocke un refresh token
+(localStorage sur le web, keychain sur mobile) qui **n'expire pas**. L'utilisateur
+reste connecté bien au-delà de six mois sans nouvelle saisie de code. Le token
+d'accès, lui, dure une heure et est renouvelé automatiquement : appeler
+`getIdToken()` avant chaque requête suffit, il ne faut pas le mettre en cache.
+
+Gestion des erreurs à prévoir :
+
+| Statut | Cas | Réaction attendue |
+|---|---|---|
+| `429` | Renvoi trop rapproché | Afficher un compte à rebours de `data.retryAfter` secondes |
+| `401` | Code refusé | Afficher `message`, et `data.attemptsRemaining` s'il est présent |
+| `200` + `isNewUser: true` | Inscription | Proposer de compléter le profil (nom, e-mail) |
 
 ### SMS
 
@@ -338,6 +381,7 @@ que le SMS ne peut pas véhiculer : liens, identifiants, HTML, texte libre.
 | Message texte libre refusé | Préversion WhatsApp | Utiliser un template, ou attendre l'ouverture |
 | `success: true` mais rien reçu | L'acceptation ≠ la livraison | `GET /api/whatsapp/verification/:id` |
 | `429` sur `auth/request` | Renvoi sous 60 s | Attendre `data.retryAfter` secondes (non facturé) |
+| `401` sur les routes protégées après connexion | Le `customToken` est envoyé tel quel | L'échanger via `signInWithCustomToken`, puis utiliser `getIdToken()` |
 | SMS `failed` / `content_rejected` | Contenu filtré par l'opérateur | Facturé quand même ; essayer un autre template |
 | SMS texte libre refusé | Aucun expéditeur sur le workspace | Utiliser un template, ou enregistrer un sender ID |
 | Total des coûts trop bas | Demandes non résolues | Appeler `GET /api/whatsapp/costs/summary` (les complète) |

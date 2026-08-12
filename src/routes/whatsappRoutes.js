@@ -92,7 +92,13 @@ router.post('/auth/request', requestAuthController);
  *                 data:
  *                   type: object
  *                   properties:
- *                     customToken: { type: 'string', description: 'À échanger via signInWithCustomToken' }
+ *                     customToken:
+ *                       type: 'string'
+ *                       description: >
+ *                         ⚠️ Token à usage unique, valable 1 h. Ce n'est PAS un token
+ *                         d'accès : il ne fonctionne pas dans un en-tête Authorization.
+ *                         L'échanger via signInWithCustomToken(), puis utiliser
+ *                         getIdToken() pour appeler les routes protégées.
  *                     isNewUser: { type: 'boolean' }
  *                     user: { type: 'object' }
  *                     cost:
