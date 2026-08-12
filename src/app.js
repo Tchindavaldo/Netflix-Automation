@@ -47,6 +47,7 @@ app.use("/api/transaction", require("./routes/transactionRoutes"));
 app.use("/api/netflix/plans", require("./routes/netflixPlanRoutes"));
 app.use("/api/netflix", require("./routes/passwordManagerRoutes"));
 app.use("/api/notification", require("./routes/notificationRoutes"));
+app.use("/api/whatsapp", require("./routes/whatsappRoutes"));
 
 // Gestion des erreurs 404
 app.use((req, res) => {
