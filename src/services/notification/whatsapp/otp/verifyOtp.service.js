@@ -7,6 +7,14 @@ const OTP_COLLECTION = 'whatsappOtp';
 
 const otpDocId = phoneNumber => phoneNumber.replace('+', '');
 
+/** Motifs de refus renvoyés par Bird dans `reason`, traduits pour le client. */
+const REASON_MESSAGES = {
+  incorrect_code: 'Code OTP incorrect',
+  expired: 'Code OTP expiré, demandez-en un nouveau',
+  max_attempts_reached: 'Trop de tentatives, demandez un nouveau code',
+  already_verified: 'Ce code a déjà été utilisé',
+};
+
 /**
  * Vérifie un code OTP auprès de la Verify API de Bird.
  *
@@ -52,7 +60,11 @@ exports.verifyWhatsappOtp = async ({ phoneNumber, email, code }) => {
       code: String(code),
     });
 
-    const verified = data?.status === 'verified' || data?.verified === true;
+    // Bird répond en HTTP 200 même pour un code refusé. Le verdict est porté par
+    // le booléen `success` ; l'état de la vérification est imbriqué sous
+    // `verification` (et non à la racine).
+    const verification = data?.verification || {};
+    const verified = data?.success === true || verification.status === 'verified';
 
     // Une vérification aboutie consomme la demande : on retire la trace locale.
     if (verified && recipient) {
@@ -63,16 +75,30 @@ exports.verifyWhatsappOtp = async ({ phoneNumber, email, code }) => {
         .catch(err => console.warn(`⚠️ [BIRD-OTP] Nettoyage impossible : ${err.message}`));
     }
 
-    console.log(`${verified ? '✅' : '⚠️'} [BIRD-OTP] Vérification ${recipient || email} : ${data?.status}`);
+    const reason = data?.reason || null;
+    const attemptsRemaining = data?.attempts_remaining ?? null;
+
+    console.log(
+      `${verified ? '✅' : '⚠️'} [BIRD-OTP] Vérification ${recipient || email} : ` +
+        `${verification.status || 'inconnu'}${reason ? ` (${reason})` : ''}`
+    );
 
     return {
       success: verified,
-      message: verified ? 'Code OTP validé' : 'Code OTP invalide ou expiré',
-      data: { status: data?.status, phoneNumber: recipient, email: email || null },
+      message: verified ? 'Code OTP validé' : REASON_MESSAGES[reason] || 'Code OTP invalide ou expiré',
+      data: {
+        status: verification.status || null,
+        reason,
+        attemptsRemaining,
+        verificationId: verification.id || null,
+        phoneNumber: recipient,
+        email: email || null,
+      },
     };
   } catch (error) {
-    // Bird répond en 4xx pour un mauvais code : ce n'est pas une erreur serveur,
-    // mais un échec de vérification métier.
+    // Un mauvais code ne passe pas par ici : Bird répond alors en HTTP 200 avec
+    // `success: false`. Ces 4xx couvrent les demandes introuvables ou expirées
+    // côté Bird — un échec métier, pas une erreur serveur.
     const status = error.response?.status;
     if (status === 400 || status === 401 || status === 404 || status === 422) {
       const birdStatus = error.response?.data?.status;

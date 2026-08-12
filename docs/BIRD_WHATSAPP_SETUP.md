@@ -218,6 +218,7 @@ Un réglage existe peut-être dans **Verify → Configure**.
 | OTP part en SMS et pas en WhatsApp | WhatsApp non coché pour le pays | Verify → Countries (étape 4) |
 | `Numéro de téléphone invalide` | Format non reconnu | `696080087`, `+237696080087` ou `00237696080087` |
 | Code refusé alors qu'il est bon | Expiré (10 min) | Redemander un code |
+| OTP part en SMS coûteux au lieu de WhatsApp | Téléphone hors ligne → `carrier_rejected` | Normal : WhatsApp passe une fois le téléphone reconnecté |
 | Message texte libre refusé | Préversion WhatsApp | Utiliser un template, ou attendre l'ouverture |
 | `success: true` mais rien reçu | L'acceptation ≠ la livraison | `GET /api/whatsapp/verification/:id` |
 
@@ -263,3 +264,49 @@ Base : `https://{region}.platform.bird.com` — en-tête `Authorization: Bearer 
 
 > Les quatre premiers formats sont **vérifiés** : ils proviennent des snippets
 > cURL du dashboard et ont été testés contre l'API réelle.
+
+### Réponse de `/v1/verify/verifications/check`
+
+⚠️ **Bird répond `HTTP 200` même quand le code est refusé.** Le verdict est porté
+par le booléen `success` à la racine ; l'état de la vérification est imbriqué
+sous `verification`, **pas à la racine** :
+
+```json
+{ "success": false, "reason": "incorrect_code", "attempts_remaining": 4,
+  "verification": { "id": "vrf_...", "status": "pending", "expires_at": "..." } }
+```
+
+Lire `data.status` à la racine renvoie `undefined` — et fait donc **rejeter tous
+les codes, y compris les bons**. Motifs observés dans `reason` :
+`incorrect_code`, `expired`, `max_attempts_reached`, `already_verified`.
+
+Une vérification tolère **5 tentatives** (`attempts_remaining` décrémente), et un
+code correct reste accepté après des essais ratés tant que la demande n'a pas
+expiré (10 min).
+
+### Format des coûts
+
+`cost.amount` est une **chaîne**, accompagnée de `cost.currency_code` :
+
+```json
+"cost": { "amount": "0.009", "currency_code": "USD" }
+```
+
+Présent à la fois sur la vérification globale et sur chaque tentative.
+
+---
+
+## Résultats de test réels (12/08/2026, Cameroun)
+
+| Canal | Statut | Coût |
+|---|---|---|
+| WhatsApp | `delivered` ✅ | **0,0090 USD** |
+| SMS (repli) | `delivered` ✅ | 0,2401 USD — 1 segment GSM_7BIT, 76 car. |
+
+**WhatsApp fonctionne au Cameroun** et coûte ~27× moins cher que le SMS. Le repli
+SMS ne se déclenche que si WhatsApp échoue.
+
+⚠️ **Téléphone hors ligne = `carrier_rejected` sur WhatsApp**, suivi d'un repli
+SMS facturé. Ce n'est **pas** un problème de routage ni de pays : une fois le
+téléphone reconnecté, WhatsApp passe directement. Ne pas confondre ce cas avec
+une indisponibilité de WhatsApp dans le pays.
