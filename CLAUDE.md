@@ -30,7 +30,7 @@ Fichier versionné : ses règles valent sur tout PC et dans toute session Claude
 
 ## R4 - Architecture (OBLIGATOIRE)
 
-- Un fichier = une responsabilité. Viser ~400 lignes, **500 = plafond**.
+- Un fichier = une responsabilité. Viser ~400 lignes, **500 = plafond** : au-delà, découper automatiquement, sans demander.
 - Nouvelle route : dans le fichier de son domaine (`routes/`, `controllers/`, `services/`).
 - Noms explicites, pas de `utils`/`helpers` fourre-tout.
 - Pas de fichier orphelin ou obsolète. Mettre à jour `README.md` si la structure change.
@@ -68,5 +68,5 @@ Fichier versionné : ses règles valent sur tout PC et dans toute session Claude
 - `.claude/hooks/` (déclarés dans `.claude/settings.json`), repris du modèle yaammoo :
   - `session-start-read.sh` : injecte ce fichier au premier message de la session.
   - `no-secret-commit.sh` : refuse un commit qui contient `.env*` ou une clé.
-  - `enforce-file-size.sh` : fichier de code > 500 lignes = proposer un découpage (avec accord).
+  - `enforce-file-size.sh` : fichier de code > 500 lignes = découpé automatiquement, sans demander.
 - Un hook qui bloque applique la règle : ne pas le contourner.
