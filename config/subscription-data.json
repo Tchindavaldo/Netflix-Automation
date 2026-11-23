@@ -1,0 +1,14 @@
+{
+  "cardInfo": {
+    "cardNumber": "4187622716279359",
+    "expirationDate": "12/25",
+    "securityCode": "123",
+    "cardholderName": "John Doe"
+  },
+  "alternativeCardInfo": {
+    "cardNumber": "4455381411708320",
+    "expirationDate": "10/26",
+    "securityCode": "123",
+    "cardholderName": "John Doe"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "navigation": {
+    "goToPlanSelection": "button[data-uia=\"cta-button\"]",
+    "nextAfterPlanSelection": "button[data-uia=\"cta-plan-selection\"]",
+    "nextToEmailPassword": "button[data-uia=\"cta-button\"]",
+    "nextToPaymentMethod": "button.ea2wixt2"
+  },
+  "planSelection": {
+    "backendRegions": {
+      "basic": {
+        "mobile": {
+          "selector": "label[for=\"select-4120\"]",
+          "planId": "4120",
+          "price": "ZAR 59"
+        },
+        "basic": {
+          "selector": "label[for=\"select-4001\"]",
+          "planId": "4001",
+          "price": "ZAR 99"
+        },
+        "standard": {
+          "selector": "label[for=\"select-3088\"]",
+          "planId": "3088",
+          "price": "ZAR 179"
+        },
+        "premium": {
+          "selector": "label[for=\"select-3108\"]",
+          "planId": "3108",
+          "price": "ZAR 299"
+        }
+      },
+      "usa": {
+        "standardWithAds": {
+          "selector": "label[for=\"select-5200\"]",
+          "planId": "5200",
+          "price": "$7.99"
+        },
+        "standard": {
+          "selector": "label[for=\"select-3088\"]",
+          "planId": "3088",
+          "price": "$17.99"
+        },
+        "premium": {
+          "selector": "label[for=\"select-3108\"]",
+          "planId": "3108",
+          "price": "$24.99"
+        }
+      }
+    }
+  },
+  "authentication": {
+    "email": "input[data-uia=\"email\"]",
+    "password": "input[data-uia=\"password\"]",
+    "emailPreference": "input[data-uia=\"field-emailPreference\"]"
+  },
+  "paymentMethod": {
+    "creditDebitCard": "button[data-uia=\"CREDIT_AND_DEBIT+PressableListItem\"]"
+  },
+  "paymentForm": {
+    "cardNumber": "input[data-uia=\"field-cardNumber\"]",
+    "expirationMonth": "input[data-uia=\"field-expirationMonth\"]",
+    "securityCode": "input[data-uia=\"field-securityCode\"]",
+    "cardholderName": "input[data-uia=\"field-name\"]",
+    "postalCode": "input[data-uia=\"field-postalCode\"]",
+    "legalCheckbox": "input[data-uia=\"legal-checkbox\"]",
+    "submitButton": "button[data-uia=\"action-submit-payment\"]"
+  }
+}

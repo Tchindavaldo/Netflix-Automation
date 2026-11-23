@@ -1,0 +1,7 @@
+{
+  "payment": {
+    "byId": "#creditOrDebitCardDisplayStringId",
+    "byDataUia": "button[data-uia=\"payment-choice+creditOrDebitOption\"]",
+    "byClass": "button.paymentTab"
+  }
+}

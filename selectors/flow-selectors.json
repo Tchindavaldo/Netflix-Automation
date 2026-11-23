@@ -1,0 +1,7 @@
+{
+  "signupNext": {
+    "selectorType": "xpath",
+    "selector": "//button[normalize-space()='Next']",
+    "updatedAt": "2025-10-03T12:34:11.953Z"
+  }
+}

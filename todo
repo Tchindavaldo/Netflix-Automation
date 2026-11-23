@@ -1,0 +1,28 @@
+# TODO List for Netflix Automation Project
+
+## API Endpoints to Implement
+
+1. **Endpoint for Active Sessions**
+   - Create an endpoint to retrieve all active sessions
+   - Should return a list of current sessions with details like session ID, status, and creation time
+
+2. **Snapshot Management Endpoints**
+   - Endpoint to delete a specific subfolder from the snapshot directory
+   - Endpoint to delete all subfolders from the snapshot directory
+   - Endpoint to delete a specific subfolder from the container's snapshot directory
+   - Endpoint to delete all subfolders from the container's snapshot directory
+
+## Implementation Notes
+- Ensure endpoints handle permissions and security
+- Add logging for audit trails
+- Consider adding rate limiting for deletion operations
+
+## Payment Flow Enhancements
+3. **Payment Click Handling**
+   - After clicking payment, if no redirection to next page occurs, take 3 screenshots with 5-second intervals between each capture
+   - Implement logic to detect if redirection happens within expected timeframe
+   - Save screenshots for debugging purposes
+
+4. **Continue Button Handling**
+   - After clicking a continue/next button, if the page does not change, wait 5 seconds and retry the click up to 3 times
+   - If the page still does not change after 3 retries, flag as error, send error message, and capture error snapshot

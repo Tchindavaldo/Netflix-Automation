@@ -1,0 +1,37 @@
+{
+  "plans": {
+    "mobile": {
+      "labelSelectors": [
+        "label[for=\"select-4120\"]",
+        "label[data-uia=\"plan-selection+option+4120\"]"
+      ],
+      "inputSelectors": ["input#select-4120", "input[value=\"4120\"]"],
+      "price": "$2.99"
+    },
+    "basic": {
+      "labelSelectors": [
+        "label[for=\"select-4001\"]",
+        "label[data-uia=\"plan-selection+option+4001\"]"
+      ],
+      "inputSelectors": ["input#select-4001", "input[value=\"4001\"]"],
+      "price": "$3.99"
+    },
+    "standard": {
+      "labelSelectors": [
+        "label[for=\"select-3088\"]",
+        "label[data-uia=\"plan-selection+option+3088\"]"
+      ],
+      "inputSelectors": ["input#select-3088", "input[value=\"3088\"]"],
+      "price": "$7.99"
+    },
+    "premium": {
+      "labelSelectors": [
+        "label[for=\"select-3108\"]",
+        "label[data-uia=\"plan-selection+option+3108\"]"
+      ],
+      "inputSelectors": ["input#select-3108", "input[value=\"3108\"]"],
+      "price": "$9.99",
+      "selected": true
+    }
+  }
+}
